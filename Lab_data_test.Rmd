@@ -1,0 +1,156 @@
+---
+title: "Lab_data_test"
+author: "Kayla Pehl"
+date: "9/28/2020"
+output: html_document
+---
+
+```{r}
+#Importing data
+Lab_data_test <- read.csv("~/College of Charleston/Thesis/R/Thesis/Lab_data_test.csv")
+
+#Importing packages
+library(ggplot2)
+```
+
+SIDE CAMERA
+
+```{r}
+#Side max acceleration max per substrate Boxplot
+ggplot(data = Lab_data_test, aes(x=Substrate_type, y=side_amax)) +
+  geom_boxplot()
+```
+
+```{r}
+#Side max acceleration max per substrate Histogram
+ggplot(data = Lab_data_test, aes(side_amax))  + 
+  geom_histogram(fill="orange") +
+  facet_wrap(~Substrate_type)
+```
+
+```{r}
+#Side max acceleration per sex Boxplot
+ggplot(data = Lab_data_test, aes(x=Sex, y=side_amax)) +
+  geom_boxplot()
+```
+
+```{r}
+#Side max acceleration per sex Histogram
+ggplot(data = Lab_data_test, aes(side_amax))  + 
+  geom_histogram(fill="orange") +
+  facet_wrap(~Sex)
+```
+
+```{r}
+#Side max velocity per sex Boxplot
+ggplot(data = Lab_data_test, aes(x=Substrate_type, y=side_vmax)) +
+  geom_boxplot()
+```
+
+```{r}
+#Side max velocity per sex Histogram
+ggplot(data = Lab_data_test, aes(side_vmax)) +
+  geom_histogram(fill = "blue") +
+  facet_wrap(~Sex)
+```
+
+
+```{r}
+#Side max velocity per substrate Boxplot
+ggplot(data = Lab_data_test, aes(x=Substrate_type, y=side_vmax)) +
+  geom_boxplot()
+```
+
+```{r}
+#Side max velocity per substrate Histogram
+ggplot(data = Lab_data_test, aes(side_vmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Substrate_type)
+```
+
+
+
+
+TOP CAMERA
+
+```{r}
+#Top max acceleration max per substrate Boxplot
+ggplot(data = Lab_data_test, aes(x=Substrate_type, y=top_amax)) +
+  geom_boxplot()
+```
+
+```{r}
+#Top max acceleration max per substrate Histogram
+ggplot(data = Lab_data_test, aes(top_amax))  + 
+  geom_histogram(fill="orange") +
+  facet_wrap(~Substrate_type)
+```
+
+```{r}
+#Top max acceleration per sex Boxplot
+ggplot(data = Lab_data_test, aes(x=Sex, y=top_amax)) +
+  geom_boxplot()
+```
+
+```{r}
+#Top max acceleration per sex Histogram
+ggplot(data = Lab_data_test, aes(top_amax))  + 
+  geom_histogram(fill="orange") +
+  facet_wrap(~Sex)
+```
+
+```{r}
+#Top max velocity per sex Boxplot
+ggplot(data = Lab_data_test, aes(x=Substrate_type, y=top_vmax)) +
+  geom_boxplot()
+```
+
+```{r}
+#Top max velocity per sex Histogram
+ggplot(data = Lab_data_test, aes(top_vmax)) +
+  geom_histogram(fill = "blue") +
+  facet_wrap(~Sex)
+```
+
+
+```{r}
+#Top max velocity per substrate Boxplot
+ggplot(data = Lab_data_test, aes(x=Substrate_type, y=top_vmax)) +
+  geom_boxplot()
+```
+
+```{r}
+#Top max velocity per substrate Histogram
+ggplot(data = Lab_data_test, aes(top_vmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Substrate_type)
+```
+
+
+
+
+BIPEDALISM
+
+```{r}
+#Bipedalism percentage per sex Histogram
+ggplot(data = Lab_data_test, aes(Bipedal_percentage))  + 
+  geom_histogram(fill="green") +
+  facet_wrap(~Sex)
+```
+
+
+```{r}
+#Bipedalism percentage per substrate Histogram
+ggplot(data = Lab_data_test, aes(Bipedal_percentage))  + 
+  geom_histogram(fill="green") +
+  facet_wrap(~Substrate_type)
+```
+
+
+
+
+
+
+
+
+
