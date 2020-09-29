@@ -16,124 +16,225 @@ library(ggplot2)
 SIDE CAMERA
 
 ```{r}
-#Side max acceleration max per substrate Boxplot
+#Side max acceleration max per substrate 
+
+#Boxplot
 ggplot(data = Lab_data_test, aes(x=Substrate_type, y=side_amax)) +
-  geom_boxplot()
-```
+  geom_boxplot() +
+  labs(title = "Side max acceleration per substrate")
 
-```{r}
-#Side max acceleration max per substrate Histogram
+#Histogram
 ggplot(data = Lab_data_test, aes(side_amax))  + 
   geom_histogram(fill="orange") +
-  facet_wrap(~Substrate_type)
+  facet_wrap(~Substrate_type) +
+  labs(title = "Side max acceleration per substrate")
 ```
 
+
+
 ```{r}
-#Side max acceleration per sex Boxplot
+#Side max acceleration per sex 
+
+#Boxplot
 ggplot(data = Lab_data_test, aes(x=Sex, y=side_amax)) +
-  geom_boxplot()
-```
+  geom_boxplot() +
+    labs(title = "Side max acceleration per sex")
 
-```{r}
-#Side max acceleration per sex Histogram
+#Histogram
 ggplot(data = Lab_data_test, aes(side_amax))  + 
   geom_histogram(fill="orange") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+  labs(title = "Side max acceleration per sex")
 ```
 
+
 ```{r}
-#Side max velocity per sex Boxplot
+#Side max velocity per sex 
+
+#Boxplot
 ggplot(data = Lab_data_test, aes(x=Substrate_type, y=side_vmax)) +
-  geom_boxplot()
-```
+  geom_boxplot() +
+  labs(title = "Side max velocity per sex")
 
-```{r}
-#Side max velocity per sex Histogram
+#Histogram
 ggplot(data = Lab_data_test, aes(side_vmax)) +
   geom_histogram(fill = "blue") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+  labs(title = "Side max velocity per sex")
 ```
 
 
+
 ```{r}
-#Side max velocity per substrate Boxplot
+#Side max velocity per substrate 
+
+#Boxplot
 ggplot(data = Lab_data_test, aes(x=Substrate_type, y=side_vmax)) +
-  geom_boxplot()
-```
+  geom_boxplot() +
+   labs(title = "Side max velocity per substrate")
 
-```{r}
-#Side max velocity per substrate Histogram
+#Histogram
 ggplot(data = Lab_data_test, aes(side_vmax))  + 
   geom_histogram(fill="blue") +
-  facet_wrap(~Substrate_type)
+  facet_wrap(~Substrate_type) +
+  labs(title = "Side max velocity per substrate")
 ```
 
 
+```{r}
+#Side tmax per substrate Histogram
+ggplot(data = Lab_data_test, aes(side_tmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Substrate_type) +
+   labs(title = "Side tmax per substrate")
+
+#Side posmax per substrate Histogram
+ggplot(data = Lab_data_test, aes(side_posmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Substrate_type) +
+   labs(title = "Side posmax per substrate")
+
+#Side spline tolerance per substrate Histogram
+ggplot(data = Lab_data_test, aes(side_spline))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Substrate_type) + 
+  labs(title = "Side spline tolerance per substrate")
+```
+
+```{r}
+#Side tmax per sex Histogram
+ggplot(data = Lab_data_test, aes(side_tmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Sex) +
+   labs(title = "Side tmax per sex")
+
+#Side posmax per sex Histogram
+ggplot(data = Lab_data_test, aes(side_posmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Sex) +
+   labs(title = "Side posmax per sex")
+
+#Side spline tolerance per sex Histogram
+ggplot(data = Lab_data_test, aes(side_spline))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Sex) + 
+  labs(title = "Side spline tolerance per sex")
+```
 
 
 TOP CAMERA
 
 ```{r}
-#Top max acceleration max per substrate Boxplot
+#Top max acceleration max per substrate 
+
+#Boxplot
 ggplot(data = Lab_data_test, aes(x=Substrate_type, y=top_amax)) +
-  geom_boxplot()
-```
+  geom_boxplot() +
+  labs(title = "Top max acceleration per substrate")
 
-```{r}
-#Top max acceleration max per substrate Histogram
+#Histogram
 ggplot(data = Lab_data_test, aes(top_amax))  + 
   geom_histogram(fill="orange") +
-  facet_wrap(~Substrate_type)
+  facet_wrap(~Substrate_type) +
+  labs(title = "Top max acceleration per substrate")
 ```
 
+
 ```{r}
-#Top max acceleration per sex Boxplot
+#Top max acceleration per sex 
+
+#Boxplot
 ggplot(data = Lab_data_test, aes(x=Sex, y=top_amax)) +
-  geom_boxplot()
-```
+  geom_boxplot() +
+  labs(title = "Top max acceleration per sex")
 
-```{r}
-#Top max acceleration per sex Histogram
+#Histogram
 ggplot(data = Lab_data_test, aes(top_amax))  + 
   geom_histogram(fill="orange") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+  labs(title = "Top max acceleration per sex")
 ```
 
+
 ```{r}
-#Top max velocity per sex Boxplot
+#Top max velocity per sex 
+
+#Boxplot
 ggplot(data = Lab_data_test, aes(x=Substrate_type, y=top_vmax)) +
-  geom_boxplot()
-```
+  geom_boxplot() +
+   labs(title = "Top max velocity per sex")
 
-```{r}
-#Top max velocity per sex Histogram
+#Histogram
 ggplot(data = Lab_data_test, aes(top_vmax)) +
   geom_histogram(fill = "blue") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+  labs(title = "Top max velocity per sex")
 ```
 
 
 ```{r}
-#Top max velocity per substrate Boxplot
+#Top max velocity per substrate 
+
+#Boxplot
 ggplot(data = Lab_data_test, aes(x=Substrate_type, y=top_vmax)) +
-  geom_boxplot()
-```
+  geom_boxplot() +
+   labs(title = "Top max velocity per substrate")
 
-```{r}
-#Top max velocity per substrate Histogram
+#Histogram
 ggplot(data = Lab_data_test, aes(top_vmax))  + 
   geom_histogram(fill="blue") +
-  facet_wrap(~Substrate_type)
+  facet_wrap(~Substrate_type) +
+  labs(title = "Top max velocity per substrate")
 ```
 
 
+```{r}
+#Top tmax per substrate Histogram
+ggplot(data = Lab_data_test, aes(top_tmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Substrate_type) +
+  labs(title = "Top tmax per substrate")
+
+#Top posmax per substrate Histogram
+ggplot(data = Lab_data_test, aes(top_posmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Substrate_type) +
+  labs(title = "Top posmax per substrate")
+
+#Top spline tolerance per substrate Histogram
+ggplot(data = Lab_data_test, aes(top_spline)) + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Substrate_type) +
+  labs(title = "Top Spline Tolerance per Substrate")
+```
+
+
+```{r}
+#Top tmax per sex Histogram
+ggplot(data = Lab_data_test, aes(top_tmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Sex) +
+  labs(title = "Top tmax per sex")
+
+#Top posmax per sex Histogram
+ggplot(data = Lab_data_test, aes(top_posmax))  + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Sex) +
+  labs(title = "Top posmax per sex")
+
+#Top spline tolerance per sex Histogram
+ggplot(data = Lab_data_test, aes(top_spline)) + 
+  geom_histogram(fill="blue") +
+  facet_wrap(~Sex) +
+  labs(title = "Top Spline Tolerance per Sex")
+```
 
 
 BIPEDALISM
 
 ```{r}
 #Bipedalism percentage per sex Histogram
-ggplot(data = Lab_data_test, aes(Bipedal_percentage))  + 
+ggplot(data = Lab_data_test, aes(Bipedal_percentage), main = "Bipedalism Percentage per Sex")  + 
   geom_histogram(fill="green") +
   facet_wrap(~Sex)
 ```
@@ -145,6 +246,14 @@ ggplot(data = Lab_data_test, aes(Bipedal_percentage))  +
   geom_histogram(fill="green") +
   facet_wrap(~Substrate_type)
 ```
+
+
+```{r}
+#Boxplot
+ggplot(data = Lab_data_test, aes(Bipedal_percentage)) +
+  geom_histogram()
+```
+
 
 
 
