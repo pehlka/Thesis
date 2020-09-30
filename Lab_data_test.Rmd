@@ -80,7 +80,6 @@ ggplot(data = Lab_data_test, aes(side_vmax))  +
   labs(title = "Side max velocity per substrate")
 ```
 
-
 ```{r}
 #Side tmax per substrate Histogram
 ggplot(data = Lab_data_test, aes(side_tmax))  + 
@@ -234,26 +233,235 @@ BIPEDALISM
 
 ```{r}
 #Bipedalism percentage per sex Histogram
-ggplot(data = Lab_data_test, aes(Bipedal_percentage), main = "Bipedalism Percentage per Sex")  + 
+ggplot(data = Lab_data_test, aes(as.numeric(Bipedal_percentage)))  + 
   geom_histogram(fill="green") +
   facet_wrap(~Sex)
 ```
 
+--------------------------------------------------------------------------------
 
-```{r}
-#Bipedalism percentage per substrate Histogram
-ggplot(data = Lab_data_test, aes(Bipedal_percentage))  + 
+# Meeting with Eric Notes (9/30/20)
+
+> table(Lab_data_test$Bipedal_top)
+
+      B   Q 
+ 13 102  81 
+> dat <- Lab_data_test[1:185,]
+> View(dat)
+> View(dat)
+> table(dat$Bipedal_top)
+
+      B   Q 
+  2 102  81 
+> dat <- Lab_data_test[1:185,]
+> table(dat$Bipedal_top)
+
+      B   Q 
+  2 102  81 
+> table(dat$Bipedal_top~dat$Substrate_type)
+Error in unique.default(x, nmax = nmax) : 
+  unique() applies only to vectors
+> table(dat$Bipedal_top~dat$Sex)
+Error in unique.default(x, nmax = nmax) : 
+  unique() applies only to vectors
+> table(dat$Bipedal_top,dat$Sex)
+   
+        F  M
+     0  2  0
+  B  0 68 34
+  Q  0 62 19
+> table(dat$Bipedal_top,dat$Substrate_type)
+   
+        D  S SD
+     0  1  0  1
+  B  0 42 28 32
+  Q  0 18 31 32
+> summary(lm(top_vmax~Bipedal, data=dat))
+Error in eval(predvars, data, env) : object 'Bipedal' not found
+> summary(lm(top_vmax~Bipedal_top, data=dat))
+
+Call:
+lm(formula = top_vmax ~ Bipedal_top, data = dat)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-1.6938 -0.1668  0.0102  0.1692  0.6527 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept)    2.2856     0.2068  11.054   <2e-16 ***
+Bipedal_topB  -0.2926     0.2088  -1.401   0.1628    
+Bipedal_topQ  -0.6367     0.2093  -3.042   0.0027 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.2924 on 182 degrees of freedom
+Multiple R-squared:  0.2694,	Adjusted R-squared:  0.2614 
+F-statistic: 33.55 on 2 and 182 DF,  p-value: 3.944e-13
+
+> anova(lm(top_vmax~Bipedal_top, data=dat))
+Analysis of Variance Table
+
+Response: top_vmax
+             Df  Sum Sq Mean Sq F value    Pr(>F)    
+Bipedal_top   2  5.7377 2.86886  33.552 3.944e-13 ***
+Residuals   182 15.5619 0.08551                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> anova(lm(top_vmax~Substrate_type, data=dat))
+Analysis of Variance Table
+
+Response: top_vmax
+                Df  Sum Sq Mean Sq F value   Pr(>F)   
+Substrate_type   2  1.3073 0.65365  5.9505 0.003138 **
+Residuals      182 19.9924 0.10985                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> anova(lm(top_vmax~Sex, data=dat))
+Analysis of Variance Table
+
+Response: top_vmax
+           Df  Sum Sq Mean Sq F value  Pr(>F)  
+Sex         1  0.5257 0.52567  4.6307 0.03271 *
+Residuals 183 20.7740 0.11352                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> anova(lm(top_vmax~Sex+Bipdeal_top+Substrate_type, data=dat))
+Error in eval(predvars, data, env) : object 'Bipdeal_top' not found
+> anova(lm(top_vmax~Sex+Bipedal_top+Substrate_type, data=dat))
+Analysis of Variance Table
+
+Response: top_vmax
+                Df  Sum Sq Mean Sq F value    Pr(>F)    
+Sex              1  0.5257 0.52567  6.3284   0.01276 *  
+Bipedal_top      2  5.4837 2.74183 33.0077 6.274e-13 ***
+Substrate_type   2  0.4215 0.21073  2.5369   0.08195 .  
+Residuals      179 14.8689 0.08307                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> anova(lm(top_vmax~Sex*Bipedal_top*Substrate_type, data=dat))
+Analysis of Variance Table
+
+Response: top_vmax
+                                Df  Sum Sq Mean Sq F value    Pr(>F)    
+Sex                              1  0.5257 0.52567  6.6188   0.01094 *  
+Bipedal_top                      2  5.4837 2.74183 34.5225 2.548e-13 ***
+Substrate_type                   2  0.4215 0.21073  2.6533   0.07331 .  
+Sex:Bipedal_top                  1  0.1484 0.14841  1.8686   0.17343    
+Sex:Substrate_type               2  0.2958 0.14789  1.8621   0.15849    
+Bipedal_top:Substrate_type       3  0.6958 0.23194  2.9203   0.03561 *  
+Sex:Bipedal_top:Substrate_type   2  0.1478 0.07392  0.9307   0.39626    
+Residuals                      171 13.5810 0.07942                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> anova(lm(Bipedal_percentage~Substrate_type, data=dat))
+Error in if (ssr < 1e-10 * mss) warning("ANOVA F-tests on an essentially perfect fit are unreliable") : 
+  missing value where TRUE/FALSE needed
+In addition: Warning messages:
+1: In model.response(mf, "numeric") :
+  using type = "numeric" with a factor response will be ignored
+2: In Ops.factor(y, z$residuals) : ‘-’ not meaningful for factors
+3: In Ops.factor(object$residuals, 2) : ‘^’ not meaningful for factors
+> anova(lm(as.numeric(Bipedal_percentage)~Substrate_type, data=dat))
+Analysis of Variance Table
+
+Response: as.numeric(Bipedal_percentage)
+                Df Sum Sq Mean Sq F value   Pr(>F)   
+Substrate_type   2  14248  7123.9  4.7461 0.009789 **
+Residuals      182 273179  1501.0                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> #Bipedalism percentage per sex Histogram
+> ggplot(data = Lab_data_test, aes(as.numeric(Bipedal_percentage))  + 
++   geom_histogram(fill="green") +
++   facet_wrap(~Sex)
+Error: Incomplete expression: ggplot(data = Lab_data_test, aes(as.numeric(Bipedal_percentage))  + 
   geom_histogram(fill="green") +
-  facet_wrap(~Substrate_type)
-```
+  facet_wrap(~Sex)
+> #Bipedalism percentage per sex Histogram
+> ggplot(data = Lab_data_test, aes(as.numeric(Bipedal_percentage)))  + 
++   geom_histogram(fill="green") +
++   facet_wrap(~Sex)
+> 
 
+--------------------------------------------------------------------------------
+
+# Below is the same script that Eric wrote during our meeting, just in R chunks
+# He wrote it all in the consol and then I copy and pasted it in the R markdown file
 
 ```{r}
-#Boxplot
-ggplot(data = Lab_data_test, aes(Bipedal_percentage)) +
-  geom_histogram()
+table(Lab_data_test$Bipedal_top)
 ```
 
+```{r}     
+dat <- Lab_data_test[1:185,]
+View(dat)
+View(dat)
+table(dat$Bipedal_top)
+```
+
+```{r}    
+dat <- Lab_data_test[1:185,]
+table(dat$Bipedal_top)
+```
+  
+```{r}   
+table(dat$Bipedal_top_frames_total~dat$Substrate_type)
+```
+
+```{r}
+table(dat$Bipedal_top_frames_total~dat$Sex)
+
+table(dat$Bipedal_top_frames_total,dat$Sex)
+ 
+table(dat$Bipedal_top_frames_total,dat$Substrate_type)
+```   
+
+```{r}    
+summary(lm(top_vmax~Bipedal, data=dat))
+```
+
+```{r}
+summary(lm(top_vmax~Bipedal_top, data=dat))
+```
+
+```{r}
+anova(lm(top_vmax~Bipedal_top, data=dat))
+```
+
+```{r}
+anova(lm(top_vmax~Substrate_type, data=dat))
+```
+
+```{r}
+anova(lm(top_vmax~Sex, data=dat))
+```
+
+```{r}
+anova(lm(top_vmax~Sex+Bipdeal_top+Substrate_type, data=dat))
+```
+
+```{r}
+anova(lm(top_vmax~Sex+Bipedal_top+Substrate_type, data=dat))
+```
+
+```{r}
+anova(lm(top_vmax~Sex*Bipedal_top*Substrate_type, data=dat))
+```
+
+```{r}
+anova(lm(Bipedal_percentage~Substrate_type, data=dat))
+```
+
+```{r}
+anova(lm(as.numeric(Bipedal_percentage)~Substrate_type, data=dat))
+```
+
+```{r}
+ggplot(data = Lab_data_test, aes(as.numeric(Bipedal_percentage)))  + 
+   geom_histogram(fill="green") +
+   facet_wrap(~Sex)
+```
 
 
 
