@@ -1,0 +1,88 @@
+---
+title: "Lab_data_w/o_no-standstill_starts"
+author: "Kayla Pehl"
+date: "10/1/2020"
+output: html_document
+---
+
+# This dataset does NOT include trials where the lizard did not start from a standstill
+
+```{r}
+#Importing data and required packages
+
+data <-  read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.01.20_removed_non-standstill_starts.csv")
+library(ggplot2)
+```
+
+```{r}
+#Side max acceleration max per substrate 
+
+ggplot(data = data, aes(side_amax))  + 
+  geom_histogram(fill="orange") +
+  facet_wrap(~substrate_type) +
+  labs(title = "Side max acceleration per substrate")
+
+
+#Side max acceleration max per sex
+
+ggplot(data = data, aes(side_amax))  + 
+  geom_histogram(fill="orange") +
+  facet_wrap(~sex) +
+  labs(title = "Side max acceleration per sex")
+```
+
+```{r}
+#Top max acceleration max per substrate 
+
+ggplot(data = data, aes(top_amax))  + 
+  geom_histogram(fill="purple") +
+  facet_wrap(~substrate_type) +
+  labs(title = "Top max acceleration per substrate")
+
+
+#Top max acceleration max per sex
+
+ggplot(data = data, aes(top_amax))  + 
+  geom_histogram(fill="purple") +
+  facet_wrap(~sex) +
+  labs(title = "Top max acceleration per sex")
+```
+
+
+```{r}
+#Bipedalism percentage per sex Histogram
+ggplot(data = data, aes(as.numeric(bipedal_percent)))  + 
+  geom_histogram(fill="green") +
+  facet_wrap(~sex)
+
+#Bipedalism percentage per substrate Histogram
+ggplot(data = data, aes(as.numeric(bipedal_percent)))  + 
+  geom_histogram(fill="green") +
+  facet_wrap(~substrate_type)
+```
+
+
+```{r}
+summary(lm(side_amax~sex, data = data))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
