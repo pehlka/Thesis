@@ -1,0 +1,105 @@
+---
+title: "Untitled"
+author: "Kayla Pehl"
+date: "10/6/2020"
+output: html_document
+---
+
+# This dataset does NOT include trials where the lizard did not start from a standstill
+
+```{r}
+#Importing data and required packages
+
+lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.01.20_removed_non-standstill_starts.csv")
+library(ggplot2)
+library(rcompanion)
+library(lme4)
+library(sjstats)
+library(lmerTest)
+```
+
+```{r}
+#Inserting necessary functions
+log_top_vmax <- log(lab.data$top_vmax)
+log_side_vmax <- log(lab.data$side_vmax)
+```
+
+
+
+# Glmer and lmer
+
+## lmer is used to fit linear mixed-effect models, so it assumes that the residual error has a Gaussian distribution. If your dependent variable A is a binary outcome (e.g. a yes/no response), then the error distribution is binomial and not Gaussian. In this case you have to use glmer, which allow to fit a generalized linear mixed-effects model: these models include a link function that allows to predict response variables with non-Gaussian distributions.
+## glmer -> use when dependent variable (X) is a binary outcome (e.g. yes/no)
+### 1 refers to an intercept; means 'add a random intercept for each ID level'
+
+```{r}
+lmer(log_top_vmax ~ bipedal_top + (1 | ID), data = lab.data)   
+```
+
+```{r}
+#Mixed model lmer 
+summary(lmer(log_side_vmax ~ bipedal_side + (1 | ID), data = lab.data))
+
+#Finding p-value in lmer 
+sjstats::p_value(lmer(log_side_vmax ~ bipedal_side + (1 | ID), data = lab.data))
+```
+
+
+```{r}
+#Mixed model lmer
+summary(lmer(log_top_vmax ~ bipedal_top + (1 | ID), data = lab.data))
+
+#Finding p-value in lmer 
+sjstats::p_value(lmer(log_top_vmax ~ bipedal_top + (1 | ID), data = lab.data))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
