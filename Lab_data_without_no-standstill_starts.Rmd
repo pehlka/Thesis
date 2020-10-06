@@ -12,13 +12,15 @@ output: html_document
 
 data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.01.20_removed_non-standstill_starts.csv")
 library(ggplot2)
+library(rcompanion)
+library(lme4)
 ```
 
 ```{r}
 #Side max acceleration max per substrate 
 
 ggplot(data = data, aes(side_amax))  + 
-  geom_histogram(fill="orange") +
+  geom_histogram(fill="orange", bins = 20, binwidth = 10) +
   facet_wrap(~substrate_type) +
   labs(title = "Side max acceleration per substrate")
 
@@ -26,7 +28,7 @@ ggplot(data = data, aes(side_amax))  +
 #Side max acceleration max per sex
 
 ggplot(data = data, aes(side_amax))  + 
-  geom_histogram(fill="orange") +
+  geom_histogram(fill="orange", bins = 20, binwidth = 5) +
   facet_wrap(~sex) +
   labs(title = "Side max acceleration per sex")
 ```
@@ -35,7 +37,7 @@ ggplot(data = data, aes(side_amax))  +
 #Top max acceleration max per substrate 
 
 ggplot(data = data, aes(top_amax))  + 
-  geom_histogram(fill="purple") +
+  geom_histogram(fill="purple", bins = 30, binwidth = 10) +
   facet_wrap(~substrate_type) +
   labs(title = "Top max acceleration per substrate")
 
@@ -43,7 +45,7 @@ ggplot(data = data, aes(top_amax))  +
 #Top max acceleration max per sex
 
 ggplot(data = data, aes(top_amax))  + 
-  geom_histogram(fill="purple") +
+  geom_histogram(fill="purple", bins = 30, binwidth = 5) +
   facet_wrap(~sex) +
   labs(title = "Top max acceleration per sex")
 ```
@@ -158,19 +160,116 @@ shapiro.test(data$top_posmax)
 
 
 ```{r}
+#Top camera max acceleration vs. bipedalism in side
+
 top.amax.biped <- lm(top_amax ~ bipedal_top, data = data)
 res.top.amax.biped <- resid(top.amax.biped)
 plot(fitted(top.amax.biped), res.top.amax.biped)
 abline(0,0)
 
 qqnorm(res.top.amax.biped)
-qqline(res.top.amax.biped)
+qqline(res.top.amax.biped,
+       col = 'red')
 plot(density(res.top.amax.biped))
+
+plot(top.amax.biped)
+```
+
+```{r}
+#Side camera max acceleration vs. bipedalism in side
+side.amax.biped <- lm(side_amax ~ bipedal_side, data = data)
+res.side.amax.biped <- resid(side.amax.biped)
+plot(fitted(side.amax.biped), res.side.amax.biped)
+
+qqnorm(res.side.amax.biped)
+qqline(res.side.amax.biped,
+       col = 'red')
+plot(density(res.side.amax.biped))
+
+plot(side.amax.biped)
+```
+
+```{r}
+#Side camera max velocity vs. bipedalism in side
+side.vmax.biped <- lm(side_vmax ~ bipedal_side, data = data)
+res.side.vmax.biped <- resid(side.vmax.biped)
+plot(fitted(side.vmax.biped), res.side.vmax.biped)
+
+qqnorm(res.side.vmax.biped)
+qqline(res.side.vmax.biped,
+       col = 'red')
+plot(density(res.side.vmax.biped))
+
+plot(side.vmax.biped)
+```
+
+```{r}
+#Log transform side camera max velocity vs. bipedalism in side
+
+log_side_vmax <- log(data$side_vmax)
+log.side.vmax.biped <- lm(log_side_vmax ~ bipedal_side, data = data)
+res.log.side.vmax.biped <- resid(log.side.vmax.biped)
+plot(fitted(log.side.vmax.biped), res.log.side.vmax.biped)
+
+qqnorm(res.log.side.vmax.biped)
+qqline(res.log.side.vmax.biped,
+       col = 'red')
+plot(density(res.log.side.vmax.biped))
+
+plot(log.side.vmax.biped)
+
+ggplot(data = data, aes(log_side_vmax))  + 
+  geom_histogram(bins = 13, col = ("grey"))    #skewed left
+
+#Q-Q plots of regular and log-transformed side vmax data look basically the same to me. I'm not sure if log-transforming did a lot for the data.
+```
+
+```{r}
+#Comparing side vmax data from original with log-transformed
+
+#histograms
+plotNormalHistogram(data$side_vmax)  #appears pretty symmetrical 
+plotNormalHistogram(log_side_vmax)  #skew left
+
+#Shapiro-Wilks test for normality
+shapiro.test(data$side_vmax)  #not normal
+shapiro.test(log_side_vmax)  #normal
 ```
 
 
+```{r}
+#Log transform top camera max velocity vs. bipedalism in top
 
+log_top_vmax <- log(data$top_vmax)
+log.top.vmax.biped <- lm(log_top_vmax ~ bipedal_top, data = data)
+res.log.top.vmax.biped <- resid(log.top.vmax.biped)
+plot(fitted(log.top.vmax.biped), res.log.top.vmax.biped)
 
+qqnorm(res.log.top.vmax.biped)
+qqline(res.log.top.vmax.biped,
+       col = 'red')
+plot(density(res.log.top.vmax.biped))
 
+plot(log.top.vmax.biped)
+```
+
+```{r}
+#Comparing top vmax data from original with log-transformed
+
+#histograms
+plotNormalHistogram(data$top_vmax)  #appears pretty symmetrical 
+plotNormalHistogram(log_top_vmax)  #skew left
+
+#Shapiro-Wilks test for normality
+shapiro.test(data$top_vmax)  #not normal
+shapiro.test(log_top_vmax)  #normal
+```
+
+```{r}
+lmer(log_top_vmax ~ bipedal_top + (1 | ID), data = data)   #1 refers to an intercept; means 'add a random intercept for each ID level'
+```
+
+## lmer is used to fit linear mixed-effect models, so it assumes that the residual error has a Gaussian distribution. If your dependent variable A is a binary outcome (e.g. a yes/no response), then the error distribution is binomial and not Gaussian. In this case you have to use glmer, which allow to fit a generalized linear mixed-effects model: these models include a link function that allows to predict response variables with non-Gaussian distributions.
+## glmer -> use when dependent variable (X) is a binary outcome (e.g. yes/no)
 
 
