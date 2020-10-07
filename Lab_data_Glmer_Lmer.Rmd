@@ -54,9 +54,25 @@ sjstats::p_value(lmer(log_top_vmax ~ bipedal_top + (1 | ID), data = lab.data))
 ```
 
 
+```{r}
+summary(lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data))
+```
 
 
+```{r}
+summary(lmer(log_side_vmax ~ substrate_type*sex + (1 | ID), data = lab.data))
+```
 
+```{r}
+summary(lmer(log_top_vmax ~ substrate_type*sex + (1 | ID), data = lab.data))
+#Sand is significant but not SD
+
+summary(lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data))
+#Sand and SD are both significant, even though SD wasn't significant when sex was included
+
+summary(lmer(log_top_vmax ~ sex + (1 | ID), data = lab.data))
+#sex wasn't significant in any of the lmers
+```
 
 
 
