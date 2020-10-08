@@ -10,7 +10,7 @@ output: html_document
 ```{r}
 #Importing data and required packages
 
-lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.01.20_removed_non-standstill_starts.csv")
+lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.08.20_removed_non-standstill_starts+NA.csv")
 library(ggplot2)
 library(rcompanion)
 library(lme4)
@@ -51,12 +51,12 @@ ggplot(data = lab.data, aes(top_amax))  +
 ```{r}
 #Bipedalism percentage per sex Histogram
 ggplot(data = lab.data, aes(as.numeric(bipedal_percent)))  + 
-  geom_histogram(fill="green", bins = 20, binwidth = 10) +
+  geom_histogram(fill="dark green", bins = 20, binwidth = 10) +
   facet_wrap(~sex)
 
 #Bipedalism percentage per substrate Histogram
 ggplot(data = lab.data, aes(as.numeric(bipedal_percent)))  + 
-  geom_histogram(fill="green", bins = 20, binwidth = 10) +
+  geom_histogram(fill="dark green", bins = 20, binwidth = 10) +
   facet_wrap(~substrate_type)
 ```
 
@@ -86,6 +86,35 @@ ggplot(data = lab.data, aes(x=bipedal_quad_top, y=top_vmax)) +
 ```
 
 ```{r}
+#Histograms of pmax, posmax and tmax
+ggplot(data = lab.data, aes(side_pmax)) +
+  geom_histogram(fill = "dark blue") +
+    labs(title = "Side Pmax")
+
+ggplot(data = lab.data, aes(side_posmax)) +
+  geom_histogram(fill = "dark blue") +
+    labs(title = "Side Posmax")
+
+ggplot(data = lab.data, aes(side_tmax)) +
+  geom_histogram(fill = "dark blue") +
+    labs(title = "Side Tmax")
+
+ggplot(data = lab.data, aes(top_pmax)) +
+  geom_histogram(fill = "medium blue") +
+    labs(title = "Top Pmax")
+
+ggplot(data = lab.data, aes(top_posmax)) +
+  geom_histogram(fill = "medium blue") +
+    labs(title = "Top Posmax")
+
+ggplot(data = lab.data, aes(top_tmax)) +
+  geom_histogram(fill = "medium blue") +
+    labs(title = "Top Tmax")
+```
+
+
+
+```{r}
 table(lab.data$bipedal_quad_side)
 table(lab.data$bipedal_quad_top)
 ```
@@ -93,7 +122,7 @@ table(lab.data$bipedal_quad_top)
 
 ```{r}
 #Summary of data
-summary(data)
+summary(lab.data)
 ```
 
 ```{r}
@@ -131,7 +160,6 @@ shapiro.test(lab.data$top_vmax)
 #top_vmax: not normal
 ```
 
-
 ```{r}
 #Checking for normality of data: time and position
 
@@ -159,6 +187,7 @@ shapiro.test(lab.data$top_posmax)
 #side_posmax: not normal
 #top_posmax: normal
 ```
+
 
 # Looking at diagnostics data
 
@@ -347,22 +376,73 @@ anova(lm(side_amax ~ sex*bipedal_side*substrate_type*ID, data = lab.data))
 # Bipedal Percentage
 
 ```{r}
-#Histogram of bipedal percentage
-ggplot(data = lab.data, aes(as.numeric(bipedal_percent)))  + 
-  geom_histogram(bins = 13, col = ("grey"))
+#Bipedal Percentage Plots
+
+#Creating new data frame without N/A's
+lab.data_omit <- lab.data[!is.na(lab.data$bipedal_percent), ]
+
+#Histogram of bipedal percent without N/A's
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent))) +
+  geom_histogram(col = "white") + 
+  labs(title = "Histogram of Bipedal Percent (without N/As)")
+
+#Histogram of bipedal percent without N/A's separated into substrate type
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent))) +
+  geom_histogram(bins = 20, binwidth = 8) +
+  facet_wrap(~substrate_type)
+
+#Boxplot of bipedal percent without N/A's separated by substrate type
+ggplot(data = lab.data_omit, aes(substrate_type, as.numeric(bipedal_percent))) +
+  geom_boxplot() + 
+  labs(title = "Boxplot of Bipedal Percent (without N/As) by Substrate Type")
+
+#Boxplot of bipedal percent without N/A's separated by sex
+ggplot(data = lab.data_omit, aes(sex, as.numeric(bipedal_percent))) +
+  geom_boxplot() + 
+  labs(title = "Boxplot of Bipedal Percent (without N/As) by Sex")
+
+#Boxplot of bipedal percent without N/A's separated by substrate type and sex
+ggplot(data = lab.data_omit, aes(substrate_type, as.numeric(bipedal_percent), fill = sex)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Bipedal Percent (without N/As) by Substrate Type and Sex")
+
+
+#Lizards are running bipedal the most on debris compared to the other substrate types.
+#Based on the boxplot, lizards are treating bipedalism on sand/debris as more similar to sand than debris
+#Males run bipedally more frequently than females for all substrate types
+```
+
+
+```{r}
+#Percent bipedal vs. substrate types and sex linear models
+summary(lm(as.numeric(bipedal_percent) ~ substrate_type*sex, data = lab.data_omit))
+anova((lm(as.numeric(bipedal_percent) ~ substrate_type*sex, data = lab.data_omit)))
+
+#Neither substrate type nor sex is significantly effecting bipedalism according to the models
 ```
 
 ```{r}
-#Percent bipedal vs. substrate types
-summary(lm(as.numeric(bipedal_percent) ~ substrate_type, data = lab.data))
+#Mixed model bipedal percent and substrate type
+lmer(bipedal_percent ~ substrate_type + (1 | ID), data = lab.data_omit)
+summary(lmer(bipedal_percent ~ substrate_type + (1 | ID), data = lab.data_omit))
+
+#sand and sand/debris have significant p-values
+```
+
+```{r}
+#Mixed model bipedal percent and sex
+lmer(bipedal_percent ~ sex + (1 | ID), data = lab.data_omit)
+summary(lmer(bipedal_percent ~ sex + (1 | ID), data = lab.data_omit))
 ```
 
 
+```{r}
+#Mixed model bipedal percent and substrate type + sex
+lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_omit)
+summary(lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_omit))
 
-
-
-
-
+#no interaction effects are significant
+```
 
 
 
