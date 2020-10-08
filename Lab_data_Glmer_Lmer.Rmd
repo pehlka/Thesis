@@ -10,7 +10,7 @@ output: html_document
 ```{r}
 #Importing data and required packages
 
-lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.01.20_removed_non-standstill_starts.csv")
+lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.08.20_removed_non-standstill_starts+NA.csv")
 library(ggplot2)
 library(rcompanion)
 library(lme4)
@@ -74,6 +74,10 @@ summary(lmer(log_top_vmax ~ sex + (1 | ID), data = lab.data))
 #sex wasn't significant in any of the lmers
 ```
 
+
+```{r}
+
+```
 
 
 
