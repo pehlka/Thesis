@@ -137,6 +137,8 @@ ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  +
 #mean, median & range of bipedal percentage separated into sex
 summaryBy(bipedal_percent ~ sex, data = lab.data_omit,
           FUN = list(mean, median, min, max))
+
+#males are bipedal a lot more than females
 ```
 
 ```{r}
@@ -145,10 +147,29 @@ ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  +
   geom_histogram(fill="dark green", bins = 20, binwidth = 10) +
   facet_wrap(~substrate_type)
 
-#mean, median & range of bipedal percentage separated into substrate type
 summaryBy(bipedal_percent ~ substrate_type, data = lab.data_omit,
           FUN = list(mean, median, min, max))
+
+#lizards are a lot more likely to run bipedal on debris than sand
 ```
+
+```{r}
+#Bipedalism percentage per substrate and sex Histogram
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  + 
+  geom_histogram(fill="dark green", bins = 20, binwidth = 10) +
+  facet_wrap(~substrate_type + sex) +
+  facet_grid(sex ~ substrate_type)
+
+#mean, median & range of bipedal percentage separated into substrate type
+summaryBy(bipedal_percent ~ substrate_type + sex, data = lab.data_omit,
+          FUN = list(mean, median, min, max))
+
+#males are bipedal more often on every substrate than females
+
+##for final manuscript, change plot titles to actual names instead of letters
+### https://www.zevross.com/blog/2019/04/02/easy-multi-panel-plots-in-r-using-facet_wrap-and-facet_grid-from-ggplot2/ 
+```
+
 
 ```{r}
 #Boxplots of Bipedalism on acceleration 
@@ -247,7 +268,7 @@ shapiro.test(lab.data$top_vmax)
 ```{r}
 #Checking for normality of data: time and position
 
-#historgrams
+#histograms
 ggplot(data = lab.data, aes(side_tmax))  + 
   geom_histogram(bins = 11, col = ("grey"))
 
@@ -270,13 +291,36 @@ shapiro.test(lab.data$top_posmax)
 #top_tmax: normal
 #side_posmax: not normal
 #top_posmax: normal
+
+> does it matter that side_posmax is not normal?
 ```
+
+```{r}
+#Checking for normality of data: bipedal_side and bipedal_top
+
+#histograms
+ggplot(data = lab.data, aes(bipedal_side))  + 
+  geom_histogram(bins = 20, col = ("grey"))
+
+ggplot(data = lab.data, aes(bipedal_top))  + 
+  geom_histogram(bins = 20, col = ("grey"))
+
+#Shapiro-Wilks normality test (p-value <0.05 is normal)
+shapiro.test(lab.data$bipedal_side)
+shapiro.test((lab.data$bipedal_top))
+
+#bipedal_side: not normal
+#bipedal_top: normal
+
+> how does bipedal_side not appear normal here but does below and vice versa for bipedal_top?
+```
+
 
 
 # Looking at diagnostics data
 
 ```{r}
-#Top camera max acceleration vs. bipedalism in side
+#Top max acceleration vs. bipedalism in top
 
 top.amax.biped <- lm(top_amax ~ bipedal_top, data = lab.data)
 res.top.amax.biped <- resid(top.amax.biped)
@@ -289,6 +333,10 @@ qqline(res.top.amax.biped,
 plot(density(res.top.amax.biped))
 
 plot(top.amax.biped)
+
+#QQ plot shows data is skewed left
+
+> Do I need to do anything with the other plots?
 ```
 
 ```{r}
@@ -303,6 +351,8 @@ qqline(res.side.amax.biped,
 plot(density(res.side.amax.biped))
 
 plot(side.amax.biped)
+
+#QQ plot maybe slightly skewed left but it looks pretty close to normal
 ```
 
 ```{r}
@@ -317,6 +367,8 @@ qqline(res.top.vmax.biped,
 plot(density(res.top.vmax.biped))
 
 plot(top.vmax.biped)
+
+#QQ plot maybe slightly skewed left but it looks pretty close to normal
 ```
 
 ```{r}
@@ -331,6 +383,8 @@ qqline(res.side.vmax.biped,
 plot(density(res.side.vmax.biped))
 
 plot(side.vmax.biped)
+
+#QQ plot looks pretty close to normal 
 ```
 
 
@@ -347,7 +401,7 @@ plot(fitted(log.side.vmax.biped), res.log.side.vmax.biped)
 qqnorm(res.log.side.vmax.biped)
 qqline(res.log.side.vmax.biped,
        col = 'red')
-plot(density(res.log.side.vmax.biped))
+plot(density(res.log.side.vmax.biped))  #QQ plot looks pretty close to normal
 
 plot(log.side.vmax.biped)
 
@@ -377,16 +431,16 @@ shapiro.test(log_side_vmax)  #normal
 log_top_vmax <- log(lab.data$top_vmax)
 log.top.vmax.biped <- lm(log_top_vmax ~ bipedal_top, data = lab.data)
 res.log.top.vmax.biped <- resid(log.top.vmax.biped)
-plot(fitted(log.top.vmax.biped), res.log.top.vmax.biped)
+plot(fitted(log.top.vmax.biped), res.log.top.vmax.biped)  
 
 qqnorm(res.log.top.vmax.biped)
 qqline(res.log.top.vmax.biped,
        col = 'red')
-plot(density(res.log.top.vmax.biped))
+plot(density(res.log.top.vmax.biped))  #QQ plot looks pretty close to normal
 
 plot(log.top.vmax.biped)
 
-plot(lm(top_vmax ~ bipedal_top, data = lab.data))  #not transformed
+plot(lm(top_vmax ~ bipedal_top, data = lab.data))  #not transformed  #QQ plot is skewed left
 ```
 
 ```{r}
@@ -408,20 +462,47 @@ shapiro.test(log_top_vmax)  #normal
 plotNormalHistogram(as.numeric(lab.data$bipedal_top), main = "Non-transformed")  #skewed left
 
 #Squared
-dat <- as.numeric(lab.data$bipedal_top)
-newdat <- dat^2
-plotNormalHistogram(newdat, main = "Bipedal_top Squared")  #even more skewed left than regular bipedal_top
+top.dat <- as.numeric(lab.data$bipedal_top)
+top.square <- top.dat^2
+plotNormalHistogram(top.square, main = "Bipedal_top Squared")  #even more skewed left than regular bipedal_top
 
 #Exponential
-newdat2 <- exp(dat)
-plotNormalHistogram(newdat2, main = "Exponential")  #even more un-normal than non-transformed
+top.exp <- exp(top.dat)
+plotNormalHistogram(top.exp, main = "Exponential")   #even more un-normal than non-transformed
 
 #Reciprocal 
-newdat3 <- 1/dat
-plotNormalHistogram(newdat3, main = "Reciprocal")  #made bipedal_top skewed right and it's even worse than non-transformed
+top.rec <- 1/top.dat
+plotNormalHistogram(top.rec, main = "Reciprocal")  #made bipedal_top skewed right and it's even worse than non-transformed
 
 #Bipedal_top looks best non-transformed
 ```
+
+```{r}
+#Trying to determine if bipedal_side needs to be transformed
+
+#Non-transformed
+plotNormalHistogram(as.numeric(lab.data$bipedal_side), main = "Non-transformed")   #looks pretty centered and un-skewed
+
+#Squared
+side.dat <- as.numeric(lab.data$bipedal_side)
+side.square <- side.dat^2
+plotNormalHistogram(side.square, main = "Bipedal_top Squared")   #skewed left
+
+#Exponential
+side.exp <- exp(side.dat)
+plotNormalHistogram(side.exp, main = "Exponential")   #even more skewed left than squared
+
+#Reciprocal 
+side.rec <- 1/side.dat
+plotNormalHistogram(side.rec, main = "Reciprocal")  #skewed right
+
+#Bipedal_side
+```
+
+
+
+
+
 
 
 
