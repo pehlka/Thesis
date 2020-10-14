@@ -19,10 +19,17 @@ library(doBy)
 ```
 
 
+```{r}
+#Summary of data
+summary(lab.data)
+```
+
+
 # Creating histograms to see distribution of data
 
+#Max acceleration
 ```{r}
-#Side max acceleration max per substrate 
+#Side max acceleration per substrate 
 ggplot(data = lab.data, aes(side_amax))  + 
   geom_histogram(fill="orange", bins = 20, binwidth = 10) +
   facet_wrap(~substrate_type) +
@@ -34,7 +41,7 @@ summaryBy(side_amax ~ substrate_type, data = lab.data,
 ```
 
 ```{r}
-#Side max acceleration max per sex
+#Side max acceleration per sex
 ggplot(data = lab.data, aes(side_amax))  + 
   geom_histogram(fill="orange", bins = 20, binwidth = 5) +
   facet_wrap(~sex) +
@@ -46,7 +53,7 @@ summaryBy(side_amax ~ sex, data = lab.data,
 ```
 
 ```{r}
-#Top max acceleration max per substrate 
+#Top max acceleration per substrate 
 ggplot(data = lab.data, aes(top_amax))  + 
   geom_histogram(fill="purple", bins = 30, binwidth = 10) +
   facet_wrap(~substrate_type) +
@@ -58,7 +65,7 @@ summaryBy(top_amax ~ substrate_type, data = lab.data,
 ```
 
 ```{r}
-#Top max acceleration max per sex
+#Top max acceleration per sex
 ggplot(data = lab.data, aes(top_amax))  + 
   geom_histogram(fill="purple", bins = 30, binwidth = 5) +
   facet_wrap(~sex) +
@@ -69,6 +76,58 @@ summaryBy(top_amax ~ sex, data = lab.data,
           FUN = list(mean, median, min, max))
 ```
 
+
+#Max velocity
+```{r}
+#Side max velocity per substrate 
+ggplot(data = lab.data, aes(side_vmax))  + 
+  geom_histogram(fill="orange", bins = 10) +
+  facet_wrap(~substrate_type) +
+  labs(title = "Side max velocity per substrate")
+
+#mean, median & range of side_vmax data separated into substrate types
+summaryBy(side_vmax ~ substrate_type, data = lab.data,
+          FUN = list(mean, median, min, max))
+```
+
+```{r}
+#Side max velocity per sex
+ggplot(data = lab.data, aes(side_vmax))  + 
+  geom_histogram(fill="orange", bins = 10) +
+  facet_wrap(~sex) +
+  labs(title = "Side max velocity per sex")
+
+#mean, median & range of side vmax velocity separated into sex
+summaryBy(side_vmax ~ sex, data = lab.data,
+          FUN = list(mean, median, min, max))
+```
+
+```{r}
+#Top max velocity per substrate 
+ggplot(data = lab.data, aes(top_vmax))  + 
+  geom_histogram(fill="purple", bins = 10) +
+  facet_wrap(~substrate_type) +
+  labs(title = "Top max velocity per substrate")
+
+#mean, median & range of top max velocity separated into substrate types
+summaryBy(top_vmax ~ substrate_type, data = lab.data,
+          FUN = list(mean, median, min, max))
+```
+
+```{r}
+#Top max velocity per sex
+ggplot(data = lab.data, aes(top_vmax))  + 
+  geom_histogram(fill="purple", bins = 10) +
+  facet_wrap(~sex) +
+  labs(title = "Top max velocity per sex")
+
+#mean, median & range of top max velocity separated into sex
+summaryBy(top_vmax ~ sex, data = lab.data,
+          FUN = list(mean, median, min, max))
+```
+
+
+#Bipedalism Percentage
 ```{r}
 #Bipedalism percentage per sex Histogram
 ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  + 
@@ -90,7 +149,6 @@ ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  +
 summaryBy(bipedal_percent ~ substrate_type, data = lab.data_omit,
           FUN = list(mean, median, min, max))
 ```
-
 
 ```{r}
 #Boxplots of Bipedalism on acceleration 
@@ -116,6 +174,8 @@ ggplot(data = lab.data, aes(x=bipedal_quad_top, y=top_vmax)) +
     labs(title = "Bipedalism effect on max velocity (top)")
 ```
 
+
+#Pmax, Posmax, Tmax
 ```{r}
 #Histograms of pmax, posmax and tmax
 ggplot(data = lab.data, aes(side_pmax)) +
@@ -143,21 +203,14 @@ ggplot(data = lab.data, aes(top_tmax)) +
     labs(title = "Top Tmax")
 ```
 
-
-
 ```{r}
+#Looking at bipedal vs. quadrupedal percentages from side and top
+
 table(lab.data$bipedal_quad_side)
+#42.6% bipedal on side runs, 57.4% quadrupedal on side runs
+
 table(lab.data$bipedal_quad_top)
-```
-
-
-```{r}
-#Summary of data
-summary(lab.data)
-```
-
-```{r}
-summary(lm(side_amax~sex, data = lab.data))
+#53.3% bipedal on top runs, 46.7% quadrupedal on top runs
 ```
 
 
@@ -253,6 +306,20 @@ plot(side.amax.biped)
 ```
 
 ```{r}
+#Top camera max velocity vs. bipedalism in top
+top.vmax.biped <- lm(top_vmax ~ bipedal_top, data = lab.data)
+res.top.vmax.biped <- resid(top.vmax.biped)
+plot(fitted(top.vmax.biped), res.top.vmax.biped)
+
+qqnorm(res.top.vmax.biped)
+qqline(res.top.vmax.biped,
+       col = 'red')
+plot(density(res.top.vmax.biped))
+
+plot(top.vmax.biped)
+```
+
+```{r}
 #Side camera max velocity vs. bipedalism in side
 side.vmax.biped <- lm(side_vmax ~ bipedal_side, data = lab.data)
 res.side.vmax.biped <- resid(side.vmax.biped)
@@ -265,6 +332,9 @@ plot(density(res.side.vmax.biped))
 
 plot(side.vmax.biped)
 ```
+
+
+#Trying to determine if v_max needs to be transformed or not
 
 ```{r}
 #Log transform side camera max velocity vs. bipedalism in side
@@ -301,7 +371,6 @@ shapiro.test(lab.data$side_vmax)  #not normal
 shapiro.test(log_side_vmax)  #normal
 ```
 
-
 ```{r}
 #Log transform top camera max velocity vs. bipedalism in top
 
@@ -332,7 +401,6 @@ shapiro.test(lab.data$top_vmax)  #not normal
 shapiro.test(log_top_vmax)  #normal
 ```
 
-
 ```{r}
 #Trying to determine if bipedal_top needs to be transformed
 
@@ -355,20 +423,29 @@ plotNormalHistogram(newdat3, main = "Reciprocal")  #made bipedal_top skewed righ
 #Bipedal_top looks best non-transformed
 ```
 
+
+
+
+
 ```{r}
 anova_side_amax <- lm(side_amax ~ sex * substrate_type * bipedal_side, data = lab.data)
 anova(anova_side_amax)
 ```
 
 ```{r}
-anova_top_vmax <- lm(top_vmax ~ sex * substrate_type * bipedal_top, data = lab.data)
-anova(anova_top_vmax)
+anova_top_vmax <- anova(lm(top_vmax ~ sex, data = lab.data))
+anova_top_vmax
+#since p<0.5 there is enough evidence to conclude that the mean values across both sexes aren't equal & can run a Tukey test
+
+TukeyHSD(x = anova_top_vmax, conf.level = 0.95)
+#can't get Tukey test to work
 ```
 
-```{r}
-aov_top_vmax <- aov(top_vmax ~ sex * substrate_type * bipedal_top, data = lab.data)
-posthoc_anova_top_vmax <- TukeyHSD(x = aov_top_vmax, 'sex', conf.level = 0.95, data = lab.data)
-```
+
+
+
+
+
 
 
 
@@ -405,20 +482,6 @@ anova(lm(top_amax ~ sex*bipedal_top*substrate_type*ID, data = lab.data))
 anova(lm(side_amax ~ sex*bipedal_side*substrate_type*ID, data = lab.data))
 #nothing is significant
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -462,7 +525,6 @@ ggplot(data = lab.data_omit, aes(substrate_type, as.numeric(bipedal_percent), fi
 #Males run bipedally more frequently than females for all substrate types
 ```
 
-
 ```{r}
 #Percent bipedal vs. substrate types and sex linear models
 summary(lm(as.numeric(bipedal_percent) ~ substrate_type*sex, data = lab.data_omit))
@@ -484,7 +546,6 @@ summary(lmer(bipedal_percent ~ substrate_type + (1 | ID), data = lab.data_omit))
 lmer(bipedal_percent ~ sex + (1 | ID), data = lab.data_omit)
 summary(lmer(bipedal_percent ~ sex + (1 | ID), data = lab.data_omit))
 ```
-
 
 ```{r}
 #Mixed model bipedal percent and substrate type + sex
