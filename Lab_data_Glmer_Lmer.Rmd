@@ -10,7 +10,12 @@ output: html_document
 ```{r}
 #Importing data and required packages
 
-lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.08.20_removed_non-standstill_starts+NA.csv")
+lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.15.20_removed_non-standstill_starts+NAs+negatives.csv")
+
+#Creating new data frame without N/A's in bipedal percent column    
+##148 rows in lab.data and 88 rows in lab.data_omit, so 60 trials didn't contain bipedalism but 88 did 
+lab.data_omit <- lab.data[!is.na(lab.data$bipedal_percent), ]
+
 library(ggplot2)
 library(rcompanion)
 library(lme4)
@@ -25,7 +30,6 @@ log_side_vmax <- log(lab.data$side_vmax)
 ```
 
 
-
 # Glmer and lmer
 
 ## lmer is used to fit linear mixed-effect models, so it assumes that the residual error has a Gaussian distribution. If your dependent variable A is a binary outcome (e.g. a yes/no response), then the error distribution is binomial and not Gaussian. In this case you have to use glmer, which allow to fit a generalized linear mixed-effects model: these models include a link function that allows to predict response variables with non-Gaussian distributions.
@@ -34,85 +38,46 @@ log_side_vmax <- log(lab.data$side_vmax)
 
 ```{r}
 lmer(log_top_vmax ~ bipedal_top + (1 | ID), data = lab.data)   
+
+lmer(top_vmax ~ bipedal_top + (1 | ID), data = lab.data)   #standard deviations and intercept is higher for non-log top_vmax than log_top_vmax
+```
+
+#Lmer models
+```{r}
+#side_amax ~ bipedal_side + substrate_type + sex
+lmer(side_amax ~ bipedal_side + substrate_type + sex + (1 | ID), data = lab.data)
+parameters::p_value(lmer(side_amax ~ bipedal_side + substrate_type + sex +(1 | ID), data = lab.data))  #Finding p-values
 ```
 
 ```{r}
-#Mixed model lmer 
-summary(lmer(log_side_vmax ~ bipedal_side + (1 | ID), data = lab.data))
-
-#Finding p-value in lmer 
-sjstats::p_value(lmer(log_side_vmax ~ bipedal_side + (1 | ID), data = lab.data))
-```
-
-
-```{r}
-#Mixed model lmer
-summary(lmer(log_top_vmax ~ bipedal_top + (1 | ID), data = lab.data))
-
-#Finding p-value in lmer 
-sjstats::p_value(lmer(log_top_vmax ~ bipedal_top + (1 | ID), data = lab.data))
-```
-
-
-```{r}
-summary(lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data))
-```
-
-
-```{r}
-summary(lmer(log_side_vmax ~ substrate_type*sex + (1 | ID), data = lab.data))
+#top_amax ~ bipedal_top + substrate_type + sex
+lmer(top_amax ~ bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
+parameters::p_value(lmer(top_amax ~ bipedal_top + substrate_type + sex +(1 | ID), data = lab.data))  #Finding p-values
 ```
 
 ```{r}
-summary(lmer(log_top_vmax ~ substrate_type*sex + (1 | ID), data = lab.data))
-#Sand is significant but not SD
-
-summary(lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data))
-#Sand and SD are both significant, even though SD wasn't significant when sex was included
-
-summary(lmer(log_top_vmax ~ sex + (1 | ID), data = lab.data))
-#sex wasn't significant in any of the lmers
+#log_side_vmax ~ bipedal_side + substrate_type + sex
+summary(lmer(log_side_vmax ~ bipedal_side + substrate_type + sex + (1 | ID), data = lab.data))
+parameters::p_value(lmer(log_side_vmax ~ bipedal_side + substrate_type + sex + (1 | ID), data = lab.data))  #Finding p-values
 ```
-
 
 ```{r}
-
+#log_top_vmax ~ bipedal_top + substrate_type + sex
+lmer(log_top_vmax ~ bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
+parameters::p_value(lmer(log_top_vmax ~ bipedal_top + substrate_type + sex +(1 | ID), data = lab.data))  #Finding p-values
 ```
 
+```{r}
+#log_top_vmax ~ bipedal_percent + substrate_type + sex
+lmer(log_top_vmax ~ bipedal_percent + substrate_type + sex + (1 | ID), data = lab.data)
+parameters::p_value(log_top_vmax ~ bipedal_percent + substrate_type + sex + (1 | ID), data = lab.data)  #Finding p-values  #not working
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```{r}
+#log_side_vmax ~ bipedal_percent + substrate_type + sex
+lmer(log_side_vmax ~ bipedal_percent + substrate_type + sex + (1 | ID), data = lab.data)
+parameters::p_value(log_side_vmax ~ bipedal_percent + substrate_type + sex + (1 | ID), data = lab.data)  #Finding p-values   #not working
+```
 
 
 
