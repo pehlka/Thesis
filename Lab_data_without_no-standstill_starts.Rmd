@@ -10,7 +10,12 @@ output: html_document
 ```{r}
 #Importing data and required packages
 
-lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.08.20_removed_non-standstill_starts+NA.csv")
+lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.15.20_removed_non-standstill_starts+NAs+negatives.csv")
+
+#Creating new data frame without N/A's in bipedal percent column    
+##148 rows in lab.data and 88 rows in lab.data_omit, so 60 trials didn't contain bipedalism but 88 did 
+lab.data_omit <- lab.data[!is.na(lab.data$bipedal_percent), ]
+
 library(ggplot2)
 library(rcompanion)
 library(lme4)
@@ -18,11 +23,34 @@ library(sjstats)
 library(doBy)
 ```
 
+#Getting a feel for the data
 
 ```{r}
 #Summary of data
 summary(lab.data)
 ```
+
+```{r}
+#Number of Pauses
+table(lab.data$pauses_side)
+table(lab.data$pauses_top)
+```
+```{r}
+#Runs per lizard on each substrate type
+table(lab.data$ID, lab.data$substrate_type)
+
+#using this data set (without no-standstill starts), lizard F has no runs for D or s, lizard N has no runs for D, and lizard P has no runs for D; all other lizards have at least 1 run for each of the substrates
+
+> should this impact the dataset I use? (not using no-standstill starts currently)
+```
+
+```{r}
+#Females vs males count
+table(lab.data$sex)
+
+#70% runs are female, 30% are male
+```
+
 
 
 # Creating histograms to see distribution of data
@@ -125,6 +153,7 @@ ggplot(data = lab.data, aes(top_vmax))  +
 summaryBy(top_vmax ~ sex, data = lab.data,
           FUN = list(mean, median, min, max))
 ```
+
 
 
 #Bipedalism Percentage
@@ -356,7 +385,7 @@ plot(side.amax.biped)
 ```
 
 ```{r}
-#Top camera max velocity vs. bipedalism in top
+#Top max velocity vs. bipedalism in top
 top.vmax.biped <- lm(top_vmax ~ bipedal_top, data = lab.data)
 res.top.vmax.biped <- resid(top.vmax.biped)
 plot(fitted(top.vmax.biped), res.top.vmax.biped)
@@ -372,7 +401,7 @@ plot(top.vmax.biped)
 ```
 
 ```{r}
-#Side camera max velocity vs. bipedalism in side
+#Side max velocity vs. bipedalism in side
 side.vmax.biped <- lm(side_vmax ~ bipedal_side, data = lab.data)
 res.side.vmax.biped <- resid(side.vmax.biped)
 plot(fitted(side.vmax.biped), res.side.vmax.biped)
@@ -391,7 +420,7 @@ plot(side.vmax.biped)
 #Trying to determine if v_max needs to be transformed or not
 
 ```{r}
-#Log transform side camera max velocity vs. bipedalism in side
+#Log transform side max velocity vs. bipedalism in side
 
 log_side_vmax <- log(lab.data$side_vmax)
 log.side.vmax.biped <- lm(log_side_vmax ~ bipedal_side, data = lab.data)
@@ -426,7 +455,7 @@ shapiro.test(log_side_vmax)  #normal
 ```
 
 ```{r}
-#Log transform top camera max velocity vs. bipedalism in top
+#Log transform top max velocity vs. bipedalism in top
 
 log_top_vmax <- log(lab.data$top_vmax)
 log.top.vmax.biped <- lm(log_top_vmax ~ bipedal_top, data = lab.data)
@@ -456,7 +485,7 @@ shapiro.test(log_top_vmax)  #normal
 ```
 
 ```{r}
-#Trying to determine if bipedal_top needs to be transformed
+#Trying to determine if bipedal_top needs to be transformed 
 
 #Non-transformed
 plotNormalHistogram(as.numeric(lab.data$bipedal_top), main = "Non-transformed")  #skewed left
@@ -478,7 +507,7 @@ plotNormalHistogram(top.rec, main = "Reciprocal")  #made bipedal_top skewed righ
 ```
 
 ```{r}
-#Trying to determine if bipedal_side needs to be transformed
+#Trying to determine if bipedal_side needs to be transformed 
 
 #Non-transformed
 plotNormalHistogram(as.numeric(lab.data$bipedal_side), main = "Non-transformed")   #looks pretty centered and un-skewed
@@ -496,24 +525,14 @@ plotNormalHistogram(side.exp, main = "Exponential")   #even more skewed left tha
 side.rec <- 1/side.dat
 plotNormalHistogram(side.rec, main = "Reciprocal")  #skewed right
 
-#Bipedal_side
+> Does bipedal_side need to be transformed? 
 ```
 
 
 
-
-
-
-
-
-
-
 ```{r}
-anova_side_amax <- lm(side_amax ~ sex * substrate_type * bipedal_side, data = lab.data)
-anova(anova_side_amax)
-```
+#Tukey Test (attempt)
 
-```{r}
 anova_top_vmax <- anova(lm(top_vmax ~ sex, data = lab.data))
 anova_top_vmax
 #since p<0.5 there is enough evidence to conclude that the mean values across both sexes aren't equal & can run a Tukey test
@@ -521,23 +540,6 @@ anova_top_vmax
 TukeyHSD(x = anova_top_vmax, conf.level = 0.95)
 #can't get Tukey test to work
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -566,24 +568,34 @@ anova(lm(side_amax ~ sex*bipedal_side*substrate_type*ID, data = lab.data))
 
 
 
+
+
 # Bipedal Percentage
 
 ```{r}
 #Bipedal Percentage Plots
 
-#Creating new data frame without N/A's in bipedal percent column    
-##148 rows in lab.data and 88 rows in lab.data_omit, so 60 trials didn't contain bipedalism but 88 did 
-lab.data_omit <- lab.data[!is.na(lab.data$bipedal_percent), ]
-
-#Histogram of bipedal percent without N/A's
-ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent))) +
+#Histogram of bipedal percent without N/A's broken into sex
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent), col=sex, fill=sex)) +
   geom_histogram(col = "white") + 
-  labs(title = "Histogram of Bipedal Percent (without N/As)")
+  labs(title = "Histogram of Bipedal Percent (without N/As) Broken Down by Sex")
 
 #Histogram of bipedal percent without N/A's separated into substrate type
-ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent))) +
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type)) +
   geom_histogram(bins = 20, binwidth = 8) +
-  facet_wrap(~substrate_type)
+  facet_wrap(~substrate_type) +
+  labs(title = "Histogram of Bipedal Percent (without N/As) Separated by Substrate Type")
+
+#Histogram of bipedal percent without NA's separated into substrate type and sex
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type, alpha=sex)) +
+  geom_histogram(bins = 20, binwidth = 8) +
+  facet_wrap(~substrate_type) +
+  labs(title = "Histogram of Bipedal Percent (without N/As) Separated by Substrate Type and Sex")
+
+#Histogram of bipedal percent without N/A's broken into substrate type
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type)) +
+  geom_histogram(bins = 20, binwidth = 8) +
+  labs(title = "Histogram of Bipedal Percent (without N/As) Broken into Substrate Type")
 
 #Boxplot of bipedal percent without N/A's separated by substrate type
 ggplot(data = lab.data_omit, aes(substrate_type, as.numeric(bipedal_percent))) +
@@ -605,6 +617,7 @@ ggplot(data = lab.data_omit, aes(substrate_type, as.numeric(bipedal_percent), fi
 #Based on the boxplot, lizards are treating bipedalism on sand/debris as more similar to sand than debris
 #Males run bipedally more frequently than females for all substrate types
 ```
+
 
 ```{r}
 #Percent bipedal vs. substrate types and sex linear models
