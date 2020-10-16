@@ -1,0 +1,20 @@
+---
+title: 'Question 3: Is the pattern observed in question #1 explained by question #2?'
+author: "Kayla Pehl"
+date: "10/16/2020"
+output: html_document
+---
+
+Question 3: Is the pattern observed in question #1 explained by question #2?
+ Ho: Racerunners run the same on all substrates.
+ Ha: Racerunners avoid moving on suboptimal parts of habitat.
+ 
+> Data used to answer this question:
+    lab experiment data
+      velocity vs. substrate type
+      acceleration vs. substrate type
+      bipedalism vs. substrate type
+      power vs. substrate type ?
+      time vs. substrate type ?
+    Eric & Lance's habitat data    
+  
