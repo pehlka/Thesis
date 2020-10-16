@@ -1,0 +1,19 @@
+---
+title: 'Question 2: How does "available" habitat affect Racerunner locomotion?'
+author: "Kayla Pehl"
+date: "10/16/2020"
+output: html_document
+---
+
+Question 2: How does "available" habitat affect Racerunner locomotion?
+ Ho: Racerunners run the same on all substrates.
+ Ha: Racerunners run fastest on sand compared to debris and sand/debris.
+
+> Data used to answer this question:
+    lab experiment data
+      velocity vs. substrate type
+      acceleration vs. substrate type
+      bipedalism vs. substrate type
+      power vs. substrate type ?
+      time vs. substrate type ?
+    Eric & Lance's habitat data 
