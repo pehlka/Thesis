@@ -230,11 +230,11 @@ ggplot(data = lab.data, aes(x=bipedal_quad_top, y=top_vmax)) +
 #Histograms of pmax, posmax and tmax
 ggplot(data = lab.data, aes(side_pmax)) +
   geom_histogram(fill = "dark blue") +
-    labs(title = "Side Pmax")
+    labs(title = "Side Pmax")                     #skewed right
 
 ggplot(data = lab.data, aes(side_posmax)) +
   geom_histogram(fill = "dark blue") +
-    labs(title = "Side Posmax")
+    labs(title = "Side Posmax")                   #skewed left
 
 ggplot(data = lab.data, aes(side_tmax)) +
   geom_histogram(fill = "dark blue") +
@@ -242,7 +242,7 @@ ggplot(data = lab.data, aes(side_tmax)) +
 
 ggplot(data = lab.data, aes(top_pmax)) +
   geom_histogram(fill = "medium blue") +
-    labs(title = "Top Pmax")
+    labs(title = "Top Pmax")                      #skewed right
 
 ggplot(data = lab.data, aes(top_posmax)) +
   geom_histogram(fill = "medium blue") +
@@ -250,7 +250,7 @@ ggplot(data = lab.data, aes(top_posmax)) +
 
 ggplot(data = lab.data, aes(top_tmax)) +
   geom_histogram(fill = "medium blue") +
-    labs(title = "Top Tmax")
+    labs(title = "Top Tmax")                      #skewed right
 ```
 
 ```{r}
@@ -271,27 +271,31 @@ table(lab.data$bipedal_quad_top)
 
 #histograms
 ggplot(data = lab.data, aes(side_amax))  + 
-  geom_histogram(bins = 11, col = ("grey"))
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Side Amax")                        #looks pretty normal
 
 ggplot(data = lab.data, aes(top_amax))  + 
-  geom_histogram(bins = 11, col = ("grey"))
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Top Amax")                         #looks skewed right
 
 ggplot(data = lab.data, aes(side_vmax))  + 
-  geom_histogram(bins = 13, col = ("grey"))
+  geom_histogram(bins = 13, col = ("grey")) +
+  labs(title = "Side Vmax")                        #looks fairly normal
 
 ggplot(data = lab.data, aes(top_vmax))  + 
-  geom_histogram(bins = 11, col = ("grey"))
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Top Vmax")                         #looks skewed left
 
-#Shapiro-Wilks normality test (p-value <0.05 is normal)
+#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
 shapiro.test(lab.data$side_amax)
 shapiro.test((lab.data$top_amax))
 shapiro.test((lab.data$side_vmax))
 shapiro.test(lab.data$top_vmax)
 
-#side_amax: normal
-#top_amax: normal
-#side_vmax: not normal
-#top_vmax: not normal
+#side_amax: not normal
+#top_amax: not normal
+#side_vmax: normal
+#top_vmax: normal
 ```
 
 ```{r}
@@ -299,47 +303,51 @@ shapiro.test(lab.data$top_vmax)
 
 #histograms
 ggplot(data = lab.data, aes(side_tmax))  + 
-  geom_histogram(bins = 11, col = ("grey"))
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Side Tmax")                           #looks skewed right
 
 ggplot(data = lab.data, aes(top_tmax))  + 
-  geom_histogram(bins = 11, col = ("grey"))
+  geom_histogram(bins = 11, col = ("grey")) +
+    labs(title = "Top Tmax")                          #looks skewed right
 
 ggplot(data = lab.data, aes(side_posmax))  + 
-  geom_histogram(bins = 13, col = ("grey"))
+  geom_histogram(bins = 13, col = ("grey")) +
+    labs(title = "Side Posmax")                       #looks fairly normal
 
 ggplot(data = lab.data, aes(top_posmax))  + 
-  geom_histogram(bins = 11, col = ("grey"))
+  geom_histogram(bins = 11, col = ("grey")) +
+    labs(title = "Top Posmax")
 
-#Shapiro-Wilks normality test (p-value <0.05 is normal)
+#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
 shapiro.test(lab.data$side_tmax)
 shapiro.test((lab.data$top_tmax))
 shapiro.test((lab.data$side_posmax))
 shapiro.test(lab.data$top_posmax)
 
-#side_tmax: normal
-#top_tmax: normal
-#side_posmax: not normal
-#top_posmax: normal
+#side_tmax: not normal
+#top_tmax: not normal
+#side_posmax: normal
+#top_posmax: not normal
 
-> does it matter that side_posmax is not normal?
+> do I need to transform these for any reason?
 ```
 
 ```{r}
 #Checking for normality of data: bipedal_side and bipedal_top
 
 #histograms
-ggplot(data = lab.data, aes(bipedal_side))  + 
+ggplot(data = lab.data_omit, aes(bipedal_side))  + 
   geom_histogram(bins = 20, col = ("grey"))
 
 ggplot(data = lab.data, aes(bipedal_top))  + 
   geom_histogram(bins = 20, col = ("grey"))
 
-#Shapiro-Wilks normality test (p-value <0.05 is normal)
+#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
 shapiro.test(lab.data$bipedal_side)
 shapiro.test((lab.data$bipedal_top))
 
-#bipedal_side: not normal
-#bipedal_top: normal
+#bipedal_side: normal
+#bipedal_top: not normal
 
 > how does bipedal_side not appear normal here but does below and vice versa for bipedal_top?
 ```
@@ -363,7 +371,7 @@ plot(density(res.top.amax.biped))
 
 plot(top.amax.biped)
 
-#QQ plot shows data is skewed left
+#QQ plot shows data is skewed left -- need to transform
 
 > Do I need to do anything with the other plots?
 ```
@@ -381,7 +389,7 @@ plot(density(res.side.amax.biped))
 
 plot(side.amax.biped)
 
-#QQ plot maybe slightly skewed left but it looks pretty close to normal
+#QQ plot maybe slightly skewed left - need to transform
 ```
 
 ```{r}
@@ -427,6 +435,9 @@ log.side.vmax.biped <- lm(log_side_vmax ~ bipedal_side, data = lab.data)
 res.log.side.vmax.biped <- resid(log.side.vmax.biped)
 plot(fitted(log.side.vmax.biped), res.log.side.vmax.biped)
 
+shapiro.test(res.log.side.vmax.biped)
+hist(log_side_vmax)
+
 qqnorm(res.log.side.vmax.biped)
 qqline(res.log.side.vmax.biped,
        col = 'red')
@@ -442,6 +453,26 @@ plot(lm(side_vmax ~ bipedal_side, data = lab.data))  #Side vmax vs. bipedalism
 #Q-Q plots of regular and log-transformed side vmax data look basically the same to me. I'm not sure if log-transforming did a lot for the data.
 ```
 
+
+```{r}
+#log transform each variable!
+#probably need to log transform all variables and then check residuals
+#levine's test
+
+log_side_amax <- log10(lab.data$side_amax+1)
+log.side.amax.biped <- lm(log_side_amax ~ bipedal_side, data = lab.data)
+res.log.side.amax.biped <- resid(log.side.amax.biped)
+plot(fitted(log.side.amax.biped), res.log.side.amax.biped)
+
+
+shapiro.test(res.log.side.amax.biped)
+hist(res.log.side.amax.biped)
+
+library(car)
+
+leveneTest(log_side_amax, lab.data$bipedal_side)
+```
+
 ```{r}
 #Comparing side vmax data from original with log-transformed
 
@@ -450,8 +481,8 @@ plotNormalHistogram(lab.data$side_vmax)  #appears pretty symmetrical
 plotNormalHistogram(log_side_vmax)  #skew left
 
 #Shapiro-Wilks test for normality
-shapiro.test(lab.data$side_vmax)  #not normal
-shapiro.test(log_side_vmax)  #normal
+shapiro.test(lab.data$side_vmax)  #normal -- not transformed
+shapiro.test(log_side_vmax)  #not normal -- log transformed
 ```
 
 ```{r}
@@ -480,12 +511,15 @@ plotNormalHistogram(lab.data$top_vmax)  #appears pretty symmetrical
 plotNormalHistogram(log_top_vmax)  #skew left
 
 #Shapiro-Wilks test for normality
-shapiro.test(lab.data$top_vmax)  #not normal
-shapiro.test(log_top_vmax)  #normal
+shapiro.test(lab.data$top_vmax)  #normal -- no transformation
+shapiro.test(log_top_vmax)  #not normal  -- log transformed
 ```
 
 ```{r}
-#Trying to determine if bipedal_top needs to be transformed 
+#Trying to determine if bipedal_top needs to be transformed              DELETE! UNNECESSARY!
+
+#Shapiro-Wilk test
+shapiro.test(lab.data$bipedal_top)          #normal
 
 #Non-transformed
 plotNormalHistogram(as.numeric(lab.data$bipedal_top), main = "Non-transformed")  #skewed left
@@ -506,8 +540,11 @@ plotNormalHistogram(top.rec, main = "Reciprocal")  #made bipedal_top skewed righ
 #Bipedal_top looks best non-transformed
 ```
 
-```{r}
-#Trying to determine if bipedal_side needs to be transformed 
+```{r} 
+#Trying to determine if bipedal_side needs to be transformed            DELETE! UNNECESSARY!
+
+#Shapiro-Wilk test
+shapiro.test(lab.data$bipedal_side)          #normal
 
 #Non-transformed
 plotNormalHistogram(as.numeric(lab.data$bipedal_side), main = "Non-transformed")   #looks pretty centered and un-skewed
@@ -629,9 +666,9 @@ anova((lm(as.numeric(bipedal_percent) ~ substrate_type*sex, data = lab.data_omit
 
 ```{r}
 #Mixed model bipedal percent and substrate type
-lmer(bipedal_percent ~ substrate_type + (1 | ID), data = lab.data_omit)
+lmer2<-lmer(bipedal_percent ~ substrate_type + (1 | ID), data = lab.data_omit)
 summary(lmer(bipedal_percent ~ substrate_type + (1 | ID), data = lab.data_omit))
-
+Anova(lmer2)     
 #sand and sand/debris have significant p-values
 ```
 
@@ -643,7 +680,7 @@ summary(lmer(bipedal_percent ~ sex + (1 | ID), data = lab.data_omit))
 
 ```{r}
 #Mixed model bipedal percent and substrate type + sex
-lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_omit)
+lmer1<-lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_omit)
 summary(lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_omit))
 
 #no interaction effects are significant
