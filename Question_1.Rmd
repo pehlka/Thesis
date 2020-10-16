@@ -1,0 +1,14 @@
+---
+title: 'Question 1: Do Racerunners use their habitat randomly or non-randomly?'
+author: "Kayla Pehl"
+date: "10/16/2020"
+output: html_document
+---
+
+Question 1: Do Racerunners use their habitat randomly or non-randomly?
+ Ho: Racerunners use their habitat randomly.
+ Ha: Racerunners use their habitat non-randomly.
+
+> Data used for this question: 
+    habitat transect data
+    Eric & Lance habitat data
