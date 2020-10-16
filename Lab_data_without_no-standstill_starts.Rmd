@@ -21,7 +21,42 @@ library(rcompanion)
 library(lme4)
 library(sjstats)
 library(doBy)
+library(car)
 ```
+
+```{r}
+#Checking to see if all data is in correct formats (i.e. factor vs. numeric)    
+
+is.factor(lab.data$ID)
+is.factor(lab.data$sex)
+is.factor(lab.data$substrate_type)
+is.numeric(lab.data$pauses_side)
+is.numeric(lab.data$pauses_top)
+is.factor(lab.data$bipedal_quad_side)
+is.factor(lab.data$bipedal_quad_top)
+is.numeric(lab.data$bipedal_side)
+is.numeric(lab.data$bipedal_top)
+is.numeric(lab.data$total_video_frames)
+is.numeric(lab.data$bipedal_percent)
+is.factor(lab.data$no_start_from_standstill)
+is.factor(lab.data$stops_before_end_of_racetrack)
+is.numeric(lab.data$calibration)
+is.numeric(lab.data$side_amax)
+is.numeric(lab.data$side_pmax)
+is.numeric(lab.data$side_posmax)
+is.numeric(lab.data$side_spline_tol)
+is.numeric(lab.data$side_tmax)
+is.numeric(lab.data$side_vmax)
+is.numeric(lab.data$top_amax)
+is.numeric(lab.data$top_pmax)
+is.numeric(lab.data$top_posmax)
+is.numeric(lab.data$top_spline_tol)
+is.numeric(lab.data$top_tmax)
+is.numeric(lab.data$top_vmax)
+
+#All are correct. Therefore nothing in dataset needs to change.
+```
+
 
 #Getting a feel for the data
 
@@ -40,9 +75,10 @@ table(lab.data$pauses_top)
 table(lab.data$ID, lab.data$substrate_type)
 
 #using this data set (without no-standstill starts), lizard F has no runs for D or s, lizard N has no runs for D, and lizard P has no runs for D; all other lizards have at least 1 run for each of the substrates
-
-> should this impact the dataset I use? (not using no-standstill starts currently)
 ```
+> should this impact the dataset I use? (not using no-standstill starts currently)?
+>> Eric said to do data work up using these 3 lizards and then when I'm done I'll need to go back and run stats without the 3 lizards and then compare the results; if the results are the same, we can run the stats including the 3 lizards, if not, we'll have to decide how to proceed
+
 
 ```{r}
 #Females vs males count
@@ -315,7 +351,7 @@ ggplot(data = lab.data, aes(side_posmax))  +
     labs(title = "Side Posmax")                       #looks fairly normal
 
 ggplot(data = lab.data, aes(top_posmax))  + 
-  geom_histogram(bins = 11, col = ("grey")) +
+  geom_histogram(bins = 30, col = ("grey")) +
     labs(title = "Top Posmax")
 
 #Shapiro-Wilks normality test (p-value >0.05 assumes normality)
@@ -328,8 +364,6 @@ shapiro.test(lab.data$top_posmax)
 #top_tmax: not normal
 #side_posmax: normal
 #top_posmax: not normal
-
-> do I need to transform these for any reason?
 ```
 
 ```{r}
@@ -348,8 +382,6 @@ shapiro.test((lab.data$bipedal_top))
 
 #bipedal_side: normal
 #bipedal_top: not normal
-
-> how does bipedal_side not appear normal here but does below and vice versa for bipedal_top?
 ```
 
 
@@ -373,7 +405,7 @@ plot(top.amax.biped)
 
 #QQ plot shows data is skewed left -- need to transform
 
-> Do I need to do anything with the other plots?
+# > Do I need to do anything with the other plots?
 ```
 
 ```{r}
@@ -455,9 +487,11 @@ plot(lm(side_vmax ~ bipedal_side, data = lab.data))  #Side vmax vs. bipedalism
 
 
 ```{r}
+# Added this section during meeting with Eric
+
 #log transform each variable!
 #probably need to log transform all variables and then check residuals
-#levine's test
+#levene's test
 
 log_side_amax <- log10(lab.data$side_amax+1)
 log.side.amax.biped <- lm(log_side_amax ~ bipedal_side, data = lab.data)
@@ -467,8 +501,6 @@ plot(fitted(log.side.amax.biped), res.log.side.amax.biped)
 
 shapiro.test(res.log.side.amax.biped)
 hist(res.log.side.amax.biped)
-
-library(car)
 
 leveneTest(log_side_amax, lab.data$bipedal_side)
 ```
@@ -538,31 +570,6 @@ top.rec <- 1/top.dat
 plotNormalHistogram(top.rec, main = "Reciprocal")  #made bipedal_top skewed right and it's even worse than non-transformed
 
 #Bipedal_top looks best non-transformed
-```
-
-```{r} 
-#Trying to determine if bipedal_side needs to be transformed            DELETE! UNNECESSARY!
-
-#Shapiro-Wilk test
-shapiro.test(lab.data$bipedal_side)          #normal
-
-#Non-transformed
-plotNormalHistogram(as.numeric(lab.data$bipedal_side), main = "Non-transformed")   #looks pretty centered and un-skewed
-
-#Squared
-side.dat <- as.numeric(lab.data$bipedal_side)
-side.square <- side.dat^2
-plotNormalHistogram(side.square, main = "Bipedal_top Squared")   #skewed left
-
-#Exponential
-side.exp <- exp(side.dat)
-plotNormalHistogram(side.exp, main = "Exponential")   #even more skewed left than squared
-
-#Reciprocal 
-side.rec <- 1/side.dat
-plotNormalHistogram(side.rec, main = "Reciprocal")  #skewed right
-
-> Does bipedal_side need to be transformed? 
 ```
 
 
@@ -685,6 +692,195 @@ summary(lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_om
 
 #no interaction effects are significant
 ```
+
+
+
+#Checking assumptions: normality of residuals
+##all residuals should be log transformed
+
+```{r}
+#Log transforming all variables 
+##included log10 and +1 because it forces 0's to be 0's and not something else
+
+log_side_amax <- log10(lab.data$side_amax +1)
+log_top_amax <- log10(lab.data$top_amax +1)
+log_side_vmax <- log10(lab.data$side_vmax +1)
+log_top_vmax <- log10(lab.data$top_vmax +1)
+log_side_posmax <- log10(lab.data$side_posmax +1)
+log_top_posmax <- log10(lab.data$top_posmax +1)
+log_side_tmax <- log10(lab.data$side_tmax +1)
+log_top_tmax <- log10(lab.data$top_tmax +1)
+log_side_pmax <- log10(lab.data$side_pmax +1)
+log_top_pmax <- log10(lab.data$top_pmax +1)
+
+log_bipedal_side <- log10(lab.data$bipedal_side +1)
+log_bipedal_top <- log10(lab.data$bipedal_top +1)
+log_bipedal_percent <- log10(lab.data$bipedal_percent +1)
+```
+
+
+#Writing linear models and Residuals
+
+```{r}
+#log.side.amax.biped
+log.side.amax.biped <- lm(log_side_amax ~ log_bipedal_side, data = lab.data)
+res.log.side.amax.biped <- resid(log.side.amax.biped)
+plot(fitted(log.side.amax.biped), res.log.side.amax.biped)
+
+qqnorm(res.log.side.amax.biped)
+qqline(res.log.side.amax.biped,
+       col = 'red')
+shapiro.test(res.log.side.amax.biped)  #normal
+plotNormalHistogram(res.log.side.amax.biped)
+
+#log transforming bipedal_side did not appear to change ANYTHING, so I'm just going to run all other runs using log_bipedal
+```
+
+```{r}
+#Test to see if log transforming bipedal_side does anything -- NO!
+#Log transformed side_amax + bipedal_side
+
+log2.side.amax.biped <- lm(log_side_amax ~ bipedal_side, data = lab.data)
+res.log2.side.amax.biped <- resid(log2.side.amax.biped)
+
+plot(fitted(log2.side.amax.biped), res.log2.side.amax.biped)
+qqnorm(res.log2.side.amax.biped)
+qqline(res.log2.side.amax.biped,
+       col = 'red')
+shapiro.test(res.log2.side.amax.biped)  #normal
+plotNormalHistogram(res.log2.side.amax.biped)
+```
+
+```{r} 
+#log.top.amax.biped
+log.top.amax.biped <- lm(log_top_amax ~ log_bipedal_top, data = lab.data)
+res.log.top.amax.biped <- resid(log.top.amax.biped)
+
+plot(fitted(log.top.amax.biped), res.log.top.amax.biped)
+qqnorm(res.log.top.amax.biped)
+qqline(res.log.top.amax.biped,
+       col = 'red')
+shapiro.test(res.log.top.amax.biped)  #normal
+plotNormalHistogram(res.log.top.amax.biped)
+```
+
+```{r}
+#log.side.vmax.biped
+log.side.vmax.biped <- lm(log_side_vmax ~ bipedal_side, data = lab.data)
+res.log.side.vmax.biped <- resid(log.side.vmax.biped)
+
+plot(fitted(log.side.vmax.biped), res.log.side.vmax.biped)
+qqnorm(res.log.side.vmax.biped)
+qqline(res.log.side.vmax.biped,
+       col = 'red')
+shapiro.test(res.log.side.vmax.biped)  #normal
+plotNormalHistogram(res.log.side.vmax.biped)
+```
+
+```{r}
+#log.top.vmax.biped
+log.top.vmax.biped <- lm(log_top_vmax ~ bipedal_top, data = lab.data)
+res.log.top.vmax.biped <- resid(log.top.vmax.biped)
+
+plot(fitted(log.top.vmax.biped), res.log.top.vmax.biped)
+qqnorm(res.log.top.vmax.biped)
+qqline(res.log.top.vmax.biped,
+       col = 'red')
+shapiro.test(res.log.top.vmax.biped)  #normal
+plotNormalHistogram(res.log.top.vmax.biped)
+```
+
+```{r}
+#log.side.posmax.biped
+log.side.posmax.biped <- lm(log_side_posmax ~ bipedal_side, data = lab.data)
+res.log.side.posmax.biped <- resid(log.side.posmax.biped)
+
+plot(fitted(log.side.posmax.biped), res.log.side.posmax.biped)
+qqnorm(res.log.side.posmax.biped)
+qqline(res.log.side.posmax.biped,
+       col = 'red')
+shapiro.test(res.log.side.posmax.biped)  #normal
+plotNormalHistogram(res.log.side.posmax.biped)
+```
+
+```{r}
+#log.top.posmax.biped
+log.top.posmax.biped <- lm(log_top_posmax ~ bipedal_top, data = lab.data)
+res.log.top.posmax.biped <- resid(log.top.posmax.biped)
+
+plot(fitted(log.top.posmax.biped), res.log.top.posmax.biped)
+qqnorm(res.log.top.posmax.biped)
+qqline(res.log.top.posmax.biped,
+       col = 'red')
+shapiro.test(res.log.top.posmax.biped)  #not normal - skewed right   #really weird data
+plotNormalHistogram(res.log.top.posmax.biped)
+```
+
+```{r}
+#log.side.tmax.biped
+log.side.tmax.biped <- lm(log_side_tmax ~ bipedal_side, data = lab.data)
+res.log.side.tmax.biped <- resid(log.side.tmax.biped)
+
+plot(fitted(log.side.tmax.biped), res.log.side.tmax.biped)
+qqnorm(res.log.side.tmax.biped)
+qqline(res.log.side.tmax.biped,
+       col = 'red')
+shapiro.test(res.log.side.tmax.biped)  #not normal - skewed right
+plotNormalHistogram(res.log.side.tmax.biped)
+```
+
+```{r}
+#log.top.tmax.biped
+log.top.tmax.biped <- lm(log_top_tmax ~ bipedal_top, data = lab.data)
+res.log.top.tmax.biped <- resid(log.top.tmax.biped)
+
+plot(fitted(log.top.tmax.biped), res.log.top.tmax.biped)
+qqnorm(res.log.top.tmax.biped)
+qqline(res.log.top.tmax.biped,
+       col = 'red')
+shapiro.test(res.log.top.tmax.biped)  #not normal - skewed right
+plotNormalHistogram(res.log.top.tmax.biped)
+```
+
+```{r}
+#log.side.pmax.biped
+log.side.pmax.biped <- lm(log_side_pmax ~ bipedal_side, data = lab.data)
+res.log.side.pmax.biped <- resid(log.side.pmax.biped)
+
+plot(fitted(log.side.pmax.biped), res.log.side.pmax.biped)
+qqnorm(res.log.side.pmax.biped)
+qqline(res.log.side.pmax.biped,
+       col = 'red')
+shapiro.test(res.log.side.pmax.biped)  #normal 
+plotNormalHistogram(res.log.side.pmax.biped)
+```
+
+```{r}
+#log.top.pmax.biped
+log.top.pmax.biped <- lm(log_top_pmax ~ bipedal_top, data = lab.data)
+res.log.top.pmax.biped <- resid(log.top.pmax.biped)
+
+plot(fitted(log.top.pmax.biped), res.log.top.pmax.biped)
+qqnorm(res.log.top.pmax.biped)
+qqline(res.log.top.pmax.biped,
+       col = 'red')
+shapiro.test(res.log.top.pmax.biped)  #normal
+plotNormalHistogram(res.log.top.pmax.biped)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
