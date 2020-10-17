@@ -734,6 +734,9 @@ shapiro.test(res.log.side.amax.biped)  #normal
 plotNormalHistogram(res.log.side.amax.biped)
 
 #log transforming bipedal_side did not appear to change ANYTHING, so I'm just going to run all other runs using log_bipedal
+
+#lmer model
+lmer(log_side_amax ~ log_bipedal_side + substrate_type + sex + (1 | ID), data = lab.data)
 ```
 
 ```{r}
@@ -762,6 +765,9 @@ qqline(res.log.top.amax.biped,
        col = 'red')
 shapiro.test(res.log.top.amax.biped)  #normal
 plotNormalHistogram(res.log.top.amax.biped)
+
+#lmer model
+lmer(log_top_amax ~ log_bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
 ```
 
 ```{r}
@@ -775,6 +781,10 @@ qqline(res.log.side.vmax.biped,
        col = 'red')
 shapiro.test(res.log.side.vmax.biped)  #normal
 plotNormalHistogram(res.log.side.vmax.biped)
+
+#lmer model
+lmer.log.side.vmax.biped <- lmer(log_side_vmax ~ bipedal_side + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.side.vmax.biped)
 ```
 
 ```{r}
@@ -788,6 +798,10 @@ qqline(res.log.top.vmax.biped,
        col = 'red')
 shapiro.test(res.log.top.vmax.biped)  #normal
 plotNormalHistogram(res.log.top.vmax.biped)
+
+#lmer model
+lmer.log.top.vmax.biped <- lmer(log_top_vmax ~ bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.top.vmax.biped)
 ```
 
 ```{r}
@@ -801,6 +815,10 @@ qqline(res.log.side.posmax.biped,
        col = 'red')
 shapiro.test(res.log.side.posmax.biped)  #normal
 plotNormalHistogram(res.log.side.posmax.biped)
+
+#lmer model
+lmer.log.side.posmax.biped <- lmer(log_side_posmax ~ bipedal_side + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.side.posmax.biped)
 ```
 
 ```{r}
