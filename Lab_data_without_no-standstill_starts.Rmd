@@ -89,7 +89,7 @@ table(lab.data$sex)
 
 
 
-# Creating histograms to see distribution of data
+> Creating histograms to see distribution of data
 
 #Max acceleration
 ```{r}
@@ -217,6 +217,7 @@ summaryBy(bipedal_percent ~ substrate_type, data = lab.data_omit,
 
 #lizards are a lot more likely to run bipedal on debris than sand
 ```
+
 
 ```{r}
 #Bipedalism percentage per substrate and sex Histogram
@@ -386,7 +387,7 @@ shapiro.test((lab.data$bipedal_top))
 
 
 
-# Looking at diagnostics data
+> Looking at diagnostics data
 
 ```{r}
 #Top max acceleration vs. bipedalism in top
@@ -586,7 +587,6 @@ TukeyHSD(x = anova_top_vmax, conf.level = 0.95)
 ```
 
 
-
 # Linear Models with Interaction Effects
 
 ```{r}
@@ -609,9 +609,6 @@ anova(lm(top_amax ~ sex*bipedal_top*substrate_type*ID, data = lab.data))
 anova(lm(side_amax ~ sex*bipedal_side*substrate_type*ID, data = lab.data))
 #nothing is significant
 ```
-
-
-
 
 
 # Bipedal Percentage
@@ -695,7 +692,7 @@ summary(lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_om
 
 
 
-#Checking assumptions: normality of residuals
+> Checking assumptions: normality of residuals
 ##all residuals should be log transformed
 
 ```{r}
@@ -832,6 +829,10 @@ qqline(res.log.top.posmax.biped,
        col = 'red')
 shapiro.test(res.log.top.posmax.biped)  #not normal - skewed right   #really weird data
 plotNormalHistogram(res.log.top.posmax.biped)
+
+#lmer model
+lmer.log.top.posmax.biped <- lmer(log_top_posmax ~ bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.top.posmax.biped)
 ```
 
 ```{r}
@@ -845,6 +846,10 @@ qqline(res.log.side.tmax.biped,
        col = 'red')
 shapiro.test(res.log.side.tmax.biped)  #not normal - skewed right
 plotNormalHistogram(res.log.side.tmax.biped)
+
+#lmer model
+lmer.log.side.tmax.biped <- lmer(log_side_tmax ~ bipedal_side + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.side.tmax.biped)
 ```
 
 ```{r}
@@ -858,6 +863,10 @@ qqline(res.log.top.tmax.biped,
        col = 'red')
 shapiro.test(res.log.top.tmax.biped)  #not normal - skewed right
 plotNormalHistogram(res.log.top.tmax.biped)
+
+#lmer model
+lmer.log.top.tmax.biped <- lmer(log_top_tmax ~ bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.top.tmax.biped)
 ```
 
 ```{r}
@@ -871,6 +880,10 @@ qqline(res.log.side.pmax.biped,
        col = 'red')
 shapiro.test(res.log.side.pmax.biped)  #normal 
 plotNormalHistogram(res.log.side.pmax.biped)
+
+#lmer model
+lmer.log.side.pmax.biped <- lmer(log_side_pmax ~ bipedal_side + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.side.pmax.biped)
 ```
 
 ```{r}
@@ -884,11 +897,67 @@ qqline(res.log.top.pmax.biped,
        col = 'red')
 shapiro.test(res.log.top.pmax.biped)  #normal
 plotNormalHistogram(res.log.top.pmax.biped)
+
+#lmer model
+lmer.log.top.pmax.biped <- lmer(log_top_pmax ~ bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.top.pmax.biped)
 ```
 
 
+> Glmer and lmer
+
+## lmer is used to fit linear mixed-effect models, so it assumes that the residual error has a Gaussian distribution. If your dependent variable A is a binary outcome (e.g. a yes/no response), then the error distribution is binomial and not Gaussian. In this case you have to use glmer, which allow to fit a generalized linear mixed-effects model: these models include a link function that allows to predict response variables with non-Gaussian distributions.
+## glmer -> use when dependent variable (X) is a binary outcome (e.g. yes/no)
+### 1 refers to an intercept; means 'add a random intercept for each ID level'
 
 
+#Lmer models with v/a/biped/p/t vs. substrate type -- Question 2
+
+
+```{r}
+#Velocity
+lmer.log.side.vmax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.side.vmax.sub)
+
+lmer.log.top.vmax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.top.vmax.sub)
+```
+
+```{r}
+#Acceleration
+lmer.log.side.amax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.side.amax.sub)
+
+lmer.log.top.amax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.top.amax.sub)
+```
+
+```{r}
+#Bipedalism
+lmer.log.side.bipedal.sub <- lmer(log_bipedal_side ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.side.bipedal.sub)
+
+lmer.log.top.bipedal.sub <- lmer(log_bipedal_top ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.top.bipedal.sub)
+```
+
+```{r}
+#Power
+lmer.log.side.pmax.sub <- lmer(log_side_pmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.side.pmax.sub)
+
+lmer.log.top.pmax.sub <- lmer(log_top_pmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.top.pmax.sub)
+```
+
+```{r}
+#Time
+lmer.log.side.tmax.sub <- lmer(log_side_tmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.side.tmax.sub)
+
+lmer.log.top.tmax.sub <- lmer(log_top_pmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.top.tmax.sub)
+```
 
 
 
