@@ -10,10 +10,18 @@ Question 2: How does "available" habitat affect Racerunner locomotion?
  Ha: Racerunners run fastest on sand compared to debris and sand/debris.
 
 > Data used to answer this question:
-    lab experiment data
-      velocity vs. substrate type
-      acceleration vs. substrate type
-      bipedalism vs. substrate type
-      power vs. substrate type ?
-      time vs. substrate type ?
-    Eric & Lance's habitat data 
+   > lab experiment data
+      > velocity vs. substrate type - lmer
+      > acceleration vs. substrate type - lmer
+      > bipedalism vs. substrate type - lmer
+      > power vs. substrate type ? - lmer
+      > time vs. substrate type ? - lmer
+   > McElroy habitat data 
+      > speed vs. ground clutter crossed -- are speeds faster when more/less ground clutter is crossed?
+          > will need to distinguish which category (S/SD/D) amount of ground clutter corresponds with
+          > lmer(speed ~ ground_clutter_crossed + (1 | ID))      
+
+
+
+   
+   
