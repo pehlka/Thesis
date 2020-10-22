@@ -10,11 +10,15 @@ Question 3: Is the pattern observed in question #1 explained by question #2?
  Ha: Racerunners avoid moving on suboptimal parts of habitat.
  
 > Data used to answer this question:
-    lab experiment data
-      velocity vs. substrate type
-      acceleration vs. substrate type
-      bipedalism vs. substrate type
-      power vs. substrate type ?
-      time vs. substrate type ?
-    Eric & Lance's habitat data    
-  
+    > lab experiment data
+        > velocity vs. substrate type
+        > acceleration vs. substrate type
+        > bipedalism vs. substrate type
+        > power vs. substrate type ?
+        > time vs. substrate type ?
+    > McElroy habitat data    
+        > speed vs. ground clutter crossed -- are speeds faster when more/less ground clutter is crossed?
+           > lmer(speed ~ ground_clutter_crossed + (1 | ID))
+        > bipedalism's effect on speed 
+           > create new data set that only includes runs where bipedalism did or didn't occur
+           > lmer(speed ~ bipedal + (1 | ID)
