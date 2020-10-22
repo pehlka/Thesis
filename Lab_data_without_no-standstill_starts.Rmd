@@ -22,6 +22,8 @@ library(lme4)
 library(sjstats)
 library(doBy)
 library(car)
+library(emmeans)
+library(multcompView)
 ```
 
 ```{r}
@@ -690,6 +692,44 @@ summary(lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_om
 #no interaction effects are significant
 ```
 
+> Levene's test
+
+## Ho: the groups we're comparing all have equal population variances. If this is true, we'll probably find slightly different variances in our samples from these populations. If the sample variances have very different variances then it'll suggest that the population variances weren't equal after all and Ho would have to be rejected.
+## Ha: the variance among the groups is not equal
+## 2 assumptions: independent observations and the test variable is quantitative
+## if p-value is less than significance level (0.05), we can reject Ho and conclude that the variance among the groups is NOT equal
+
+```{r}
+#Levene test - ID
+leveneTest(side_amax ~ ID, data = lab.data)   #not significant
+leveneTest(top_amax ~ ID, data = lab.data)   #not significant
+
+leveneTest(side_vmax ~ ID, data = lab.data)   #not significant
+leveneTest(top_vmax ~ ID, data = lab.data)   #not significant
+```
+
+```{r}
+#Levene test - sex
+leveneTest(side_amax ~ sex, data = lab.data)   #not significant
+leveneTest(top_amax ~ sex, data = lab.data)   #not significant
+
+leveneTest(side_vmax ~ sex, data = lab.data)   #not significant
+leveneTest(top_vmax ~ sex, data = lab.data)   #not significant
+```
+
+```{r}
+#Levene test - bipedalism
+leveneTest(bipedal_percent ~ substrate_type, data = lab.data)  #not significant so can't reject Ho; variance among groups may be equal
+leveneTest(bipedal_side ~ substrate_type, data = lab.data)   #not significant
+leveneTest(bipedal_top ~ substrate_type, data = lab.data)   #not significant
+```
+# do we want the data to have variance or no?
+
+
+
+
+
+
 
 
 > Checking assumptions: normality of residuals
@@ -733,7 +773,8 @@ plotNormalHistogram(res.log.side.amax.biped)
 #log transforming bipedal_side did not appear to change ANYTHING, so I'm just going to run all other runs using log_bipedal
 
 #lmer model
-lmer(log_side_amax ~ log_bipedal_side + substrate_type + sex + (1 | ID), data = lab.data)
+lmer.log.side.amax.biped <- lmer(log_side_amax ~ log_bipedal_side + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.side.amax.biped)
 ```
 
 ```{r}
@@ -764,7 +805,8 @@ shapiro.test(res.log.top.amax.biped)  #normal
 plotNormalHistogram(res.log.top.amax.biped)
 
 #lmer model
-lmer(log_top_amax ~ log_bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
+lmer.log.top.amax.biped <- lmer(log_top_amax ~ log_bipedal_top + substrate_type + sex + (1 | ID), data = lab.data)
+anova(lmer.log.top.amax.biped)
 ```
 
 ```{r}
@@ -917,55 +959,87 @@ anova(lmer.log.top.pmax.biped)
 ```{r}
 #Velocity
 lmer.log.side.vmax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.vmax.sub)
+anova(lmer.log.side.vmax.sub)  #significant
 
 lmer.log.top.vmax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.vmax.sub)
+anova(lmer.log.top.vmax.sub)  #significant
 ```
 
 ```{r}
 #Acceleration
 lmer.log.side.amax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.amax.sub)
+anova(lmer.log.side.amax.sub)  #significant
 
 lmer.log.top.amax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.amax.sub)
-```
+anova(lmer.log.top.amax.sub)  #significant
+```  
 
 ```{r}
 #Bipedalism
 lmer.log.side.bipedal.sub <- lmer(log_bipedal_side ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.bipedal.sub)
+anova(lmer.log.side.bipedal.sub)  #not significant
 
 lmer.log.top.bipedal.sub <- lmer(log_bipedal_top ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.bipedal.sub)
+anova(lmer.log.top.bipedal.sub)  #not significant
 ```
 
 ```{r}
 #Power
 lmer.log.side.pmax.sub <- lmer(log_side_pmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.pmax.sub)
+anova(lmer.log.side.pmax.sub)   #not significant
 
 lmer.log.top.pmax.sub <- lmer(log_top_pmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.pmax.sub)
+anova(lmer.log.top.pmax.sub)   #not significant
 ```
 
 ```{r}
 #Time
 lmer.log.side.tmax.sub <- lmer(log_side_tmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.tmax.sub)
+anova(lmer.log.side.tmax.sub)  #not significant
 
 lmer.log.top.tmax.sub <- lmer(log_top_pmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.tmax.sub)
+anova(lmer.log.top.tmax.sub)  #not significant
+```
+
+
+```{r}
+#Velocity - sex
+lmer.log.side.vmax.sex <- lmer(log_side_vmax ~ sex + (1 | ID), data = lab.data)
+anova(lmer.log.side.vmax.sex)  #not significant
+
+lmer.log.top.vmax.sex <- lmer(log_top_vmax ~ sex + (1 | ID), data = lab.data)
+anova(lmer.log.top.vmax.sex)  #not significant
 ```
 
 
 
 
+#Tukey Test
 
+```{r}
+tukey.lmer.log.side.amax.sub <- emmeans(lmer.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
+tukey.lmer.log.side.amax.sub
+plot(tukey.lmer.log.side.amax.sub)
+```
+#I'm not really sure what this is saying. 
 
+```{r}
+tukey.lmer.log.top.amax.sub <- emmeans(lmer.log.top.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
+tukey.lmer.log.top.amax.sub
+plot(tukey.lmer.log.top.amax.sub)
+```
 
+```{r}
+tukey.lmer.log.side.vmax.sex <- emmeans(lmer.log.side.vmax.sex, pairwise ~ sex, adjust="tukey", data=lab.data)
+tukey.lmer.log.side.vmax.sex   #not significant
+plot(tukey.lmer.log.side.vmax.sex)
+```
 
+```{r}
+tukey.lmer.log.top.vmax.sex <- emmeans(lmer.log.top.vmax.sex, pairwise ~ sex, adjust="tukey", data=lab.data)
+tukey.lmer.log.top.vmax.sex  #not significant
+plot(tukey.lmer.log.top.vmax.sex)
+```
 
 
 
