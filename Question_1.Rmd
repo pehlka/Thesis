@@ -12,16 +12,18 @@ Question 1: Do Racerunners use their habitat randomly or non-randomly?
 > Data used for this question: 
     > habitat transect data
         > percent occurrance of each type of substrate (habitat data) -- what is most common?
-        > did cover effect it?
+        > does cover effect it?
     > McElroy habitat data
         > speed vs. ground clutter crossed -- are speeds faster when more/less ground clutter is crossed?
            > lmer(speed ~ ground_clutter_crossed + (1 | ID))
-        > bipedalism's effect on speed 
+        > bipedalism's effect on speed -- hard to test - probably don't do
            > create new data set that only includes runs where bipedalism did or didn't occur
            > lmer(speed ~ bipedal + (1 | ID)
+        > 
         > ground clutter crossed effect on bipedalism -- probably can't do because there aren't any definite 'Y's'
     > lab data  
         > how often bipedalism occurs on different substrates ?
+          > check histograms
         
       
         
@@ -31,14 +33,22 @@ Question 1: Do Racerunners use their habitat randomly or non-randomly?
         
 ```{r}
 #Loading necessary packages
+library(ggplot2)
+library(rcompanion)
 library(lme4)
-library(lmerTest)
+library(sjstats)
+library(doBy)
+library(car)
+library(emmeans)
+library(multcompView)
+library(nlme)
+library(lmtest)
 ```
 
 ```{r}
 #Importing datasets
 
-mcelroy_habitat_data <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data.csv")   #full data set
+McElroy_Habitat_Data2 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data2.csv")
 mcelroy_habitat_data_omit <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data_omit.csv")  #data set minus runs where bipedalism was unknown
 field_transects <- read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrates.csv")  #field transect data
 field_transects_totals <-  read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrate_Totals.csv")  #field transect substrate totals
@@ -57,24 +67,6 @@ field_transects_totals_condensed
 #lizards therefore have to be at least somewhat good at running on heavy mixed because there's so much of it in their habitat
 ```
 
-
-```{r}
-speed_ground_cover <- lmer(speed ~ ground_clutter_crossed + (1 | ï..ID), data = mcelroy_habitat_data)
-anova(speed_ground_cover)
-summary(speed_ground_cover)
-```
-  
-```{r}
-speed_bipedal <- lmer(speed ~ bipedal + (1 | ï..ID), data = mcelroy_habitat_data_omit)
-anova(speed_bipedal)
-summary(speed_bipedal)
-```
-
-# what do these tell me? no p-value shown. They don't appear significant.
-
-
-
-
 ```{r}
 #Bipedalism percentage per substrate and sex Histogram
 ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  + 
@@ -87,8 +79,107 @@ summaryBy(bipedal_percent ~ substrate_type + sex, data = lab.data_omit,
           FUN = list(mean, median, min, max))
 
 #males are bipedal more often on every substrate than females
-```  
+``` 
+
+```{r}
+speed_bipedal <- lmer(speed ~ bipedal + (1 | ï..ID), data = mcelroy_habitat_data_omit)
+anova(speed_bipedal)
+summary(speed_bipedal)
+```
+
+
+> Work from meeting with Eric
+
+```{r}
+speed_ground_cover <- lmer(speed ~ ground_clutter_crossed + (1 | ï..ID), data = McElroy_Habitat_Data2)
+anova(speed_ground_cover)
+summary(speed_ground_cover)
+
+speed_ground_cover_null <- lmer(speed ~ (1 | ï..ID), data = McElroy_Habitat_Data2)
+
+plot(McElroy_Habitat_Data2$ground_clutter_crossed, McElroy_Habitat_Data2$speed)
+
+ggplot(McElroy_Habitat_Data2, aes(ground_clutter_crossed, speed)) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(title = "Ground Clutter Crossed vs Speed in Habitat Data")
+
+#There is a slight upward trend in speed as number of ground clutter crossed increases. This suggests that Racerunners run slightly faster when there are more obstacles in their path. 
+```
   
-  
+
+```{r}
+#ensuring ground_clutter_crossed is still numeric (it wasn't before, but we changed it, hence the "2" at the end of the dataset name)
+is.numeric(McElroy_Habitat_Data2$ground_clutter_crossed)
+```
+
+```{r}
+speed_ground_cover_null <- lmer(speed ~ (1 | ï..ID), data = McElroy_Habitat_Data2)
+lrtest(speed_ground_cover, speed_ground_cover_null)
+lrtest(speed_ground_cover_null, speed_ground_cover)
+#creating a null function allows you to see if adding in a variable does a lot to change the variation in the analysis
+#changing the order of the lrtest doesn't change the outcome of the likelihood test
+```
+
+```{r}
+performance::r2(speed_ground_cover)
+performance::r2(speed_ground_cover_null)
+
+#conditional and marginal R2s are both higher for regular model (non-null)
+```
+
+
+
+```{r}
+anova(speed_ground_cover)
+summary(speed_ground_cover)
+
+lm(speed ~ ground_clutter_crossed, data = McElroy_Habitat_Data2)
+anova(lm(speed ~ ground_clutter_crossed, data = McElroy_Habitat_Data2))
+anova(lm(log10(speed) ~ log10(ground_clutter_crossed +1) , data = McElroy_Habitat_Data2))
+```
+
+```{r}
+plot(log10(McElroy_Habitat_Data2$ground_clutter_crossed +1), log10(McElroy_Habitat_Data2$speed))
+ggplot(McElroy_Habitat_Data2, aes(log10(ground_clutter_crossed+1), log10(speed)) )+
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(title = "Log Ground Clutter Crossed vs Log Speed in Habitat Data")
+
+random <- lme(speed ~ ground_clutter_crossed, random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
+anova(random)
+hist(residuals(random))
+shapiro.test(residuals(random))
+summary(random)
+performance::r2(random)   #low R2s
+```
+
+```{r}
+random2 <- lme(log10(speed) ~ log10(ground_clutter_crossed+1), random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
+anova(random2)
+hist(residuals(random2))
+shapiro.test(residuals(random2))
+performance::r2(random2)  #low R2s
+```
+
+# R2 determines how much a variable's behavior can explain the behavior of another variable. A measure 0f 70% or more means that the behavior of the dependent variable is highly explained by the behavior of the independent variable being studied.
+  # marginal R2 describes the proportion of variance explained by the fixed factor(s) alone.
+  # conditoinal R2 describes the proportion of variance explained by both the fixed and random factors.
+
+> post-meeting
+
+```{r}
+lsmeans(random, pairwise ~ ground_clutter_crossed, adjust = "tukey", data=McElroy_Habitat_Data2)
+```
+
+
+
+
+
+
+
+
+
+
   
   
