@@ -10,5 +10,85 @@ Question 1: Do Racerunners use their habitat randomly or non-randomly?
  Ha: Racerunners use their habitat non-randomly.
 
 > Data used for this question: 
-    habitat transect data
-    Eric & Lance habitat data
+    > habitat transect data
+        > percent occurrance of each type of substrate (habitat data) -- what is most common?
+        > did cover effect it?
+    > McElroy habitat data
+        > speed vs. ground clutter crossed -- are speeds faster when more/less ground clutter is crossed?
+           > lmer(speed ~ ground_clutter_crossed + (1 | ID))
+        > bipedalism's effect on speed 
+           > create new data set that only includes runs where bipedalism did or didn't occur
+           > lmer(speed ~ bipedal + (1 | ID)
+        > ground clutter crossed effect on bipedalism -- probably can't do because there aren't any definite 'Y's'
+    > lab data  
+        > how often bipedalism occurs on different substrates ?
+        
+      
+        
+        
+        
+        
+        
+```{r}
+#Loading necessary packages
+library(lme4)
+library(lmerTest)
+```
+
+```{r}
+#Importing datasets
+
+mcelroy_habitat_data <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data.csv")   #full data set
+mcelroy_habitat_data_omit <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data_omit.csv")  #data set minus runs where bipedalism was unknown
+field_transects <- read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrates.csv")  #field transect data
+field_transects_totals <-  read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrate_Totals.csv")  #field transect substrate totals
+field_transects_totals_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrate_Totals_condensed.csv")
+lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.15.20_removed_non-standstill_starts+NAs+negatives.csv")
+```
+> fix ID column - not headed properly
+
+
+```{r}
+field_transects_totals
+#heavy mixed was most common substrate type in transect study
+field_transects_totals_condensed
+#mixed was most common grouped susbtrate type
+
+#lizards therefore have to be at least somewhat good at running on heavy mixed because there's so much of it in their habitat
+```
+
+
+```{r}
+speed_ground_cover <- lmer(speed ~ ground_clutter_crossed + (1 | ï..ID), data = mcelroy_habitat_data)
+anova(speed_ground_cover)
+summary(speed_ground_cover)
+```
+  
+```{r}
+speed_bipedal <- lmer(speed ~ bipedal + (1 | ï..ID), data = mcelroy_habitat_data_omit)
+anova(speed_bipedal)
+summary(speed_bipedal)
+```
+
+# what do these tell me? no p-value shown. They don't appear significant.
+
+
+
+
+```{r}
+#Bipedalism percentage per substrate and sex Histogram
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  + 
+  geom_histogram(fill="dark green", bins = 20, binwidth = 10) +
+  facet_wrap(~substrate_type + sex) +
+  facet_grid(sex ~ substrate_type)
+
+#mean, median & range of bipedal percentage separated into substrate type
+summaryBy(bipedal_percent ~ substrate_type + sex, data = lab.data_omit,
+          FUN = list(mean, median, min, max))
+
+#males are bipedal more often on every substrate than females
+```  
+  
+  
+  
+  
