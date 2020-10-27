@@ -11,11 +11,14 @@ Question 3: Is the pattern observed in question #1 explained by question #2?
  
 > Data used to answer this question:
     > lab experiment data
-        > velocity vs. substrate type
-        > acceleration vs. substrate type
-        > bipedalism vs. substrate type
-        > power vs. substrate type ?
-        > time vs. substrate type ?
+        > velocity vs. substrate type - lmer
+        > acceleration vs. substrate type - lmer 
+        > bipedalism vs. substrate type - lmer
+        > bipedalism vs velocity - lmer
+        > power vs. substrate type ? - lmer
+        > time vs. substrate type ? - lmer
+    > transect data
+        > effect of available cover; where is cover most frequent (more cover = safer)
     > McElroy habitat data    
         > speed vs. ground clutter crossed -- are speeds faster when more/less ground clutter is crossed?
            > lmer(speed ~ ground_clutter_crossed + (1 | ID))
