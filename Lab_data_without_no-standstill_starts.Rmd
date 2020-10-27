@@ -24,6 +24,8 @@ library(doBy)
 library(car)
 library(emmeans)
 library(multcompView)
+library(nlme)
+library(lmtest)
 ```
 
 ```{r}
@@ -376,12 +378,12 @@ shapiro.test(lab.data$top_posmax)
 ggplot(data = lab.data_omit, aes(bipedal_side))  + 
   geom_histogram(bins = 20, col = ("grey"))
 
-ggplot(data = lab.data, aes(bipedal_top))  + 
+ggplot(data = lab.data_omit, aes(bipedal_top))  + 
   geom_histogram(bins = 20, col = ("grey"))
 
 #Shapiro-Wilks normality test (p-value >0.05 assumes normality)
-shapiro.test(lab.data$bipedal_side)
-shapiro.test((lab.data$bipedal_top))
+shapiro.test(lab.data_omit$bipedal_side)
+shapiro.test((lab.data_omit$bipedal_top))
 
 #bipedal_side: normal
 #bipedal_top: not normal
@@ -407,8 +409,6 @@ plot(density(res.top.amax.biped))
 plot(top.amax.biped)
 
 #QQ plot shows data is skewed left -- need to transform
-
-# > Do I need to do anything with the other plots?
 ```
 
 ```{r}
@@ -550,43 +550,6 @@ shapiro.test(lab.data$top_vmax)  #normal -- no transformation
 shapiro.test(log_top_vmax)  #not normal  -- log transformed
 ```
 
-```{r}
-#Trying to determine if bipedal_top needs to be transformed              DELETE! UNNECESSARY!
-
-#Shapiro-Wilk test
-shapiro.test(lab.data$bipedal_top)          #normal
-
-#Non-transformed
-plotNormalHistogram(as.numeric(lab.data$bipedal_top), main = "Non-transformed")  #skewed left
-
-#Squared
-top.dat <- as.numeric(lab.data$bipedal_top)
-top.square <- top.dat^2
-plotNormalHistogram(top.square, main = "Bipedal_top Squared")  #even more skewed left than regular bipedal_top
-
-#Exponential
-top.exp <- exp(top.dat)
-plotNormalHistogram(top.exp, main = "Exponential")   #even more un-normal than non-transformed
-
-#Reciprocal 
-top.rec <- 1/top.dat
-plotNormalHistogram(top.rec, main = "Reciprocal")  #made bipedal_top skewed right and it's even worse than non-transformed
-
-#Bipedal_top looks best non-transformed
-```
-
-
-
-```{r}
-#Tukey Test (attempt)
-
-anova_top_vmax <- anova(lm(top_vmax ~ sex, data = lab.data))
-anova_top_vmax
-#since p<0.5 there is enough evidence to conclude that the mean values across both sexes aren't equal & can run a Tukey test
-
-TukeyHSD(x = anova_top_vmax, conf.level = 0.95)
-#can't get Tukey test to work
-```
 
 
 # Linear Models with Interaction Effects
@@ -671,12 +634,41 @@ anova((lm(as.numeric(bipedal_percent) ~ substrate_type*sex, data = lab.data_omit
 ```
 
 ```{r}
+#looked at with Eric during meeting 10/22
+
 #Mixed model bipedal percent and substrate type
 lmer2<-lmer(bipedal_percent ~ substrate_type + (1 | ID), data = lab.data_omit)
+lmer3<- lmer(sqrt(bipedal_percent) ~ substrate_type + (1 | ID), data = lab.data_omit)
 summary(lmer(bipedal_percent ~ substrate_type + (1 | ID), data = lab.data_omit))
-Anova(lmer2)     
+Anova(lmer2)
+
+emmeans(lmer2, pairwise ~ substrate_type, adjust = "tukey", data=lab.data)
+
+hist(residuals(lmer2))
+hist(residuals(lmer3))
+
+shapiro.test(residuals(lmer2))  #not normal
+shapiro.test(residuals(lmer3))  #need sqrt transform - fixed normality issue   #normal
+
 #sand and sand/debris have significant p-values
 ```
+
+```{r}
+lmer.biped.sub <- lmer(sqrt(bipedal_percent) ~ substrate_type + (1|ID), data = lab.data_omit)
+anova(lmer.biped.sub)
+plotNormalHistogram(residuals(lmer.biped.sub))   #appears normal
+lmer.biped.sub.tukey <- emmeans(lmer.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)   
+lmer.biped.sub.tukey   #significant differences between D-S but not for D-SD and S-SD
+ggplot(data = lab.data_omit, aes(x= substrate_type, y=bipedal_percent)) +
+  geom_boxplot() +
+  labs(title = "Bipedal Percent by Substrate Type") 
+plot(lmer.biped.sub.tukey)
+summary(lmer.biped.sub)
+performance::r2(lmer.biped.sub)  #low R2s
+
+#can't figure out how to do a Tukey test for lme function so had to use lmer instead
+```
+
 
 ```{r}
 #Mixed model bipedal percent and sex
@@ -698,6 +690,8 @@ summary(lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_om
 ## Ha: the variance among the groups is not equal
 ## 2 assumptions: independent observations and the test variable is quantitative
 ## if p-value is less than significance level (0.05), we can reject Ho and conclude that the variance among the groups is NOT equal
+## we want them to not be significant
+
 
 ```{r}
 #Levene test - ID
@@ -723,17 +717,12 @@ leveneTest(bipedal_percent ~ substrate_type, data = lab.data)  #not significant 
 leveneTest(bipedal_side ~ substrate_type, data = lab.data)   #not significant
 leveneTest(bipedal_top ~ substrate_type, data = lab.data)   #not significant
 ```
-# do we want the data to have variance or no?
-
-
-
-
 
 
 
 
 > Checking assumptions: normality of residuals
-##all residuals should be log transformed
+## all residuals should be log transformed
 
 ```{r}
 #Log transforming all variables 
@@ -777,20 +766,6 @@ lmer.log.side.amax.biped <- lmer(log_side_amax ~ log_bipedal_side + substrate_ty
 anova(lmer.log.side.amax.biped)
 ```
 
-```{r}
-#Test to see if log transforming bipedal_side does anything -- NO!
-#Log transformed side_amax + bipedal_side
-
-log2.side.amax.biped <- lm(log_side_amax ~ bipedal_side, data = lab.data)
-res.log2.side.amax.biped <- resid(log2.side.amax.biped)
-
-plot(fitted(log2.side.amax.biped), res.log2.side.amax.biped)
-qqnorm(res.log2.side.amax.biped)
-qqline(res.log2.side.amax.biped,
-       col = 'red')
-shapiro.test(res.log2.side.amax.biped)  #normal
-plotNormalHistogram(res.log2.side.amax.biped)
-```
 
 ```{r} 
 #log.top.amax.biped
@@ -946,6 +921,7 @@ anova(lmer.log.top.pmax.biped)
 ```
 
 
+
 > Glmer and lmer
 
 ## lmer is used to fit linear mixed-effect models, so it assumes that the residual error has a Gaussian distribution. If your dependent variable A is a binary outcome (e.g. a yes/no response), then the error distribution is binomial and not Gaussian. In this case you have to use glmer, which allow to fit a generalized linear mixed-effects model: these models include a link function that allows to predict response variables with non-Gaussian distributions.
@@ -955,91 +931,221 @@ anova(lmer.log.top.pmax.biped)
 
 #Lmer models with v/a/biped/p/t vs. substrate type -- Question 2
 
+#larger F-values represent greater dispersion of data
 
 ```{r}
 #Velocity
 lmer.log.side.vmax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.vmax.sub)  #significant
+anova(lmer.log.side.vmax.sub)
+summary(lmer.log.side.vmax.sub)
 
 lmer.log.top.vmax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.vmax.sub)  #significant
+anova(lmer.log.top.vmax.sub)  
 ```
 
 ```{r}
 #Acceleration
 lmer.log.side.amax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.amax.sub)  #significant
+anova(lmer.log.side.amax.sub)  
 
 lmer.log.top.amax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.amax.sub)  #significant
+anova(lmer.log.top.amax.sub)  
 ```  
 
 ```{r}
 #Bipedalism
 lmer.log.side.bipedal.sub <- lmer(log_bipedal_side ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.bipedal.sub)  #not significant
+anova(lmer.log.side.bipedal.sub)  
 
 lmer.log.top.bipedal.sub <- lmer(log_bipedal_top ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.bipedal.sub)  #not significant
+anova(lmer.log.top.bipedal.sub)  
 ```
 
 ```{r}
 #Power
 lmer.log.side.pmax.sub <- lmer(log_side_pmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.pmax.sub)   #not significant
+anova(lmer.log.side.pmax.sub)   
 
 lmer.log.top.pmax.sub <- lmer(log_top_pmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.pmax.sub)   #not significant
+anova(lmer.log.top.pmax.sub)   
 ```
 
 ```{r}
 #Time
 lmer.log.side.tmax.sub <- lmer(log_side_tmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.tmax.sub)  #not significant
+anova(lmer.log.side.tmax.sub) 
 
 lmer.log.top.tmax.sub <- lmer(log_top_pmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.tmax.sub)  #not significant
+anova(lmer.log.top.tmax.sub)  
 ```
 
 
 ```{r}
 #Velocity - sex
 lmer.log.side.vmax.sex <- lmer(log_side_vmax ~ sex + (1 | ID), data = lab.data)
-anova(lmer.log.side.vmax.sex)  #not significant
+anova(lmer.log.side.vmax.sex)  
 
 lmer.log.top.vmax.sex <- lmer(log_top_vmax ~ sex + (1 | ID), data = lab.data)
-anova(lmer.log.top.vmax.sex)  #not significant
+anova(lmer.log.top.vmax.sex)  
 ```
 
 
 
 
-#Tukey Test
+> Tukey Test
+
+## don't need to do with sex because it's only 2 groups and because sex doesn't play a big role in overall analysis
 
 ```{r}
+#Substrate
+
 tukey.lmer.log.side.amax.sub <- emmeans(lmer.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
 tukey.lmer.log.side.amax.sub
 plot(tukey.lmer.log.side.amax.sub)
-```
-#I'm not really sure what this is saying. 
+#p-value is significant for D-S but not for D-SD and S-SD
 
-```{r}
 tukey.lmer.log.top.amax.sub <- emmeans(lmer.log.top.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
 tukey.lmer.log.top.amax.sub
 plot(tukey.lmer.log.top.amax.sub)
+#p-value significant for D-S and D-S but not for S-SD
+```
+
+> Bipedalism and Velocity/Acceleration
+
+```{r}
+#Bipedalism's effect on side velocity
+biped.side.vmax <- lme(log10(bipedal_percent+1) ~ log10(side_vmax+1), random = ~1|ID, data = lab.data_omit)
+anova(biped.side.vmax)   #p-value < 0.0001   #significant
+hist(residuals(biped.side.vmax))
+shapiro.test(residuals(biped.side.vmax))  #normal
+summary(biped.side.vmax)
+performance::r2(biped.side.vmax)   #low R2s
+
+#velocity does affect bipedalism in side videos 
 ```
 
 ```{r}
-tukey.lmer.log.side.vmax.sex <- emmeans(lmer.log.side.vmax.sex, pairwise ~ sex, adjust="tukey", data=lab.data)
-tukey.lmer.log.side.vmax.sex   #not significant
-plot(tukey.lmer.log.side.vmax.sex)
+#Bipedalism's effect on top velocity
+biped.top.vmax <- lme(log10(bipedal_percent+1) ~ log10(top_vmax+1), random = ~1|ID, data = lab.data_omit)
+anova(biped.top.vmax)   #p-value = 0.0165   #significant
+hist(residuals(biped.top.vmax))
+shapiro.test(residuals(biped.top.vmax))   #normal
+summary(biped.top.vmax)
+performance::r2(biped.top.vmax)   #low R2s
+
+#velocity does affect bipedalism in top videos
 ```
 
 ```{r}
-tukey.lmer.log.top.vmax.sex <- emmeans(lmer.log.top.vmax.sex, pairwise ~ sex, adjust="tukey", data=lab.data)
-tukey.lmer.log.top.vmax.sex  #not significant
-plot(tukey.lmer.log.top.vmax.sex)
+#Bipedalism's effect on side acceleration
+biped.side.amax <- lme(log10(bipedal_percent+1) ~ log10(side_amax+1), random = ~1|ID, data = lab.data_omit)
+anova(biped.side.amax)   #p-value = 0.9311   #not significant
+hist(residuals(biped.side.amax))
+shapiro.test(residuals(biped.side.amax))  #normal
+summary(biped.side.amax)
+performance::r2(biped.side.amax)   #low R2s
+
+#acceleration does not affect bipedalism in side videos 
 ```
+
+```{r}
+#Bipedalism's effect on top acceleration
+biped.top.amax <- lme(log10(bipedal_percent+1) ~ log10(top_amax+1), random = ~1|ID, data = lab.data_omit)
+anova(biped.top.amax)   #p-value = 0.0081   #significant
+hist(residuals(biped.top.amax))
+shapiro.test(residuals(biped.top.amax))   #normal
+summary(biped.top.amax)
+performance::r2(biped.top.amax)   #low R2s
+
+#acceleration does affect bipedalism in top videos, but lizard's aren't starting from a standstill so this may be inaccurate
+```
+
+
+> Pauses
+
+```{r}
+side.amax.pause <- lme(log_side_amax ~ pauses_side == "0", random = ~1|ID, data = lab.data)
+anova(side.amax.pause)   #p-value = 0.2037  #not signficant
+hist(residuals(side.amax.pause))
+shapiro.test(residuals(side.amax.pause))   #normal
+summary(side.amax.pause)
+performance::r2(side.amax.pause)   #low R2s
+
+#pauses do not affect acceleration in side videos
+```
+
+```{r}
+side.amax.pause <- lme(log_side_amax ~ pauses_side, random = ~1|ID, data = lab.data)
+anova(side.amax.pause)   #p-value = 0.2341  #not signficant
+hist(residuals(side.amax.pause))
+shapiro.test(residuals(side.amax.pause))   #normal
+summary(side.amax.pause)
+performance::r2(side.amax.pause)   #low R2s
+```
+
+```{r}
+top.amax.pause <- lme(log_top_amax ~ pauses_side)
+```
+
+```{r}
+lab.data_pause <- lab.data[!is.na(lab.data$pauses_side), ]
+```
+
+```{r}
+lab.data_side_pause_0 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.23.20_removed_non-standstill_starts+NAs+negatives_side_pause_0.csv")
+
+lab.data_side_pause_1 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.15.20_removed_non-standstill_starts+NAs+negatives_side_pause_1+.csv")
+```
+
+```{r}
+#Pauses effect on side acceleration - 0 pauses
+lmer.side.amax.pause0 <- lmer(log10(side_amax+1) ~ pauses_side + (1|ID), data = lab.data_side_pause_0)
+summary(lmer.side.amax.pause0)
+anova(lmer.side.amax.pause0)   #not working for some reason
+tukey.lmer.side.amax.pause0 <- emmeans(lmer.side.amax.pause0, pairwise ~ pauses_side, adjust="tukey", data=lab.data_side_pause_0)
+tukey.lmer.side.amax.pause0
+```
+
+```{r}
+#Pauses effect on side acceleration - 1+ pauses
+lmer.side.amax.pause1 <- lmer(log10(side_amax+1) ~ pauses_side + (1|ID), data = lab.data_side_pause_1)
+
+
+#lme() wouldn't work for some reason
+```
+
+```{r}
+is.numeric(lab.data_side_pause_0$pauses_side)
+```
+
+
+> Sex
+
+```{r}
+side.amax.sex <- lmer(log_side_amax ~ log_bipedal_side + substrate_type + sex + (1|ID), data = lab.data)
+anova(side.amax.sex)
+summary(side.amax.sex)
+
+side.amax.sex_null <- lmer(log_side_amax ~ log_bipedal_side + substrate_type + (1|ID), data = lab.data)
+anova(side.amax.sex_null)
+summary(side.amax.sex_null)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
