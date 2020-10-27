@@ -1,0 +1,346 @@
+---
+title: "Untitled"
+author: "Kayla Pehl"
+date: "10/26/2020"
+output: html_document
+---
+
+# This dataset does NOT include trials where the lizard did not start from a standstill
+# It also does not include the 3 lizards (F, N & P) that did not have at least 1 good run on all three substrates saved
+
+```{r}
+#Importing data and required packages
+
+lab.data_reduced <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.26.20_removed_non-standstill_starts+NAs+negatives+3lizards.csv")
+#this data set has lizards F, N & P removed - they were the lizards that did not have at least 1 good run on all three substrates saved. 
+  
+#Creating new data frame without N/A's in bipedal percent column    
+##148 rows in lab.data and 88 rows in lab.data_omit, so 60 trials didn't contain bipedalism but 88 did 
+lab.data_reduced_omit <- lab.data_reduced[!is.na(lab.data_reduced$bipedal_percent), ]
+
+library(ggplot2)
+library(rcompanion)
+library(lme4)
+library(sjstats)
+library(doBy)
+library(car)
+library(emmeans)
+library(multcompView)
+library(nlme)
+library(lmtest)
+```
+
+```{r}
+#Checking to see if all data is in correct formats (i.e. factor vs. numeric)    
+
+is.factor(lab.data_reduced$ID)
+is.factor(lab.data_reduced$sex)
+is.factor(lab.data_reduced$substrate_type)
+is.numeric(lab.data_reduced$pauses_side)
+is.numeric(lab.data_reduced$pauses_top)
+is.factor(lab.data_reduced$bipedal_quad_side)
+is.factor(lab.data_reduced$bipedal_quad_top)
+is.numeric(lab.data_reduced$bipedal_side)
+is.numeric(lab.data_reduced$bipedal_top)
+is.numeric(lab.data_reduced$total_video_frames)
+is.numeric(lab.data_reduced$bipedal_percent)
+is.factor(lab.data_reduced$no_start_from_standstill)
+is.factor(lab.data_reduced$stops_before_end_of_racetrack)
+is.numeric(lab.data_reduced$calibration)
+is.numeric(lab.data_reduced$side_amax)
+is.numeric(lab.data_reduced$side_pmax)
+is.numeric(lab.data_reduced$side_posmax)
+is.numeric(lab.data_reduced$side_spline_tol)
+is.numeric(lab.data_reduced$side_tmax)
+is.numeric(lab.data_reduced$side_vmax)
+is.numeric(lab.data_reduced$top_amax)
+is.numeric(lab.data_reduced$top_pmax)
+is.numeric(lab.data_reduced$top_posmax)
+is.numeric(lab.data_reduced$top_spline_tol)
+is.numeric(lab.data_reduced$top_tmax)
+is.numeric(lab.data_reduced$top_vmax)
+
+#All are correct. Therefore nothing in dataset needs to change.
+```
+
+
+# Checking for normality
+
+```{r}
+#Checking for normality of data: max accelerations and velocities
+
+#histograms
+ggplot(data = lab.data_reduced, aes(side_amax))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Side Amax")                        #slight skew right
+
+ggplot(data = lab.data_reduced, aes(top_amax))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Top Amax")                         #looks skewed right
+
+ggplot(data = lab.data_reduced, aes(side_vmax))  + 
+  geom_histogram(bins = 13, col = ("grey")) +
+  labs(title = "Side Vmax")                        #looks fairly normal
+
+ggplot(data = lab.data_reduced, aes(top_vmax))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Top Vmax")                         #looks fairly normal
+
+#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
+shapiro.test(lab.data_reduced$side_amax)
+shapiro.test((lab.data_reduced$top_amax))
+shapiro.test((lab.data_reduced$side_vmax))
+shapiro.test(lab.data_reduced$top_vmax)
+
+#side_amax: not normal
+#top_amax: not normal
+#side_vmax: normal
+#top_vmax: normal
+```
+
+
+```{r}
+#Checking for normality of data: time and position
+
+#histograms
+ggplot(data = lab.data_reduced, aes(side_tmax))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Side Tmax")                           #looks skewed right
+
+ggplot(data = lab.data_reduced, aes(top_tmax))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+    labs(title = "Top Tmax")                          #looks skewed right
+
+ggplot(data = lab.data_reduced, aes(side_posmax))  + 
+  geom_histogram(bins = 13, col = ("grey")) +
+    labs(title = "Side Posmax")                       #looks fairly normal
+
+ggplot(data = lab.data_reduced, aes(top_posmax))  + 
+  geom_histogram(bins = 30, col = ("grey")) +
+    labs(title = "Top Posmax")
+
+#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
+shapiro.test(lab.data_reduced$side_tmax)
+shapiro.test((lab.data_reduced$top_tmax))
+shapiro.test((lab.data_reduced$side_posmax))
+shapiro.test(lab.data_reduced$top_posmax)
+
+#side_tmax: not normal
+#top_tmax: not normal
+#side_posmax: normal
+#top_posmax: not normal
+```
+
+```{r}
+#Checking for normality of data: bipedal_side and bipedal_top
+
+#histograms
+ggplot(data = lab.data_reduced_omit, aes(bipedal_side))  + 
+  geom_histogram(bins = 20, col = ("grey"))
+
+ggplot(data = lab.data_reduced_omit, aes(bipedal_top))  + 
+  geom_histogram(bins = 20, col = ("grey"))
+
+#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
+shapiro.test(lab.data_reduced_omit$bipedal_side)
+shapiro.test((lab.data_reduced_omit$bipedal_top))
+
+#bipedal_side: normal
+#bipedal_top: not normal
+```
+
+
+> Checking assumptions: normality of residuals
+## all residuals should be log transformed
+
+```{r}
+#Log transforming all variables 
+##included log10 and +1 because it forces 0's to be 0's and not something else
+
+log_side_amax <- log10(lab.data_reduced$side_amax +1)
+log_top_amax <- log10(lab.data_reduced$top_amax +1)
+log_side_vmax <- log10(lab.data_reduced$side_vmax +1)
+log_top_vmax <- log10(lab.data_reduced$top_vmax +1)
+log_side_posmax <- log10(lab.data_reduced$side_posmax +1)
+log_top_posmax <- log10(lab.data_reduced$top_posmax +1)
+log_side_tmax <- log10(lab.data_reduced$side_tmax +1)
+log_top_tmax <- log10(lab.data_reduced$top_tmax +1)
+log_side_pmax <- log10(lab.data_reduced$side_pmax +1)
+log_top_pmax <- log10(lab.data_reduced$top_pmax +1)
+
+log_bipedal_side <- log10(lab.data_reduced$bipedal_side +1)
+log_bipedal_top <- log10(lab.data_reduced$bipedal_top +1)
+log_bipedal_percent <- log10(lab.data_reduced$bipedal_percent +1)
+```
+
+
+#Writing linear models and Residuals
+
+```{r}
+#log.side.amax.biped
+log.side.amax.biped <- lm(log_side_amax ~ log_bipedal_side, data = lab.data_reduced)
+res.log.side.amax.biped <- resid(log.side.amax.biped)
+plot(fitted(log.side.amax.biped), res.log.side.amax.biped)
+
+qqnorm(res.log.side.amax.biped)
+qqline(res.log.side.amax.biped,
+       col = 'red')
+shapiro.test(res.log.side.amax.biped)  #normal
+plotNormalHistogram(res.log.side.amax.biped)
+
+#lmer model
+lmer.log.side.amax.biped <- lmer(log_side_amax ~ log_bipedal_side + substrate_type + sex + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.side.amax.biped)
+```
+
+
+```{r} 
+#log.top.amax.biped
+log.top.amax.biped <- lm(log_top_amax ~ log_bipedal_top, data = lab.data_reduced)
+res.log.top.amax.biped <- resid(log.top.amax.biped)
+
+plot(fitted(log.top.amax.biped), res.log.top.amax.biped)
+qqnorm(res.log.top.amax.biped)
+qqline(res.log.top.amax.biped,
+       col = 'red')
+shapiro.test(res.log.top.amax.biped)  #normal
+plotNormalHistogram(res.log.top.amax.biped)
+
+#lmer model
+lmer.log.top.amax.biped <- lmer(log_top_amax ~ log_bipedal_top + substrate_type + sex + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.top.amax.biped)
+```
+
+```{r}
+#log.side.vmax.biped
+log.side.vmax.biped <- lm(log_side_vmax ~ bipedal_side, data = lab.data_reduced)
+res.log.side.vmax.biped <- resid(log.side.vmax.biped)
+
+plot(fitted(log.side.vmax.biped), res.log.side.vmax.biped)
+qqnorm(res.log.side.vmax.biped)
+qqline(res.log.side.vmax.biped,
+       col = 'red')
+shapiro.test(res.log.side.vmax.biped)  #normal
+plotNormalHistogram(res.log.side.vmax.biped)
+
+#lmer model
+lmer.log.side.vmax.biped <- lmer(log_side_vmax ~ bipedal_side + substrate_type + sex + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.side.vmax.biped)
+```
+
+```{r}
+#log.top.vmax.biped
+log.top.vmax.biped <- lm(log_top_vmax ~ bipedal_top, data = lab.data_reduced)
+res.log.top.vmax.biped <- resid(log.top.vmax.biped)
+
+plot(fitted(log.top.vmax.biped), res.log.top.vmax.biped)
+qqnorm(res.log.top.vmax.biped)
+qqline(res.log.top.vmax.biped,
+       col = 'red')
+shapiro.test(res.log.top.vmax.biped)  #normal
+plotNormalHistogram(res.log.top.vmax.biped)
+
+#lmer model
+lmer.log.top.vmax.biped <- lmer(log_top_vmax ~ bipedal_top + substrate_type + sex + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.top.vmax.biped)
+```
+
+
+> Glmer and lmer
+
+```{r}
+#Velocity
+lmer.log.side.vmax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.side.vmax.sub)
+summary(lmer.log.side.vmax.sub)
+
+lmer.log.top.vmax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.top.vmax.sub)  
+```
+
+```{r}
+#Acceleration
+lmer.log.side.amax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.side.amax.sub)  
+
+lmer.log.top.amax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.top.amax.sub)  
+```  
+
+```{r}
+#Bipedalism
+lmer.log.side.bipedal.sub <- lmer(log_bipedal_side ~ substrate_type + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.side.bipedal.sub)  
+
+lmer.log.top.bipedal.sub <- lmer(log_bipedal_top ~ substrate_type + (1 | ID), data = lab.data_reduced)
+anova(lmer.log.top.bipedal.sub)  
+```
+
+
+> Tukey Test
+
+```{r}
+#Substrate
+
+tukey.lmer.log.side.amax.sub <- emmeans(lmer.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data_reduced)
+tukey.lmer.log.side.amax.sub
+plot(tukey.lmer.log.side.amax.sub)
+#p-value is significant for D-S but not for D-SD and S-SD
+
+tukey.lmer.log.top.amax.sub <- emmeans(lmer.log.top.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data_reduced)
+tukey.lmer.log.top.amax.sub
+plot(tukey.lmer.log.top.amax.sub)
+#p-value significant for D-S and D-S but not for S-SD
+```
+
+
+>Bipedalism and Velocity/Acceleration
+
+```{r}
+#Bipedalism's effect on side velocity
+biped.side.vmax <- lme(log10(bipedal_percent+1) ~ log10(side_vmax+1), random = ~1|ID, data = lab.data_reduced_omit)
+anova(biped.side.vmax)   #p-value < 0.0001   #significant
+hist(residuals(biped.side.vmax))
+shapiro.test(residuals(biped.side.vmax))  #normal
+summary(biped.side.vmax)
+performance::r2(biped.side.vmax)   #low R2s
+
+#velocity does affect bipedalism in side videos 
+```
+
+```{r}
+#Bipedalism's effect on top velocity
+biped.top.vmax <- lme(log10(bipedal_percent+1) ~ log10(top_vmax+1), random = ~1|ID, data = lab.data_reduced_omit)
+anova(biped.top.vmax)   #p-value = 0.0693   #not significant
+hist(residuals(biped.top.vmax))
+shapiro.test(residuals(biped.top.vmax))   #normal
+summary(biped.top.vmax)
+performance::r2(biped.top.vmax)   #low R2s
+
+#velocity does affect bipedalism in top videos
+```
+
+```{r}
+#Bipedalism's effect on side acceleration
+biped.side.amax <- lme(log10(bipedal_percent+1) ~ log10(side_amax+1), random = ~1|ID, data = lab.data_reduced_omit)
+anova(biped.side.amax)   #p-value = 0.7871   #not significant
+hist(residuals(biped.side.amax))
+shapiro.test(residuals(biped.side.amax))  #normal
+summary(biped.side.amax)
+performance::r2(biped.side.amax)   #low R2s
+
+#acceleration does not affect bipedalism in side videos 
+```
+
+```{r}
+#Bipedalism's effect on top acceleration
+biped.top.amax <- lme(log10(bipedal_percent+1) ~ log10(top_amax+1), random = ~1|ID, data = lab.data_reduced_omit)
+anova(biped.top.amax)   #p-value = 0.022   #significant
+hist(residuals(biped.top.amax))
+shapiro.test(residuals(biped.top.amax))   #normal
+summary(biped.top.amax)
+performance::r2(biped.top.amax)   #low R2s
+
+#acceleration does affect bipedalism in top videos, but lizard's aren't starting from a standstill so this may be inaccurate
+```
+
