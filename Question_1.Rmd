@@ -16,10 +16,6 @@ Question 1: Do Racerunners use their habitat randomly or non-randomly?
     > McElroy habitat data
         > speed vs. ground clutter crossed -- are speeds faster when more/less ground clutter is crossed?
            > lmer(speed ~ ground_clutter_crossed + (1 | ID))
-        > bipedalism's effect on speed -- hard to test - probably don't do
-           > create new data set that only includes runs where bipedalism did or didn't occur
-           > lmer(speed ~ bipedal + (1 | ID)
-        > 
         > ground clutter crossed effect on bipedalism -- probably can't do because there aren't any definite 'Y's'
     > lab data  
         > how often bipedalism occurs on different substrates ?
@@ -54,6 +50,7 @@ field_transects <- read.csv("~/College of Charleston/Thesis/Data/Field_Transects
 field_transects_totals <-  read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrate_Totals.csv")  #field transect substrate totals
 field_transects_totals_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrate_Totals_condensed.csv")
 lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.15.20_removed_non-standstill_starts+NAs+negatives.csv")
+field_obstacles <- read.csv("~/College of Charleston/Thesis/Data/field_obstacles.csv")
 ```
 > fix ID column - not headed properly
 
@@ -158,7 +155,7 @@ performance::r2(random)   #low R2s
 random2 <- lme(log10(speed) ~ log10(ground_clutter_crossed+1), random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
 anova(random2)
 hist(residuals(random2))
-shapiro.test(residuals(random2))
+shapiro.test(residuals(random2))  #normal
 performance::r2(random2)  #low R2s
 ```
 
@@ -171,9 +168,6 @@ performance::r2(random2)  #low R2s
 ```{r}
 lsmeans(random, pairwise ~ ground_clutter_crossed, adjust = "tukey", data=McElroy_Habitat_Data2)
 ```
-
-
-
 
 
 
