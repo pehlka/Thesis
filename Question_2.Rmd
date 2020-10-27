@@ -11,14 +11,18 @@ Question 2: How does "available" habitat affect Racerunner locomotion?
 
 > Data used to answer this question:
    > lab experiment data
-      > velocity vs. substrate type - lmer
-      > acceleration vs. substrate type - lmer
-      > bipedalism vs. substrate type - lmer
-      > power vs. substrate type ? - lmer
-      > time vs. substrate type ? - lmer
+      > velocity vs. substrate type - lme
+      > acceleration vs. substrate type - lme
+      > bipedalism vs. substrate type - lme
+         > does bipedalism affect velocity? bipedalism vs velocity - lme
+      > power vs. substrate type ? - lme
+      > time vs. substrate type ? - lme
    > McElroy habitat data 
       > speed vs. ground clutter crossed -- are speeds faster when more/less ground clutter is crossed?
-          > will need to distinguish which category (S/SD/D) amount of ground clutter corresponds with
+          > will need to distinguish which category (S/SD/D) amount of ground clutter (0-20) corresponds with
+            > 0 = sand
+            > 1-10 = sand/debris
+            > 11-20 = debris
           > lmer(speed ~ ground_clutter_crossed + (1 | ID))      
 
 
