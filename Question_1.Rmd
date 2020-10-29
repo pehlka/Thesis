@@ -21,6 +21,15 @@ Question 1: Do Racerunners use their habitat randomly or non-randomly?
         > how often bipedalism occurs on different substrates ?
           > check histograms
         
+Results:
+    There is a slight upward trend in McElroy habitat data between speed and ground clutter crossed, which suggests that Racerunners run slightly faster
+    when there are more obstacles in their path.
+  Transect data: mixed (specifically heavy mixed) was most common substrate in field.
+  Racerunners are faster and run bipedally more on debris than sand or sand/debris.
+  Racerunners use their habitat non-randomly.
+
+
+RE-DO USING NEW DATA SET!!!
 
 ```{r}
 #Loading necessary packages
@@ -41,8 +50,8 @@ library(lmtest)
 
 McElroy_Habitat_Data2 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data2.csv")
 mcelroy_habitat_data_omit <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data_omit.csv")  #data set minus runs where bipedalism was unknown
-McElroy_Habitat_Data2_heavy <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data2_heavy.csv")
-McElroy_Habitat_Data2_light <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data2_light.csv")
+McElroy_Habitat_Data2_heavy <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data2_heavy.csv")  #10-20 obstacles
+McElroy_Habitat_Data2_light <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data2_light.csv")  #0-9 obstacles
 field_transects <- read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrates.csv")  #field transect data
 field_transects_totals <-  read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrate_Totals.csv")  #field transect substrate totals
 field_transects_totals_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field_Transects_Substrate_Totals_condensed.csv")
@@ -109,11 +118,15 @@ is.numeric(McElroy_Habitat_Data2$ground_clutter_crossed)
 ```
 
 ```{r}
+#Likelihood ratio test to compare the fit of 2 models
 speed_ground_cover_null <- lmer(speed ~ (1 | ï..ID), data = McElroy_Habitat_Data2)
-lrtest(speed_ground_cover, speed_ground_cover_null)
-lrtest(speed_ground_cover_null, speed_ground_cover)
+lrtest(speed_ground_cover, speed_ground_cover_null)  #p-value: 0.6112
+lrtest(speed_ground_cover_null, speed_ground_cover)   #p-value: 0.6112
+
 #creating a null function allows you to see if adding in a variable does a lot to change the variation in the analysis
 #changing the order of the lrtest doesn't change the outcome of the likelihood test
+#Ho: the smaller model is the "best" model. It's rejected when the p-value is large (like it is here), which means that the larger model is a significant improvement over the smaller one.   https://www.statisticshowto.com/likelihood-ratio-tests/
+  #This means that speed ground clutter crossed does impact speed
 ```
 
 ```{r}
@@ -135,26 +148,30 @@ anova(lm(log10(speed) ~ log10(ground_clutter_crossed +1) , data = McElroy_Habita
 ```
 
 ```{r}
+#Ground Clutter Crossed vs. Speed Lmer Models
+
+#Regular Model
+speed.clutter <- lme(speed ~ ground_clutter_crossed, random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
+anova(speed.clutter)   #p-value = 0.0308  #significant
+hist(residuals(speed.clutter))
+shapiro.test(residuals(speed.clutter))  #not normal
+summary(speed.clutter)
+performance::r2(speed.clutter)   #low R2s
+
+#Log-transformed Model
+log.speed.clutter <- lme(log10(speed) ~ log10(ground_clutter_crossed+1), random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
+anova(log.speed.clutter)   #p-value = 0.0412  #significant
+hist(residuals(log.speed.clutter))
+shapiro.test(residuals(log.speed.clutter))  #normal p=0.2585
+performance::r2(log.speed.clutter)  #low R2s
+
 plot(log10(McElroy_Habitat_Data2$ground_clutter_crossed +1), log10(McElroy_Habitat_Data2$speed))
 ggplot(McElroy_Habitat_Data2, aes(log10(ground_clutter_crossed+1), log10(speed)) )+
   geom_point() + 
   geom_smooth(method = 'lm') +
   labs(title = "Log Ground Clutter Crossed vs Log Speed in Habitat Data")
 
-speed.clutter <- lme(speed ~ ground_clutter_crossed, random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
-anova(speed.clutter)
-hist(residuals(speed.clutter))
-shapiro.test(residuals(speed.clutter))
-summary(speed.clutter)
-performance::r2(speed.clutter)   #low R2s
-```
-
-```{r}
-log.speed.clutter <- lme(log10(speed) ~ log10(ground_clutter_crossed+1), random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
-anova(log.speed.clutter)
-hist(residuals(log.speed.clutter))
-shapiro.test(residuals(log.speed.clutter))  #normal
-performance::r2(log.speed.clutter)  #low R2s
+#have to use log-transformed model because non-transformed is not normal
 ```
 
 # R2 determines how much a variable's behavior can explain the behavior of another variable. A measure 0f 70% or more means that the behavior of the dependent variable is highly explained by the behavior of the independent variable being studied.
@@ -200,7 +217,8 @@ ggplot(McElroy_Habitat_Data2, aes(distance_movement, speed)) +
 ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  + 
   geom_histogram(fill="dark green", bins = 20, binwidth = 10) +
   facet_wrap(~substrate_type + sex) +
-  facet_grid(sex ~ substrate_type)
+  facet_grid(sex ~ substrate_type) +
+  labs(title = "Histogram of Bipedalism Percentage per Substrate")
 
 #mean, median & range of bipedal percentage separated into substrate type
 summaryBy(bipedal_percent ~ substrate_type + sex, data = lab.data_omit,
@@ -253,5 +271,45 @@ performance::r2(speed.clutter.light)   #low R2s
 ```
 
 
-  
+> Velocity per Substrate
+
+```{r}
+#Top max velocity per substrate 
+ggplot(data = lab.data, aes(top_vmax))  + 
+  geom_histogram(fill="purple", bins = 10) +
+  facet_wrap(~substrate_type) +
+  labs(title = "Top max velocity per substrate")
+
+#mean, median & range of top max velocity separated into substrate types
+summaryBy(top_vmax ~ substrate_type, data = lab.data,
+          FUN = list(mean, median, min, max))
+```
+
+```{r}
+#Top max velocity per sex
+ggplot(data = lab.data, aes(top_vmax))  + 
+  geom_histogram(fill="purple", bins = 10) +
+  facet_wrap(~sex) +
+  labs(title = "Top max velocity per sex")
+
+#mean, median & range of top max velocity separated into sex
+summaryBy(top_vmax ~ sex, data = lab.data,
+          FUN = list(mean, median, min, max))
+```
+
+```{r}
+#Velocity
+
+log_side_vmax <- log10(lab.data$side_vmax +1)
+log_top_vmax <- log10(lab.data$top_vmax +1)
+
+lmer.log.side.vmax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.side.vmax.sub)
+summary(lmer.log.side.vmax.sub)
+
+lmer.log.top.vmax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
+anova(lmer.log.top.vmax.sub)  
+
+
+``` 
   
