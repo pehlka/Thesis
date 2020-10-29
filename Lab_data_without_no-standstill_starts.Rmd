@@ -87,8 +87,10 @@ table(lab.data$ID, lab.data$substrate_type)
 ```{r}
 #Females vs males count
 table(lab.data$sex)
-
 #70% runs are female, 30% are male
+#15 females, 7 males
+
+#7 males, 12 females
 ```
 
 
@@ -934,19 +936,48 @@ anova(lmer.log.top.pmax.biped)
 #larger F-values represent greater dispersion of data
 
 ```{r}
-#Velocity
+#Velocity - Side
 lmer.log.side.vmax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
 anova(lmer.log.side.vmax.sub)
 summary(lmer.log.side.vmax.sub)
+shapiro.test(residuals(lmer.log.side.vmax.sub))  #normal
+lmer.log.side.vmax.sub.tukey <- emmeans(lmer.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)   
+lmer.log.side.vmax.sub.tukey   
+ggplot(data = lab.data, aes(x= substrate_type, y=log_side_vmax)) +
+  geom_boxplot() +
+  labs(title = "Side Velocity by Substrate Type") 
+summary(lmer.log.side.vmax.sub)
+performance::r2(lmer.log.side.vmax.sub)  #low R2s
+```
 
+```{r}
+#Velocity - Top
 lmer.log.top.vmax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
 anova(lmer.log.top.vmax.sub)  
+shapiro.test(residuals(lmer.log.top.vmax.sub))  #NOT normal
+lmer.log.top.vmax.sub.tukey <- emmeans(lmer.log.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)   
+lmer.log.top.vmax.sub.tukey   
+ggplot(data = lab.data, aes(x= substrate_type, y=log_top_vmax)) +
+  geom_boxplot() +
+  labs(title = "top Velocity by Substrate Type") 
+summary(lmer.log.top.vmax.sub)
+performance::r2(lmer.log.top.vmax.sub)  #low R2s
+#DATA NOT NORMAL - TRANSFORM
 ```
 
 ```{r}
 #Acceleration
 lmer.log.side.amax.sub <- lmer(log_side_amax ~ substrate_type + (1 | ID), data = lab.data)
 anova(lmer.log.side.amax.sub)  
+anova(lmer.log.side.amax.sub)  
+shapiro.test(residuals(lmer.log.side.amax.sub))   #normal
+lmer.log.side.amax.sub.tukey <- emmeans(lmer.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)   
+lmer.log.side.amax.sub.tukey   
+ggplot(data = lab.data, aes(x= substrate_type, y=log_side_amax)) +
+  geom_boxplot() +
+  labs(title = "Side Acceleration by Substrate Type") 
+summary(lmer.log.side.amax.sub)
+performance::r2(lmer.log.side.amax.sub)  #low R2s
 
 lmer.log.top.amax.sub <- lmer(log_top_amax ~ substrate_type + (1 | ID), data = lab.data)
 anova(lmer.log.top.amax.sub)  
@@ -1194,8 +1225,186 @@ summary(side.amax.sex_null)
 ```
 
 
+> Question 1
+
+> Work from meeting with Eric
+
+```{r}
+#Ground Clutter Crossed vs. Speed
+speed_ground_cover <- lmer(speed ~ ground_clutter_crossed + (1 | ï..ID), data = McElroy_Habitat_Data2)
+anova(speed_ground_cover)
+summary(speed_ground_cover)
+
+speed_ground_cover_null <- lmer(speed ~ (1 | ï..ID), data = McElroy_Habitat_Data2)
+
+plot(McElroy_Habitat_Data2$ground_clutter_crossed, McElroy_Habitat_Data2$speed)
+
+ggplot(McElroy_Habitat_Data2, aes(ground_clutter_crossed, speed)) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(title = "Ground Clutter Crossed vs Speed in Habitat Data")
+
+#There is a slight upward trend in speed as number of ground clutter crossed increases. This suggests that Racerunners run slightly faster when there are more obstacles in their path. 
+```
+  
+
+```{r}
+#ensuring ground_clutter_crossed is still numeric (it wasn't before, but we changed it, hence the "2" at the end of the dataset name)
+is.numeric(McElroy_Habitat_Data2$ground_clutter_crossed)
+```
+
+```{r}
+#Likelihood ratio test to compare the fit of 2 models
+speed_ground_cover_null <- lmer(speed ~ (1 | ï..ID), data = McElroy_Habitat_Data2)
+lrtest(speed_ground_cover, speed_ground_cover_null)  #p-value: 0.6112
+lrtest(speed_ground_cover_null, speed_ground_cover)   #p-value: 0.6112
+
+#creating a null function allows you to see if adding in a variable does a lot to change the variation in the analysis
+#changing the order of the lrtest doesn't change the outcome of the likelihood test
+#Ho: the smaller model is the "best" model. It's rejected when the p-value is large (like it is here), which means that the larger model is a significant improvement over the smaller one.   https://www.statisticshowto.com/likelihood-ratio-tests/
+  #This means that speed ground clutter crossed does impact speed
+```
+
+```{r}
+performance::r2(speed_ground_cover)
+performance::r2(speed_ground_cover_null)
+
+#conditional and marginal R2s are both higher for regular model (non-null)
+```
 
 
+
+```{r}
+anova(speed_ground_cover)
+summary(speed_ground_cover)
+
+lm(speed ~ ground_clutter_crossed, data = McElroy_Habitat_Data2)
+anova(lm(speed ~ ground_clutter_crossed, data = McElroy_Habitat_Data2))
+anova(lm(log10(speed) ~ log10(ground_clutter_crossed +1) , data = McElroy_Habitat_Data2))
+```
+
+```{r}
+#Ground Clutter Crossed vs. Speed Lmer Models
+
+#Regular Model
+speed.clutter <- lme(speed ~ ground_clutter_crossed, random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
+anova(speed.clutter)   #p-value = 0.0308  #significant
+hist(residuals(speed.clutter))
+shapiro.test(residuals(speed.clutter))  #not normal
+summary(speed.clutter)
+performance::r2(speed.clutter)   #low R2s
+
+#Log-transformed Model
+log.speed.clutter <- lme(log10(speed) ~ log10(ground_clutter_crossed+1), random= ~1|ï..ID, data = McElroy_Habitat_Data2, na.action=na.omit)
+anova(log.speed.clutter)   #p-value = 0.0412  #significant
+hist(residuals(log.speed.clutter))
+shapiro.test(residuals(log.speed.clutter))  #normal p=0.2585
+performance::r2(log.speed.clutter)  #low R2s
+
+plot(log10(McElroy_Habitat_Data2$ground_clutter_crossed +1), log10(McElroy_Habitat_Data2$speed))
+ggplot(McElroy_Habitat_Data2, aes(log10(ground_clutter_crossed+1), log10(speed)) )+
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(title = "Log Ground Clutter Crossed vs Log Speed in Habitat Data")
+
+#have to use log-transformed model because non-transformed is not normal
+```
+
+# R2 determines how much a variable's behavior can explain the behavior of another variable. A measure 0f 70% or more means that the behavior of the dependent variable is highly explained by the behavior of the independent variable being studied.
+  # marginal R2 describes the proportion of variance explained by the fixed factor(s) alone.
+  # conditoinal R2 describes the proportion of variance explained by both the fixed and random factors.
+
+
+
+> post-meeting
+
+```{r}
+lsmeans(random, pairwise ~ ground_clutter_crossed, adjust = "tukey", data=McElroy_Habitat_Data2)
+```
+
+```{r}
+#Cover vs distance plot of transect data
+ggplot(data = field_transects_totals, aes(x=cover_space_cm, y=distance_cm, color = substrate)) +
+  geom_point() +
+  labs(title = "Transect Data: Cover (cm) vs. Distance (cm)")
+```
+
+```{r}
+#Distance of Movement vs. Speed
+speed_distance_move <- lmer(speed ~ distance_movement + (1 | ï..ID), data = McElroy_Habitat_Data2)
+anova(speed_distance_move)
+summary(speed_distance_move)
+
+speed_distance_move_null <- lmer(speed ~ (1 | ï..ID), data = McElroy_Habitat_Data2)
+
+ggplot(McElroy_Habitat_Data2, aes(distance_movement, speed)) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(title = "Distance of Movement vs Speed in Habitat Data")
+
+#There is a slight upward trend in speed as the distance of each movement increases. This suggests that Racerunners run slightly faster when they run longer distances. 
+```
+
+
+> Bipedalism on difference substrates
+
+```{r}
+#Bipedalism percentage per substrate and sex Histogram
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent)))  + 
+  geom_histogram(fill="dark green", bins = 20, binwidth = 10) +
+  facet_wrap(~substrate_type + sex) +
+  facet_grid(sex ~ substrate_type) +
+  labs(title = "Histogram of Bipedalism Percentage per Substrate")
+
+#mean, median & range of bipedal percentage separated into substrate type
+summaryBy(bipedal_percent ~ substrate_type + sex, data = lab.data_omit,
+          FUN = list(mean, median, min, max))
+
+#males are bipedal more often on every substrate than females
+
+##for final manuscript, change plot titles to actual names instead of letters
+### https://www.zevross.com/blog/2019/04/02/easy-multi-panel-plots-in-r-using-facet_wrap-and-facet_grid-from-ggplot2/ 
+```
+
+```{r}
+#Histogram of bipedal percent without NA's separated into substrate type and sex
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type, alpha=sex)) +
+  geom_histogram(bins = 20, binwidth = 8) +
+  facet_wrap(~substrate_type) +
+  labs(title = "Histogram of Bipedal Percent (without N/As) Separated by Substrate Type and Sex")
+
+#Boxplot of bipedal percent without N/A's separated by substrate type and sex
+ggplot(data = lab.data_omit, aes(substrate_type, as.numeric(bipedal_percent), fill = sex)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Bipedal Percent (without N/As) by Substrate Type and Sex")
+
+#Histogram of bipedal percent without N/A's broken into substrate type
+ggplot(data = lab.data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type)) +
+  geom_histogram(col = "white") + 
+  labs(title = "Histogram of Bipedal Percent (without N/As) Broken Down by Substrate Type")
+```
+
+
+# Trying to compare heavy vs. light obstacles crossed in McElroy habitat data. However, there probably is not enough heavy data to do a good analysis on. Therefore comparing this to the light data is probably pointless.
+# 0-9 obstsacles = light
+# 10-20 obstacles = heavy
+```{r}
+#Ground clutter crossed (heavy) vs. speed
+speed.clutter.heavy <- lme(log10(speed+1) ~ log10(ground_clutter_crossed+1), random= ~1|ID, data = McElroy_Habitat_Data2_heavy, na.action=na.omit)
+anova(speed.clutter.heavy)  #p-value = 02644  #not significant
+hist(residuals(speed.clutter))
+shapiro.test(residuals(speed.clutter.heavy))  #normal
+summary(speed.clutter.heavy)
+performance::r2(speed.clutter.heavy)   #low R2s
+
+#Ground clutter crossed (light) vs. speed
+speed.clutter.light <- lme(log10(speed+1) ~ log(ground_clutter_crossed+1), random= ~1|ID, data = McElroy_Habitat_Data2_light, na.action=na.omit)
+anova(speed.clutter.light)  #p-value = 0.0309  # significant
+hist(residuals(speed.clutter))
+shapiro.test(residuals(speed.clutter.light))  #normal
+summary(speed.clutter.light)
+performance::r2(speed.clutter.light)   #low R2s
+```
 
 
 
