@@ -1,0 +1,202 @@
+---
+title: "Thesis_Stats_all"
+author: "Kayla Pehl"
+date: "10/29/2020"
+output: html_document
+---
+
+```{r}
+#Loading necessary packages
+library(ggplot2)
+#library(rcompanion)
+library(lme4)
+#library(sjstats)
+#library(doBy)
+#library(car)
+library(emmeans)
+#library(multcompView)
+library(nlme)
+library(lmtest)
+```
+
+```{r}
+#Importing data
+lab_data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.26.20_removed_non-standstill_starts+NAs+negatives+3lizards.csv")  
+  #lab experiment data without no-standstill starts & 3 incomplete lizards
+lab_data_omit <- lab_data[!is.na(lab_data$bipedal_percent), ]
+  #lab_data without trials that were run quadrupedally with no bipedalism present
+McElroy_habitat_data <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/McElroy_Habitat_Data2.csv")
+  #McElroy & McBrayer habitat data from 2018-2019
+field_transect_data_totals <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_Totals.csv") 
+  #field transect substrate totals
+field_transect_data_totals_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_Totals_condensed.csv")
+  #field transect substrate totals condensed into debris/mixed/vegetation/sand
+field_transect_data_totals_heaviness <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_heaviness.csv")
+  #field transect susbtrate totals broken into heavy/light/sand
+```
+
+
+
+Question 1: Do Racerunners use their habitat randomly or non-randomly?
+ Ho: Racerunners use their habitat randomly.
+ Ha: Racerunners use their habitat non-randomly.
+ 
+```{r}
+#Ground Clutter Crossed vs. Speed
+
+log.speed.clutter <- lme(log10(speed) ~ log10(ground_clutter_crossed+1), random= ~1|ï..ID, data = McElroy_habitat_data, na.action=na.omit)
+anova(log.speed.clutter)   #p-value = 0.0412  #significant
+hist(residuals(log.speed.clutter))
+shapiro.test(residuals(log.speed.clutter))  #normal  
+performance::r2(log.speed.clutter)  #C=0.354 #M=0.124 
+
+ggplot(McElroy_habitat_data, aes(log10(ground_clutter_crossed+1), log10(speed)) )+
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+``` 
+
+```{r}
+#Field Transect Data
+field_transect_data_totals  #heavy mixed most common
+field_transect_data_totals_condensed  #mixed most common
+field_transect_data_totals_heaviness  #heavy derbis/mixed/veg most common
+```
+
+
+
+Question 2: How does "available" habitat affect Racerunner locomotion?
+ Ho: Racerunners run the same on all substrates.
+ Ha: Racerunners run fastest on sand compared to debris and sand/debris.
+
+```{r}
+#Velocity vs Substrate Type - Side
+lme.log.side.vmax.sub <- lme(log10(side_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
+anova(lme.log.side.vmax.sub)  #p-value=0.0028  #significant
+ggplot(lab_data, aes(residuals(lme.log.side.vmax.sub))) + 
+  geom_histogram(bins = 11, color = "white") +
+  labs(x = "Residuals of lme.log.side.vmax.sub") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.log.side.vmax.sub))  #normal (but just barely)
+summary(lme.log.side.vmax.sub)
+performance::r2(lme.log.side.vmax.sub)  #C=0.395 #M=0.056
+lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
+lme.log.side.vmax.sub.tukey  #significant differences between D-S but not D-SD or S-SD
+ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +
+  geom_boxplot() + 
+  labs(x = "Substrate", y = "Velocity (side camera) (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+```
+
+```{r}
+#Velocity vs Substrate Type - Top
+
+```
+
+```{r}
+#Acceleration vs Substrate Type - Side
+lme.log.side.amax.sub <- lme(log10(side_amax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
+anova(lme.log.side.amax.sub)  #p-value=0.8411  #not significant
+ggplot(lab_data, aes(residuals(lme.log.side.amax.sub))) + 
+  geom_histogram(bins = 8, color = "white") +
+  labs(x = "Residuals of lme.log.side.amax.sub") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.log.side.amax.sub))  #normal
+summary(lme.log.side.amax.sub)
+performance::r2(lme.log.side.amax.sub)   #C=0.047  #M=0.002
+lme.log.side.amax.sub.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
+lme.log.side.amax.sub.tukey  #no significant differences in any substrate's acceleration
+ggplot(lab_data, aes(y=log10(side_amax+1), x=substrate_type)) +
+  geom_boxplot() + 
+  labs(x = "Substrate", y = "Acceleration (side camera) (m^2/s)") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+
+#low R2s make sense because the model shows that susbtrate type doesn't affect acceleration, which means that substrate type should not explain a high percentage of changes in the data
+```
+
+```{r}
+#Bipedalism vs Substrate Type
+lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type, random = ~1|ID, data = lab_data_omit)
+anova(lme.biped.sub)  #p-value=0.0512  #barely not significant
+ggplot(lab_data_omit, aes(residuals(lme.biped.sub))) + 
+  geom_histogram(bins = 7, color = "white") +
+  labs(x = "Residuals of lme.biped.sub") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.biped.sub))   #normal
+summary(lme.biped.sub)
+performance::r2(lme.biped.sub)  #conditional: 0.417, marginal: 0.05  
+lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data_omit)
+lme.biped.sub.tukey  #no significant differences in substrates
+ggplot(lab_data_omit, aes(y=sqrt(bipedal_percent), x=substrate_type)) +
+  geom_boxplot() + 
+  labs(x = "Substrate", y = "Percent Bipedal") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+```
+#check back over - p-value barely insignificant
+
+
+> Bipedalism on difference substrates
+
+```{r}
+#creating labels for histograms
+sex.labs <- c("Female", "Male")
+names(sex.labs) <- c("F", "M")
+sub.labs <- c("Debris", "Sand", "Sand/Debris")
+names(sub.labs) <- c("D", "S", "SD")
+
+#Bipedalism per substrate and sex Histogram
+ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent)))  + 
+  geom_histogram(bins=10) +
+  facet_wrap(~substrate_type + sex) +
+  facet_grid(sex ~ substrate_type,
+             labeller = labeller(sex=sex.labs, substrate_type=sub.labs)) +
+  labs(x = "Percent Bipedal")
+
+
+#mean, median & range of bipedal percentage separated into substrate type
+summaryBy(bipedal_percent ~ substrate_type + sex, data = lab_data_omit,
+          FUN = list(mean, median, min, max))
+```
+
+
+#FINISH DOING THIS HISTOGRAM AND THE ONE BELOW IT + BOXPLOT
+
+```{r}
+#Histogram of bipedal percent without NA's separated into substrate type and sex
+ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type, alpha=sex)) +
+  geom_histogram(bins = 20, binwidth = 8) +
+  facet_wrap(~substrate_type) +
+  labs(x = "Percent Bipedal")
+  
+
+ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type, alpha=sex)) +
+  geom_histogram(bins = 20, binwidth = 8) +
+  facet_wrap(~substrate_type) +
+  labs(title = "Histogram of Bipedal Percent (without N/As) Separated by Substrate Type and Sex")  #original histogram
+
+#Histogram of bipedal percent without N/A's broken into substrate type
+ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type)) +
+  geom_histogram(col = "white") + 
+  labs(title = "Histogram of Bipedal Percent (without N/As) Broken Down by Substrate Type")
+```
+
+```{r}
+#Boxplot of bipedal percent without N/A's separated by substrate type and sex
+ggplot(data = lab_data_omit, aes(substrate_type, as.numeric(bipedal_percent), fill = sex)) +
+  geom_boxplot() +
+  labs(x = "Substrate", y = "Percent Bipedal")
+  scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
+  theme(panel.background = element_blank())
+```
+
