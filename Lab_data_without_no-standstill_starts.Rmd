@@ -945,10 +945,10 @@ anova(lmer.log.top.vmax.sub)
 
 ```{r}
 #Acceleration
-lmer.log.side.amax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
+lmer.log.side.amax.sub <- lmer(log_side_amax ~ substrate_type + (1 | ID), data = lab.data)
 anova(lmer.log.side.amax.sub)  
 
-lmer.log.top.amax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
+lmer.log.top.amax.sub <- lmer(log_top_amax ~ substrate_type + (1 | ID), data = lab.data)
 anova(lmer.log.top.amax.sub)  
 ```  
 
@@ -1002,13 +1002,33 @@ anova(lmer.log.top.vmax.sex)
 tukey.lmer.log.side.amax.sub <- emmeans(lmer.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
 tukey.lmer.log.side.amax.sub
 plot(tukey.lmer.log.side.amax.sub)
+ggplot(data = lab.data, aes(y=side_amax, x=substrate_type)) +
+  geom_boxplot()
 #p-value is significant for D-S but not for D-SD and S-SD
 
 tukey.lmer.log.top.amax.sub <- emmeans(lmer.log.top.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
 tukey.lmer.log.top.amax.sub
 plot(tukey.lmer.log.top.amax.sub)
+ggplot(data = lab.data, aes(y=top_amax, x=substrate_type)) +
+  geom_boxplot()
 #p-value significant for D-S and D-S but not for S-SD
+
+tukey.lmer.log.side.vmax.sub <- emmeans(lmer.log.side.vmax.sub, pairwise ~ substrate_type, adjust = "tukey", data=lab.data)
+tukey.lmer.log.side.vmax.sub
+plot(tukey.lmer.log.side.vmax.sub)
+ggplot(data = lab.data, aes(y=side_vmax, x=substrate_type)) +
+  geom_boxplot()
+#p-value significant between D-S but not between D-SD and S-SD
+
+tukey.lmer.log.top.vmax.sub <- emmeans(lmer.log.top.vmax.sub, pairwise ~ substrate_type, adjust = "tukey", data=lab.data)
+tukey.lmer.log.top.vmax.sub
+plot(tukey.lmer.log.top.vmax.sub)
+ggplot(data = lab.data, aes(y=top_vmax, x=substrate_type)) +
+  geom_boxplot()
+#p-value significant between D-S and D-SD but not between S-SD
 ```
+
+
 
 > Bipedalism and Velocity/Acceleration
 
@@ -1025,6 +1045,17 @@ performance::r2(biped.side.vmax)   #low R2s
 ```
 
 ```{r}
+vmax.biped.side <- lme(log10(side_vmax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data=lab.data_omit)
+anova(vmax.biped.side)   #p-value < 0.0001   #significant
+hist(residuals(vmax.biped.side))
+shapiro.test(residuals(vmax.biped.side))   #normal
+summary(vmax.biped.side)
+performance::r2(vmax.biped.side)   #low R2s
+
+#bipedalism does affect velocity in side videos
+```
+
+```{r}
 #Bipedalism's effect on top velocity
 biped.top.vmax <- lme(log10(bipedal_percent+1) ~ log10(top_vmax+1), random = ~1|ID, data = lab.data_omit)
 anova(biped.top.vmax)   #p-value = 0.0165   #significant
@@ -1037,6 +1068,18 @@ performance::r2(biped.top.vmax)   #low R2s
 ```
 
 ```{r}
+vmax.biped.top <- lme(log10(top_vmax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data=lab.data_omit)
+anova(vmax.biped.top)   #p-value = 0.0153   #significant
+hist(residuals(vmax.biped.top))
+shapiro.test(residuals(vmax.biped.top))   #normal
+summary(vmax.biped.top)
+performance::r2(vmax.biped.top)   #low R2s
+
+#bipedalism does affect velocity in top videos
+```
+
+
+```{r}
 #Bipedalism's effect on side acceleration
 biped.side.amax <- lme(log10(bipedal_percent+1) ~ log10(side_amax+1), random = ~1|ID, data = lab.data_omit)
 anova(biped.side.amax)   #p-value = 0.9311   #not significant
@@ -1047,6 +1090,18 @@ performance::r2(biped.side.amax)   #low R2s
 
 #acceleration does not affect bipedalism in side videos 
 ```
+
+```{r}
+amax.biped.side <- lme(log10(side_amax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data=lab.data_omit)
+anova(amax.biped.side)   #p-value = 0.6629   #not significant
+hist(residuals(amax.biped.side))
+shapiro.test(residuals(amax.biped.side))   #normal
+summary(amax.biped.side)
+performance::r2(amax.biped.side)   #low R2s
+
+#bipedalism does not affect acceleration in side videos
+```
+
 
 ```{r}
 #Bipedalism's effect on top acceleration
@@ -1101,17 +1156,24 @@ lab.data_side_pause_1 <- read.csv("~/College of Charleston/Thesis/Videos Digitiz
 #Pauses effect on side acceleration - 0 pauses
 lmer.side.amax.pause0 <- lmer(log10(side_amax+1) ~ pauses_side + (1|ID), data = lab.data_side_pause_0)
 summary(lmer.side.amax.pause0)
-anova(lmer.side.amax.pause0)   #not working for some reason
+anova(lmer.side.amax.pause0)   
 tukey.lmer.side.amax.pause0 <- emmeans(lmer.side.amax.pause0, pairwise ~ pauses_side, adjust="tukey", data=lab.data_side_pause_0)
 tukey.lmer.side.amax.pause0
+
+#not sure what this is saying
 ```
 
 ```{r}
 #Pauses effect on side acceleration - 1+ pauses
 lmer.side.amax.pause1 <- lmer(log10(side_amax+1) ~ pauses_side + (1|ID), data = lab.data_side_pause_1)
-
+summary(lmer.side.amax.pause1)
+anova(lmer.side.amax.pause1)   #not working for some reason
+tukey.lmer.side.amax.pause1 <- emmeans(lmer.side.amax.pause0, pairwise ~ pauses_side, adjust="tukey", data=lab.data_side_pause_0)
+tukey.lmer.side.amax.pause1
 
 #lme() wouldn't work for some reason
+
+#not sure what this is saying
 ```
 
 ```{r}
