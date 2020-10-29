@@ -22,6 +22,13 @@ Question 2: How does "available" habitat affect Racerunner locomotion?
           > will need to distinguish which category (S/SD/D) amount of ground clutter (0-20) corresponds with ??
           > lmer(speed ~ ground_clutter_crossed + (1 | ID))      
 
+Results
+   Racerunners ran fastest on debris and slowest on sand. Sand/debris is treated more like sand than debris.
+   Mixed was the most common substrate in the field.
+   Acceleration doesn't appear to be affected by substrate type
+
+
+RE-DO USING NEW DATA SET!!!
 
 ```{r}
 #Importing data and required packages
@@ -50,59 +57,62 @@ library(lmtest)
 # Velocity vs. substrate type
 
 ```{r}
-#Velocity
-lmer.log.side.vmax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.vmax.sub)
-summary(lmer.log.side.vmax.sub)
+#Velocity vs Substrate Type - Side
+lme.log.side.vmax.sub <- lme(log10(side_vmax+1) ~ substrate_type, random = ~1|ID, data = lab.data)
+anova(lme.log.side.vmax.sub)  #p-value=0.0037  #significant
+hist(residuals(lme.log.side.vmax.sub))
+shapiro.test(residuals(lme.log.side.vmax.sub))  #normal
+summary(lme.log.side.vmax.sub)
+performance::r2(lme.log.side.vmax.sub)  #low R2s
+lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
 
-lmer.log.top.vmax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.vmax.sub)  
+sqrt(.396)
+lme.log.side.vmax.sub.tukey  #significant differences between D-S but none of the others
+```
+
+```{r}
+#Velocity vs Substrate Type - Top
+lme.log.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab.data)
+anova(lme.log.top.vmax.sub)  #p-value=0.0005  #significant
+hist(residuals(lme.log.top.vmax.sub))
+shapiro.test(residuals(lme.log.top.vmax.sub))  # not normal
+summary(lme.log.top.vmax.sub)
+performance::r2(lme.log.top.vmax.sub)  #low R2s
+lme.log.top.vmax.sub.tukey <- emmeans(lme.log.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
+lme.log.top.vmax.sub.tukey  #significant differences between D-S and D-SD but not S-SD
+
+#DATA IS NOT NORMAL -- TRANSFORM
 ```
 
 
 # Acceleration vs. substrate type
 
 ```{r}
-#Acceleration
-lmer.log.side.amax.sub <- lmer(log_side_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.amax.sub)  
-
-lmer.log.top.amax.sub <- lmer(log_top_vmax ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.amax.sub)  
-```  
+#Acceleration vs Substrate Type - Side
+lme.log.side.amax.sub <- lme(log10(side_amax+1) ~ substrate_type, random = ~1|ID, data = lab.data)
+anova(lme.log.side.amax.sub)  #p-value=0.8524  #not significant
+hist(residuals(lme.log.side.amax.sub))
+shapiro.test(residuals(lme.log.side.amax.sub))  #normal
+summary(lme.log.side.amax.sub)
+performance::r2(lme.log.side.amax.sub)
+lme.log.side.amax.sub.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
+lme.log.side.amax.sub.tukey  #no significant differences in any substrate's acceleration
+```
 
 
 #Bipedalism vs. substrate type
 
 ```{r}
-lmer.biped.sub <- lmer(sqrt(bipedal_percent) ~ substrate_type + (1|ID), data = lab.data_omit)
-anova(lmer.biped.sub)
-shapiro.test(residuals(lmer.biped.sub))  #need sqrt transform - fixed normality issue   #normal
-plot(residuals(lmer.biped.sub))   #appears normal
-lmer.biped.sub.tukey <- emmeans(lmer.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)   
-lmer.biped.sub.tukey   #significant differences between D-S but not for D-SD and S-SD
-ggplot(data = lab.data_omit, aes(x= substrate_type, y=bipedal_percent)) +
-  geom_boxplot() +
-  labs(title = "Bipedal Percent by Substrate Type") 
-summary(lmer.biped.sub)
-performance::r2(lmer.biped.sub)  #low R2s
-
-#can't figure out how to do a Tukey test for lme function so had to use lmer instead
-#sand and sand/debris have significant p-values
-```
-
-```{r}
-#Bipedalism
-lmer.log.side.bipedal.sub <- lmer(log_bipedal_side ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.side.bipedal.sub)  
-
-lmer.log.top.bipedal.sub <- lmer(log_bipedal_top ~ substrate_type + (1 | ID), data = lab.data)
-anova(lmer.log.top.bipedal.sub)  
+#Bipedalism vs Substrate Type
+lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type, random = ~1|ID, data = lab.data_omit)
+anova(lme.biped.sub)  #p-value=0.0246  #significant
+hist(residuals(lme.biped.sub))  
+shapiro.test(residuals(lme.biped.sub))   #normal
+summary(lme.biped.sub)
+performance::r2(lme.biped.sub)  #conditional: 0.427, marginal: 0.06  #good!
+lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data_omit)
+lme.biped.sub.tukey  #significant differences in D-S but not D-SD or S-SD
 ```
 
 
 
-
-
-   
-   
