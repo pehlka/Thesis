@@ -84,6 +84,18 @@ lme.log.top.vmax.sub.tukey  #significant differences between D-S and D-SD but no
 #DATA IS NOT NORMAL -- TRANSFORM
 ```
 
+```{r}
+#Velocity vs Substrate Type - Top (transformed)
+lme.top.vmax.sub <- lme(top_vmax+1 ~ substrate_type, random = ~1|ID, data = lab.data)
+anova(lme.top.vmax.sub)  #p-value=  #
+hist(residuals(lme.top.vmax.sub))
+shapiro.test(residuals(lme.top.vmax.sub))  # 
+summary(lme.top.vmax.sub)
+performance::r2(lme.top.vmax.sub)  #
+lme.top.vmax.sub.tukey <- emmeans(lme.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab.data)
+lme.top.vmax.sub.tukey  #
+```
+
 
 # Acceleration vs. substrate type
 
