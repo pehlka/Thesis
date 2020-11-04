@@ -11,7 +11,7 @@ library(ggplot2)
 #library(rcompanion)
 library(lme4)
 #library(sjstats)
-#library(doBy)
+library(doBy)
 #library(car)
 library(emmeans)
 #library(multcompView)
@@ -54,7 +54,8 @@ ggplot(McElroy_habitat_data, aes(log10(ground_clutter_crossed+1), log10(speed)) 
   geom_point() + 
   geom_smooth(method = 'lm') +
   labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
         axis.line = element_line(color = "black"))
 ``` 
 
@@ -64,6 +65,8 @@ field_transect_data_totals  #heavy mixed most common
 field_transect_data_totals_condensed  #mixed most common
 field_transect_data_totals_heaviness  #heavy derbis/mixed/veg most common
 ```
+
+
 
 
 
@@ -89,13 +92,68 @@ ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +
   geom_boxplot() + 
   labs(x = "Substrate", y = "Velocity (side camera) (m/s)") +
   scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+```
+
+```{r}
+#Side max velocity per substrate 
+ggplot(data = lab_data, aes(side_vmax))  + 
+  geom_histogram(bins = 8) +
+  facet_wrap(~substrate_type) +
+  facet_grid(~substrate_type,
+             labeller = labeller(substrate_type=sub.labs)) +
+  labs(x = "Velocity (Side Camera) (m/s)") +
+  theme(axis.title.x = element_text(face = "bold"))
+
+#mean, median & range of top max velocity separated into substrate types
+summaryBy(side_vmax ~ substrate_type, data = lab_data,
+          FUN = list(mean, median, min, max))
 ```
 
 ```{r}
 #Velocity vs Substrate Type - Top
 
+lme.log.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
+anova(lme.log.top.vmax.sub)  #p-value=0.0004  #significant
+hist(residuals(lme.log.top.vmax.sub))
+shapiro.test(residuals(lme.log.top.vmax.sub))  # not normal
+summary(lme.log.top.vmax.sub)
+performance::r2(lme.log.top.vmax.sub)  #pretty low R2s
+lme.log.top.vmax.sub.tukey <- emmeans(lme.log.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
+lme.log.top.vmax.sub.tukey  #no significant differences between substrates
+
+#DATA IS NOT NORMAL -- TRANSFORM
+#data isn't normal without log10, with log10
+
+lme.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
+anova(lme.top.vmax.sub)  #p-value=0.0004  #significant
+hist(residuals(lme.log.top.vmax.sub))
+shapiro.test(residuals(lme.top.vmax.sub))  # not normal
+summary(lme.top.vmax.sub)
+performance::r2(lme.top.vmax.sub)  #pretty low R2s
+lme.top.vmax.sub.tukey <- emmeans(lme.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
+lme.top.vmax.sub.tukey  #no significant differences between substrates
+
+#LOOK BACK AT!!!!!!!!!!!!!!!!!!!!!!!!!1
+
+```
+
+```{r}
+#Top max velocity per substrate 
+ggplot(data = lab_data, aes(top_vmax))  + 
+  geom_histogram(bins = 8) +
+  facet_wrap(~substrate_type) +
+  facet_grid(~substrate_type,
+             labeller = labeller(substrate_type=sub.labs)) +
+  labs(x = "Velocity (Top Camera) (m/s)")
+
+#mean, median & range of top max velocity separated into substrate types
+summaryBy(top_vmax ~ substrate_type, data = lab_data,
+          FUN = list(mean, median, min, max))
 ```
 
 ```{r}
@@ -105,7 +163,8 @@ anova(lme.log.side.amax.sub)  #p-value=0.8411  #not significant
 ggplot(lab_data, aes(residuals(lme.log.side.amax.sub))) + 
   geom_histogram(bins = 8, color = "white") +
   labs(x = "Residuals of lme.log.side.amax.sub") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
         axis.line = element_line(color = "black"))
 shapiro.test(residuals(lme.log.side.amax.sub))  #normal
 summary(lme.log.side.amax.sub)
@@ -116,10 +175,27 @@ ggplot(lab_data, aes(y=log10(side_amax+1), x=substrate_type)) +
   geom_boxplot() + 
   labs(x = "Substrate", y = "Acceleration (side camera) (m^2/s)") +
   scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
 
 #low R2s make sense because the model shows that susbtrate type doesn't affect acceleration, which means that substrate type should not explain a high percentage of changes in the data
+```
+
+```{r}
+#Side max acceleration per substrate 
+ggplot(data = lab_data, aes(side_amax))  + 
+  geom_histogram(bins = 8) +
+  facet_wrap(~substrate_type) +
+    facet_grid(~substrate_type,
+             labeller = labeller(substrate_type=sub.labs)) +
+  labs(x = bquote('Acceleration (Side Camera)' ~ (m^2/s)))
+
+#mean, median & range of side_amax data separated into substrate types
+summaryBy(side_amax ~ substrate_type, data = lab_data,
+          FUN = list(mean, median, min, max))
 ```
 
 ```{r}
@@ -129,7 +205,8 @@ anova(lme.biped.sub)  #p-value=0.0512  #barely not significant
 ggplot(lab_data_omit, aes(residuals(lme.biped.sub))) + 
   geom_histogram(bins = 7, color = "white") +
   labs(x = "Residuals of lme.biped.sub") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
         axis.line = element_line(color = "black"))
 shapiro.test(residuals(lme.biped.sub))   #normal
 summary(lme.biped.sub)
@@ -140,8 +217,11 @@ ggplot(lab_data_omit, aes(y=sqrt(bipedal_percent), x=substrate_type)) +
   geom_boxplot() + 
   labs(x = "Substrate", y = "Percent Bipedal") +
   scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
 ```
 #check back over - p-value barely insignificant
 
@@ -163,40 +243,43 @@ ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent)))  +
              labeller = labeller(sex=sex.labs, substrate_type=sub.labs)) +
   labs(x = "Percent Bipedal")
 
-
 #mean, median & range of bipedal percentage separated into substrate type
 summaryBy(bipedal_percent ~ substrate_type + sex, data = lab_data_omit,
           FUN = list(mean, median, min, max))
 ```
 
 
-#FINISH DOING THIS HISTOGRAM AND THE ONE BELOW IT + BOXPLOT
-
 ```{r}
-#Histogram of bipedal percent without NA's separated into substrate type and sex
-ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type, alpha=sex)) +
-  geom_histogram(bins = 20, binwidth = 8) +
+#Histogram of bipedal percent broken into substrate type and sex
+ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), alpha=sex)) +
+  geom_histogram(bins = 20, binwidth = 8, color = "black") +
   facet_wrap(~substrate_type) +
-  labs(x = "Percent Bipedal")
-  
-
-ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type, alpha=sex)) +
-  geom_histogram(bins = 20, binwidth = 8) +
-  facet_wrap(~substrate_type) +
-  labs(title = "Histogram of Bipedal Percent (without N/As) Separated by Substrate Type and Sex")  #original histogram
-
-#Histogram of bipedal percent without N/A's broken into substrate type
-ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), col=substrate_type, fill=substrate_type)) +
-  geom_histogram(col = "white") + 
-  labs(title = "Histogram of Bipedal Percent (without N/As) Broken Down by Substrate Type")
+  facet_grid(~substrate_type,
+             labeller = labeller(sex=sex.labs, substrate_type=sub.labs)) +
+  labs(x = "Percent Bipedal") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 ```
 
+
 ```{r}
-#Boxplot of bipedal percent without N/A's separated by substrate type and sex
+#Histogram of bipedal percent broken into substrate type
+ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), fill=substrate_type)) +
+  geom_histogram(col = "white") + 
+  labs(x = "Percent Bipedal") +
+  scale_fill_discrete(name = "Substrate Type", labels = c("Debris", "Sand", "Sand/Debris")) +
+  theme(panel.background = element_blank())
+```
+
+
+```{r}
+#Boxplot of bipedal percent separated by substrate type and sex
 ggplot(data = lab_data_omit, aes(substrate_type, as.numeric(bipedal_percent), fill = sex)) +
   geom_boxplot() +
-  labs(x = "Substrate", y = "Percent Bipedal")
+  labs(x = "Substrate", y = "Percent Bipedal") +
   scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
-  theme(panel.background = element_blank())
+  theme(panel.background = element_blank()) +
+  scale_fill_discrete(name = "Substrate Type", labels = c("Female", "Male")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
 ```
 
