@@ -25,6 +25,7 @@ Question 3: Is the pattern observed in question #1 explained by question #2?
         > bipedalism's effect on speed 
            > create new data set that only includes runs where bipedalism did or didn't occur
            > lmer(speed ~ bipedal + (1 | ID)
+        > video analysis
            
-    > Would've been really helpful to have had choice experiment data for this question, but since I don't have it, it may be a lot harder to answer this 
-    question. 
+
+> Would've been really helpful to have had choice experiment data for this question, but since I don't have it, it may be a lot harder to answer this question. 
