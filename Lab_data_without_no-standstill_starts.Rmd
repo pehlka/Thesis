@@ -17,8 +17,6 @@ lab.data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_vid
 lab.data_omit <- lab.data[!is.na(lab.data$bipedal_percent), ]
 
 fieldspeed_final <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final.csv")
-fieldspeed_final2 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final2.csv")  
-  #relabeled IDs to letters instead of numbers
 
 library(ggplot2)
 library(rcompanion)
@@ -94,7 +92,7 @@ table(lab.data$sex)
 #70% runs are female, 30% are male
 #15 females, 7 males
 
-#7 males, 12 females
+#7 males, 12 females - in final data set once 3 were removed that didn't have good runs on all 3 substrates
 ```
 
 
@@ -1413,81 +1411,49 @@ performance::r2(speed.clutter.light)   #low R2s
 
 
 
+Question 3: Is the pattern observed in question #1 explained by question #2?
+ Ho: Racerunners run the same on all substrates.
+ Ha: Racerunners avoid moving on suboptimal parts of habitat.
+
+
 > McElroy fieldspeed data
 
 # SAND and DEBRIS were easy to tell,  however, MIXED was usually some open sand with patched of debris 'mixed' in, so it's a much more heterogenous category.   
-# I suggest you compute the proportion of movements that were on each substrate type and if there is a relationship between speed and substrate type in the field.     You might think of other comparisons you could make.  You might also try the mixed model, because there data are 'repeated' measurements (i.e. each lizard has 1-4 movements, so there is a clumping of movements within lizard).
+# I suggest you compute the proportion of movements that were on each substrate type and if there is a relationship between speed and substrate type in the field.  You might think of other comparisons you could make.  You might also try the mixed model, because there data are 'repeated' measurements (i.e. each lizard has 1-4 movements, so there is a clumping of movements within lizard).
 
 
 ```{r}
-is.factor(fieldspeed_final$ID)  #numeric
-is.factor(fieldspeed_final3$ID)
+is.factor(fieldspeed_final$ID)  #changed IDs to letters in fieldspeed_final so that they were factors b/c couldn't figure out how to change in r
+is.factor(fieldspeed_final$ID)
 is.factor(fieldspeed_final$Substrate.Type)
 is.numeric(fieldspeed_final$Segment.)
 is.numeric(fieldspeed_final$NumberClutter)
 ```
 
-
 ```{r}
-#Speed vs. Substrate Type
-mcelroy_speed_sub_lmer <- lmer(Speed ~ Substrate.Type + (1|ID), data = fieldspeed_final)
-anova(mcelroy_speed_sub_lmer)
-mcelroy_speed_sub_lmer_tukey <- emmeans(mcelroy_speed_sub_lmer, pairwise ~ Substrate.Type, adjust = "tukey", data=fieldspeed_final)
-mcelroy_speed_sub_lmer_tukey  #no significant differences between any of the substrate types
-ggplot(data = fieldspeed_final, aes(x = Substrate.Type, y = Speed)) +
-  geom_boxplot() +
-  scale_x_discrete(labels = c("?", "Debris", "Mixed", "Sand")) +
-  labs(x = "Substrate Type", y = bquote('Speed' ~ (m^2/s))) +
-  theme(panel.background = element_blank()) + 
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5))
-
-shapiro.test(residuals(mcelroy_speed_sub_lmer))  #normal
-hist(residuals(mcelroy_speed_sub_lmer))
-performance::r2(mcelroy_speed_sub_lmer)  #R2 kinda low #C=0.175  #M=0.040
-```
-
-```{r}
-#Lmer using fieldspeed_final2, where IDs were changed to letters instead of numbers (to see if could help with lme since it's not working) and added IDs to last 4 runs 
-
-#Speed vs. Substrate Type 2
-mcelroy_speed_sub_lmer2 <- lmer(Speed ~ Substrate.Type + (1|ID), data = fieldspeed_final2)
-anova(mcelroy_speed_sub_lmer2)
-mcelroy_fieldspeed_lmer_tukey2 <- emmeans(mcelroy_speed_sub_lmer2, pairwise ~ Substrate.Type, adjust = "tukey", data=fieldspeed_final2)
-mcelroy_fieldspeed_lmer_tukey2  #no significant differences between any of the substrate types
-ggplot(data = fieldspeed_final2, aes(x = Substrate.Type, y = Speed)) +
-  geom_boxplot() +
-  scale_x_discrete(labels = c("?", "Debris", "Mixed", "Sand")) +
-  labs(x = "Substrate Type", y = bquote('Speed' ~ (m^2/s))) +
-  theme(panel.background = element_blank()) + 
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5))
-
-shapiro.test(residuals(mcelroy_speed_sub_lmer2))  #normal
-hist(residuals(mcelroy_speed_sub_lmer2))
-performance::r2(mcelroy_speed_sub_lmer2)  #R2 kinda low #C=0.151  #M=0.029
-
-#R2 slightly different from fieldspeed_final analysis, but besides that everything else is pretty much the same
-```
-
-```{r}
-#Speed vs. Substrate Type - lme - fieldspeed_final3 dataset
-fieldspeed_final3 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final3.csv")
-
-mcelroy_speed_sub_lme <- lme(Speed ~ Substrate.Type, random = ~1|ID, data = fieldspeed_final3)
-anova(mcelroy_speed_sub_lme)  #p-value=0.7666  #not significant
-mcelroy_speed_sub_lme_tukey <- emmeans(mcelroy_speed_sub_lme, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_final3)
+#Speed vs. Substrate Type 
+mcelroy_speed_sub_lme <- lme(Speed ~ Substrate.Type, random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
+anova(mcelroy_speed_sub_lme)  #p-value=0.3845  #not significant
+mcelroy_speed_sub_lme_tukey <- emmeans(mcelroy_speed_sub_lme, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_final)
 mcelroy_speed_sub_lme_tukey  #no substrates are signficant
 hist(residuals(mcelroy_speed_sub_lme))
 shapiro.test(residuals(mcelroy_speed_sub_lme))  #normal
-ggplot(data = fieldspeed_final3, aes(x = Substrate.Type, y = Speed)) +
-  geom_boxplot()
 
-#lme wouldn't work for some reason using data sets 1 & 2 but when I deleted rows that didn't have a speed value, it worked
+fieldspeed_final3 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final3.csv")  
+  #removed 2 blank substrate rows b/c couldn't figure out how to plot boxplot without them
+
+ggplot(data = fieldspeed_final3, aes(x = Substrate.Type, y = Speed)) +
+  geom_boxplot() +
+  labs(x = "Substrate Type", y = "Speed (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5)) 
+
 
 #Substrate type doesn't appear to affect speed at all
 
-anova(lme(Speed ~ Substrate.Type + Sex, random = ~1|ID, data = fieldspeed_final3))
+anova(lme(Speed ~ Substrate.Type + Sex, random = ~1|ID, data = fieldspeed_final, na.action = na.omit))
 #Sex doesn't affect model either
 ```
 
@@ -1502,23 +1468,22 @@ ggplot(data = fieldspeed_final, aes(Segment.), alpha = Substrate.Type.) +
 
 ```{r}
 table(fieldspeed_final$Segment.)                    #total: 46
-table(fieldspeed_final$Substrate.Type == "DEBRIS")  #3  (6.5%)
-table(fieldspeed_final$Substrate.Type == "MIXED")   #11 (23.9%)
+table(fieldspeed_final$Substrate.Type == "DEBRIS")  #2  (4.3%)
+table(fieldspeed_final$Substrate.Type == "MIXED")   #12 (26.1%)
 table(fieldspeed_final$Substrate.Type == "SAND")    #30 (65.2%)
 table(fieldspeed_final$Substrate.Type == "")        #2  (4.3%)
 
 #most of lizards' movements are happening on sand, then mixed, and only a few happen on debris
 ```
 
-#Number Clutter vs Speed
+
+#Speed vs. Number Clutter 
 
 ```{r}
-fieldspeed_final4 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final4.csv")  
-  #without rows that didn't have values for speed or NumberClutter
-
-mcelroy_speed_clutter_lme <- lme(Speed ~ NumberClutter, random = ~1|ID, data = fieldspeed_final4)
+mcelroy_speed_clutter_lme <- lme(Speed ~ NumberClutter, random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
 anova(mcelroy_speed_clutter_lme)  #p-value=0.1097  #not significant
-mcelroy_speed_clutter_lme_tukey <- emmeans(mcelroy_speed_clutter_lme, pairwise ~ NumberClutter, adjust = "tukey", data = fieldspeed_final4)
+mcelroy_speed_clutter_lme_tukey <- emmeans(mcelroy_speed_clutter_lme, pairwise ~ NumberClutter, adjust = "tukey", data = fieldspeed_final, 
+                                           na.action = na.omit)
 mcelroy_speed_clutter_lme_tukey  #nothing to compare
 shapiro.test(residuals(mcelroy_speed_clutter_lme))  #normal
 hist(residuals(mcelroy_speed_clutter_lme))
@@ -1526,15 +1491,15 @@ performance::r2(mcelroy_speed_clutter_lme)  #ok  #C=0.280   #M=0.075
 
 #Number of clutter doesn't affect speed
 
-anova(lme(Speed ~ NumberClutter + Sex + Substrate.Type, random = ~1|ID, data = fieldspeed_final4))
-anova(lme(Speed ~ NumberClutter + Substrate.Type, random = ~1|ID, data = fieldspeed_final4))
-anova(lme(Speed ~ NumberClutter + Sex, random = ~1|ID, data = fieldspeed_final4))
+anova(lme(Speed ~ NumberClutter + Sex + Substrate.Type, random = ~1|ID, data = fieldspeed_final, na.action = na.omit))
+anova(lme(Speed ~ NumberClutter + Substrate.Type, random = ~1|ID, data = fieldspeed_final, na.action = na.omit))
+anova(lme(Speed ~ NumberClutter + Sex, random = ~1|ID, data = fieldspeed_final, na.action = na.omit))
 #Neither sex nor substrate type affect speed ~ numberclutter
 ```
 
 ```{r}
-#Log transformed speed & number clutter
-mcelroy_speed_clutter_lme_log <- lme(log10(Speed) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final4)
+#Log transformed Speed vs.log-transformed number clutter
+mcelroy_speed_clutter_lme_log <- lme(log10(Speed) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
 anova(mcelroy_speed_clutter_lme_log)  #p-value=0.0943  #not significant
 shapiro.test(residuals(mcelroy_speed_clutter_lme_log))  #not normal
 hist(residuals(mcelroy_speed_clutter_lme_log))
@@ -1542,8 +1507,8 @@ performance::r2(mcelroy_speed_clutter_lme_log)  #ok  #C=0.258   #M=0.087
 ```
 
 ```{r}
-#Log transformed speed 
-mcelroy_speed_clutter_lme_log2 <- lme(log10(Speed) ~ NumberClutter, random = ~1|ID, data = fieldspeed_final4)
+#Log transformed Speed vs.number clutter
+mcelroy_speed_clutter_lme_log2 <- lme(log10(Speed) ~ NumberClutter, random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
 anova(mcelroy_speed_clutter_lme_log2)  #p-value=0.0943  #not significant
 shapiro.test(residuals(mcelroy_speed_clutter_lme_log2))  #not normal
 hist(residuals(mcelroy_speed_clutter_lme_log2))
@@ -1551,16 +1516,13 @@ performance::r2(mcelroy_speed_clutter_lme_log2)  #ok  #C=0.273   #M=0.073
 ```
 
 ```{r}
-#Log transformed number clutter  -- best model
-mcelroy_speed_clutter_lme_log3 <- lme(Speed ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final4)
+#Speed vs Log transformed number clutter  -- best model
+mcelroy_speed_clutter_lme_log3 <- lme(Speed ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
 anova(mcelroy_speed_clutter_lme_log3)  #p-value=0.0703  #not significant
 shapiro.test(residuals(mcelroy_speed_clutter_lme_log3))  #normal
 hist(residuals(mcelroy_speed_clutter_lme_log3))
 performance::r2(mcelroy_speed_clutter_lme_log3)  #ok  #C=0.290   #M=0.102
-```
 
-
-```{r}
 ggplot(fieldspeed_final, aes(log10(NumberClutter+1), Speed))+
   geom_point() + 
   geom_smooth(method = 'lm') +
@@ -1578,14 +1540,65 @@ table(fieldspeed_final$ID)  #41
 table(fieldspeed_final4$ID)  #37
 ```
 
-```{r}
-ggplot(fieldspeed_final4, aes(log10(NumberClutter+1), Distance, col=ID)) +
-  geom_point()
-  
-  #geom_smooth(method = "lm") 
 
-#finish graph!
+#Distance vs. Clutter
+
+```{r}
+#Distance vs. Number Clutter 1
+mcelroy_dist_clutter_lme <- lme(Distance ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
+anova(mcelroy_dist_clutter_lme)  #p-value=0.0233
+shapiro.test(residuals(mcelroy_dist_clutter_lme))  #not normal
+hist(residuals(mcelroy_dist_clutter_lme))
+performance::r2(mcelroy_dist_clutter_lme)  
 ```
+
+```{r}
+#Distance vs. Number Clutter 2
+mcelroy_dist_clutter_lme2 <- lme(Distance ~ NumberClutter, random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
+anova(mcelroy_dist_clutter_lme2)  #p-value=0.0229
+shapiro.test(residuals(mcelroy_dist_clutter_lme2))  #not normal
+hist(residuals(mcelroy_dist_clutter_lme2))
+performance::r2(mcelroy_dist_clutter_lme2)
+```
+
+```{r}
+#Distance vs. Number Clutter 3 -- best model
+mcelroy_dist_clutter_lme3 <- lme(log10(Distance) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
+anova(mcelroy_dist_clutter_lme3)  #p-value=0.0137  #significant
+shapiro.test(residuals(mcelroy_dist_clutter_lme3))  #normal
+hist(residuals(mcelroy_dist_clutter_lme3))
+performance::r2(mcelroy_dist_clutter_lme3)  #good  #C=0.586  #M=0.154
+
+ggplot(fieldspeed_final, aes(log10(NumberClutter+1), log10(Distance))) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Number of Clutter Crossed", y = "Distance Traveled (m)")
+#trying to get dots to color-coordinate with ID, but when I put col=ID after Distance in aes, it messes up the lm line
+
+#not sure if this analysis will be useful; it makes sense that the farther the lizards run, the more clutter they would have to cross
+```
+
+
+#Speed vs. Distance 
+
+```{r}
+#Speed vs. Distance
+mcelroy_dist_speed_lme <- lme(log10(Speed) ~ log10(Distance), random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
+anova(mcelroy_dist_speed_lme)  #p-value=0.0001  #significant
+shapiro.test(residuals(mcelroy_dist_speed_lme))   #normal
+hist(residuals(mcelroy_dist_speed_lme))
+performance::r2(mcelroy_dist_speed_lme)  #good  #C=0.702  #M=0.449
+
+ggplot(fieldspeed_final, aes(log10(Distance), log10(Speed))) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Distance (m)", y = "Speed (m/s)") +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+```
+
+
 
 
 
