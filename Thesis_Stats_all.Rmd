@@ -33,6 +33,8 @@ field_transect_data_totals_condensed <- read.csv("~/College of Charleston/Thesis
   #field transect substrate totals condensed into debris/mixed/vegetation/sand
 field_transect_data_totals_heaviness <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_heaviness.csv")
   #field transect susbtrate totals broken into heavy/light/sand
+fieldspeed_final <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final.csv")
+  #McElroy & McBrayer habitat data from 2018-2019 with substrates crossed listed
 ```
 
 
@@ -282,4 +284,105 @@ ggplot(data = lab_data_omit, aes(substrate_type, as.numeric(bipedal_percent), fi
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5))
 ```
+
+
+
+Question 3: Is the pattern observed in question #1 explained by question #2?
+ Ho: Racerunners run the same on all substrates.
+ Ha: Racerunners avoid moving on suboptimal parts of habitat.
+
+```{r}
+#How often lizards ran on certain substrates
+table(fieldspeed_final$Segment.)                    #total: 46
+table(fieldspeed_final$Substrate.Type == "DEBRIS")  #2  (4.3%)
+table(fieldspeed_final$Substrate.Type == "MIXED")   #12 (26.1%)
+table(fieldspeed_final$Substrate.Type == "SAND")    #30 (65.2%)
+table(fieldspeed_final$Substrate.Type == "")        #2  (4.3%)
+
+#most of lizards' movements are happening on sand, then mixed, and only a few happen on debris
+```
+
+```{r}
+#Speed vs. Substrate Type 
+mcelroy_speed_sub_lme <- lme(Speed ~ Substrate.Type, random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
+anova(mcelroy_speed_sub_lme)  #p-value=0.3845  #not significant
+mcelroy_speed_sub_lme_tukey <- emmeans(mcelroy_speed_sub_lme, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_final)
+mcelroy_speed_sub_lme_tukey  #no substrates are signficant
+hist(residuals(mcelroy_speed_sub_lme))
+shapiro.test(residuals(mcelroy_speed_sub_lme))  #normal
+
+anova(lme(Speed ~ Substrate.Type + Sex, random = ~1|ID, data = fieldspeed_final, na.action = na.omit))
+#Sex doesn't affect model either
+
+ggplot(data = fieldspeed_final, aes(x = Substrate.Type, y = Speed)) +
+  geom_boxplot() +
+  labs(x = "Substrate Type", y = "Speed (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+#Substrate type doesn't appear to affect speed at all
+```
+
+```{r}
+#Speed vs. Number Clutter
+mcelroy_speed_clutter_lme_log3 <- lme(Speed ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
+anova(mcelroy_speed_clutter_lme_log3)  #p-value=0.0703  #not significant
+shapiro.test(residuals(mcelroy_speed_clutter_lme_log3))  #normal
+hist(residuals(mcelroy_speed_clutter_lme_log3))
+performance::r2(mcelroy_speed_clutter_lme_log3)  #ok  #C=0.290   #M=0.102
+
+ggplot(fieldspeed_final, aes(log10(NumberClutter+1), Speed))+
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+
+#slight upward trend: as ground clutter increased, speed also increased slightly
+```
+
+```{r}
+#Distance vs. Number Clutter 
+mcelroy_dist_clutter_lme3 <- lme(log10(Distance) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
+anova(mcelroy_dist_clutter_lme3)  #p-value=0.0137  #significant
+shapiro.test(residuals(mcelroy_dist_clutter_lme3))  #normal
+hist(residuals(mcelroy_dist_clutter_lme3))
+performance::r2(mcelroy_dist_clutter_lme3)  #good  #C=0.586  #M=0.154
+
+ggplot(fieldspeed_final4, aes(log10(NumberClutter+1), log10(Distance))) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Number of Clutter Crossed", y = "Distance Traveled (m)") +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+#trying to get dots to color-coordinate with ID, but when I put col=ID after Distance in aes, it messes up the lm line
+```
+
+```{r}
+#Speed vs. Distance
+mcelroy_dist_speed_lme <- lme(log10(Speed) ~ log10(Distance), random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
+anova(mcelroy_dist_speed_lme)  #p-value=0.0001  #significant
+shapiro.test(residuals(mcelroy_dist_speed_lme))   #normal
+hist(residuals(mcelroy_dist_speed_lme))
+performance::r2(mcelroy_dist_speed_lme)  #good  #C=0.702  #M=0.449
+
+ggplot(fieldspeed_final, aes(log10(Distance), log10(Speed))) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Distance (m)", y = "Speed (m/s)") +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+```
+
+
+
+
+
+
+
+
 
