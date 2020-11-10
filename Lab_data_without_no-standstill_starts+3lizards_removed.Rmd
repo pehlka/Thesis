@@ -297,7 +297,7 @@ plot(tukey.lmer.log.top.amax.sub)
 >Bipedalism and Velocity/Acceleration
 
 ```{r}
-#Bipedalism's effect on side velocity
+#velocity's effect on Bipedalism
 biped.side.vmax <- lme(log10(bipedal_percent+1) ~ log10(side_vmax+1), random = ~1|ID, data = lab.data_reduced_omit)
 anova(biped.side.vmax)   #p-value < 0.0001   #significant
 hist(residuals(biped.side.vmax))
@@ -308,8 +308,46 @@ performance::r2(biped.side.vmax)   #low R2s
 #velocity does affect bipedalism in side videos 
 ```
 
+
+```{r}
+#Bipedalism's effect on side velocity
+lab_data_omit <- lab_data[!is.na(lab_data$bipedal_percent), ]
+  #lab_data without trials that were run quadrupedally with no bipedalism present
+
+side.vmax.biped <- lme(log10(side_vmax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
+anova(side.vmax.biped)  #p-value < 0.0001
+hist(residuals(side.vmax.biped))
+shapiro.test(residuals(side.vmax.biped))  #normal
+performance::r2(side.vmax.biped)  #C=0.304  #M=0.273
+
+#bipedalism does effect velocity in side videos
+```
+
 ```{r}
 #Bipedalism's effect on top velocity
+top.vmax.biped <- lme(log10(top_vmax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
+anova(top.vmax.biped)  #p-value < 0.0736
+hist(residuals(top.vmax.biped))
+shapiro.test(residuals(top.vmax.biped))  #normal
+performance::r2(top.vmax.biped)  #C=0.425  #M=0.038
+
+#bipedalsim does not effect velocity in top videos
+```
+
+```{r}
+#Bipedalism's effect on side acceleration
+side.amax.biped <- lme(log10(side_amax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
+anova(side.amax.biped)  #p-value < 0.5229
+hist(residuals(side.amax.biped))
+shapiro.test(residuals(side.amax.biped))  #normal
+performance::r2(side.amax.biped)  #C=0.119  #M=0.006
+
+#Bipedalism does not effect acceleration in side videos
+```
+
+
+```{r}
+#Velocity's effect on Bipedalism
 biped.top.vmax <- lme(log10(bipedal_percent+1) ~ log10(top_vmax+1), random = ~1|ID, data = lab.data_reduced_omit)
 anova(biped.top.vmax)   #p-value = 0.0693   #not significant
 hist(residuals(biped.top.vmax))
@@ -321,7 +359,7 @@ performance::r2(biped.top.vmax)   #low R2s
 ```
 
 ```{r}
-#Bipedalism's effect on side acceleration
+#Acceleration's effect on Bipedalism
 biped.side.amax <- lme(log10(bipedal_percent+1) ~ log10(side_amax+1), random = ~1|ID, data = lab.data_reduced_omit)
 anova(biped.side.amax)   #p-value = 0.7871   #not significant
 hist(residuals(biped.side.amax))
