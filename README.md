@@ -3,7 +3,7 @@
 
 These are the R markdown files that I am using for my thesis project.
 
-The condensed file that contains all of the important, usable statistics is found in the "Thesis_Stats_all" file. The data files associated with it that you'll need are also uploaded. Some of the file names are different from the names I gave the data in R.
+The condensed file that contains all of the important, usable statistics is found in the **"Thesis_Stats_all"** file. The data files associated with it that you'll need are also uploaded. Some of the file names are different from the names I gave the data in R.
 
 They are:
 
