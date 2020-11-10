@@ -29,3 +29,43 @@ Question 3: Is the pattern observed in question #1 explained by question #2?
            
 
 > Would've been really helpful to have had choice experiment data for this question, but since I don't have it, it may be a lot harder to answer this question. 
+
+
+```{r}
+#Distance vs. Number Clutter 
+mcelroy_dist_clutter_lme3 <- lme(log10(NumberClutter+1) ~log10(Distance), random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
+anova(mcelroy_dist_clutter_lme3)  #p-value=0.0173  #significant
+shapiro.test(residuals(mcelroy_dist_clutter_lme3))  #normal
+hist(residuals(mcelroy_dist_clutter_lme3))
+performance::r2(mcelroy_dist_clutter_lme3)  #good  #C=0.655  #M=0.118
+
+ggplot(fieldspeed_final, aes(log10(Distance), log10(NumberClutter+1))) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Distance Traveled (m)", y = "Number of Clutter Crossed") +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+#trying to get dots to color-coordinate with ID, but when I put col=ID after Distance in aes, it messes up the lm line
+
+#as distance increased, so did the amount of clutter crossed
+```
+
+```{r}
+#Speed vs. Distance
+mcelroy_dist_speed_lme <- lme(log10(Speed) ~ log10(Distance), random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
+anova(mcelroy_dist_speed_lme)  #p-value=0.0001  #significant
+shapiro.test(residuals(mcelroy_dist_speed_lme))   #normal
+hist(residuals(mcelroy_dist_speed_lme))
+performance::r2(mcelroy_dist_speed_lme)  #good  #C=0.702  #M=0.449
+
+ggplot(fieldspeed_final, aes(log10(Distance), log10(Speed))) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Distance (m)", y = "Speed (m/s)") +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+
+#as distance increased, so did speed
+```
