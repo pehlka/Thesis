@@ -699,27 +699,27 @@ summary(lmer(bipedal_percent ~ sex*substrate_type + (1 | ID), data = lab.data_om
 
 ```{r}
 #Levene test - ID
-leveneTest(side_amax ~ ID, data = lab.data)   #not significant
-leveneTest(top_amax ~ ID, data = lab.data)   #not significant
+leveneTest(side_amax ~ ID, data = lab_data)   #not significant
+leveneTest(top_amax ~ ID, data = lab_data)   #not significant
 
-leveneTest(side_vmax ~ ID, data = lab.data)   #not significant
-leveneTest(top_vmax ~ ID, data = lab.data)   #not significant
+leveneTest(side_vmax ~ ID, data = lab_data)   #not significant
+leveneTest(top_vmax ~ ID, data = lab_data)   #not significant
 ```
 
 ```{r}
 #Levene test - sex
-leveneTest(side_amax ~ sex, data = lab.data)   #not significant
-leveneTest(top_amax ~ sex, data = lab.data)   #not significant
+leveneTest(side_amax ~ sex, data = lab_data)   #not significant
+leveneTest(top_amax ~ sex, data = lab_data)   #not significant
 
-leveneTest(side_vmax ~ sex, data = lab.data)   #not significant
-leveneTest(top_vmax ~ sex, data = lab.data)   #not significant
+leveneTest(side_vmax ~ sex, data = lab_data)   #not significant
+leveneTest(top_vmax ~ sex, data = lab_data)   #not significant
 ```
 
 ```{r}
 #Levene test - bipedalism
-leveneTest(bipedal_percent ~ substrate_type, data = lab.data)  #not significant so can't reject Ho; variance among groups may be equal
-leveneTest(bipedal_side ~ substrate_type, data = lab.data)   #not significant
-leveneTest(bipedal_top ~ substrate_type, data = lab.data)   #not significant
+leveneTest(bipedal_percent ~ substrate_type, data = lab_data)  #not significant so can't reject Ho; variance among groups may be equal
+leveneTest(bipedal_side ~ substrate_type, data = lab_data)   #not significant
+leveneTest(bipedal_top ~ substrate_type, data = lab_data)   #not significant
 ```
 
 
@@ -1147,6 +1147,7 @@ performance::r2(biped.top.amax)   #low R2s
 
 #acceleration does affect bipedalism in top videos, but lizard's aren't starting from a standstill so this may be inaccurate
 ```
+
 
 
 > Pauses
@@ -1598,10 +1599,124 @@ ggplot(fieldspeed_final, aes(log10(Distance), log10(Speed))) +
         axis.line.y = element_line(color = "black", size = 0.5))
 ```
 
+```{r}
+fieldspeed_final_time_movement <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_time_movement.csv")
+
+#time spent per substrate
+ggplot(fieldspeed_final_time_movement, aes(TimePerMovement)) +
+  geom_histogram() +
+  facet_wrap(~Substrate.Type)
+
+summaryBy(TimePerMovement ~ Substrate.Type, data = fieldspeed_final_time_movement,
+          FUN = list(mean, median, min, max))
+#spent more time on sand than debris or mixed but time differences are not significant
+
+sub.movement <- lme(log10(TimePerMovement) ~ Substrate.Type, random = ~1|ID, data = fieldspeed_final_time_movement)
+anova(sub.movement)  #p-value=0.9167  #not signficant
+shapiro.test(residuals(sub.movement))  #normal
+hist(residuals(sub.movement))
+performance::r2(sub.movement)  #C=0.592  #M=0.003
+emmeans(sub.movement, pairwise ~ Substrate.Type, adjust = "tukey", data=fieldspeed_final_time_movement)
+  #no differences in substrate type are significant
+
+ggplot(fieldspeed_final_time_movement, aes(x=Substrate.Type, y=TimePerMovement)) +
+  geom_boxplot()
+```
+
+
+```{r}
+#Speed vs. Substrate Type 
+mcelroy_speed_sub_lme <- lme(Speed ~ Substrate.Type, random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
+anova(mcelroy_speed_sub_lme)  #p-value=0.3845  #not significant
+mcelroy_speed_sub_lme_tukey <- emmeans(mcelroy_speed_sub_lme, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_final)
+mcelroy_speed_sub_lme_tukey  #no substrates are signficant
+hist(residuals(mcelroy_speed_sub_lme))
+shapiro.test(residuals(mcelroy_speed_sub_lme))  #normal
+
+anova(lme(Speed ~ Substrate.Type + Sex, random = ~1|ID, data = fieldspeed_final, na.action = na.omit))
+#Sex doesn't affect model either
+
+ggplot(data = fieldspeed_final, aes(x = Substrate.Type, y = Speed)) +
+  geom_boxplot() +
+  labs(x = "Substrate Type", y = "Speed (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+
+#Substrate type doesn't appear to affect speed at all
+```
+
+```{r}
+#Speed vs. Substrate Type 
+#trying to get blank box on boxplot removed but couldn't figure out how to do in R so had to make new csv file
+#comparing results with above
+
+fieldspeed_final_reduced <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced.csv")
+
+mcelroy_speed_sub_lme2 <- lme(Speed ~ Substrate.Type, random = ~1|ID, data = fieldspeed_final_reduced, na.action=na.omit)
+anova(mcelroy_speed_sub_lme2)  #p-value=0.3976  #not significant
+mcelroy_speed_sub_lme_tukey2 <- emmeans(mcelroy_speed_sub_lme2, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_final_reduced)
+mcelroy_speed_sub_lme_tukey2  #no substrates are signficant
+hist(residuals(mcelroy_speed_sub_lme2))
+shapiro.test(residuals(mcelroy_speed_sub_lme2))  #normal
+
+ggplot(data = fieldspeed_final_reduced, aes(x = Substrate.Type, y = Speed)) +
+  geom_boxplot() +
+  labs(x = "Substrate Type", y = "Speed (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+```
 
 
 
+```{r}
+#Velocity vs Substrate Type - Top
+
+lme.log.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
+anova(lme.log.top.vmax.sub)  #p-value=0.0004  #significant
+hist(residuals(lme.log.top.vmax.sub))
+shapiro.test(residuals(lme.log.top.vmax.sub))  # not normal
+summary(lme.log.top.vmax.sub)
+performance::r2(lme.log.top.vmax.sub)  #pretty low R2s
+lme.log.top.vmax.sub.tukey <- emmeans(lme.log.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
+lme.log.top.vmax.sub.tukey  #no significant differences between substrates
+
+#DATA IS NOT NORMAL -- TRANSFORM
+#data isn't normal without log10, with log10
+
+#no significant differences between substrates
+
+#LOOK BACK AT!!!!!!!!!!!!!!!!!!!!!!!!!1
 
 
+lme1 <- lme(top_vmax ~ substrate_type, random = ~1|ID, data = lab_data)  #un-transformed
+shapiro.test(residuals(lme1))  #not normal
+hist(residuals(lme1))
 
+lme2 <- lme(sqrt(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)  #square root
+shapiro.test(residuals(lme2))  #not normal
+hist(residuals(lme2))
 
+lme3 <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)  #log
+shapiro.test(residuals(lme3))  #not normal
+hist(residuals(lme3))
+
+lme4 <- lme(abs(top_vmax+1)^(1/3) ~ substrate_type, random = ~1|ID, data = lab_data)  #cubed root
+shapiro.test(residuals(lme4))  #not normal
+hist(residuals(lme4))
+
+lme5 <- lme(transformTukey(top_vmax+1, plotit = FALSE) ~ substrate_type, random = ~1|ID, data = lab_data)  #TUkey's ladder of powers
+shapiro.test(residuals(lme5))  #not normal
+hist(residuals(lme5))
+plotNormalHistogram(residuals(lme5))
+
+lme6 <- lm(top_vmax ~ substrate_type, data = lab_data)
+shapiro.test(residuals(lme6))  #normal
+plotNormalHistogram(residuals(lme6))
+
+hist(lab_data$top_vmax)
+shapiro.test(lab_data$top_vmax)
+```
