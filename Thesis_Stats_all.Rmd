@@ -8,13 +8,10 @@ output: html_document
 ```{r}
 #Loading necessary packages
 library(ggplot2)
-#library(rcompanion)
 library(lme4)
-#library(sjstats)
 library(doBy)
-#library(car)
+library(car)
 library(emmeans)
-#library(multcompView)
 library(nlme)
 library(lmtest)
 ```
@@ -35,6 +32,8 @@ field_transect_data_totals_heaviness <- read.csv("~/College of Charleston/Thesis
   #field transect susbtrate totals broken into heavy/light/sand
 fieldspeed_final <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final.csv")
   #McElroy & McBrayer habitat data from 2018-2019 with substrates crossed listed
+fieldspeed_final_reduced <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced.csv")
+  #same as fieldspeed_final data except 2 rows were removed that did not have substrate types listed
 ```
 
 
@@ -59,6 +58,8 @@ ggplot(McElroy_habitat_data, aes(log10(ground_clutter_crossed+1), log10(speed)) 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black"))
+
+#Slight upward trend: as ground clutter increases, so does speed
 ``` 
 
 ```{r}
@@ -83,13 +84,15 @@ anova(lme.log.side.vmax.sub)  #p-value=0.0028  #significant
 ggplot(lab_data, aes(residuals(lme.log.side.vmax.sub))) + 
   geom_histogram(bins = 11, color = "white") +
   labs(x = "Residuals of lme.log.side.vmax.sub") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
         axis.line = element_line(color = "black"))
 shapiro.test(residuals(lme.log.side.vmax.sub))  #normal (but just barely)
 summary(lme.log.side.vmax.sub)
 performance::r2(lme.log.side.vmax.sub)  #C=0.395 #M=0.056
 lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
 lme.log.side.vmax.sub.tukey  #significant differences between D-S but not D-SD or S-SD
+
 ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +
   geom_boxplot() + 
   labs(x = "Substrate", y = "Velocity (side camera) (m/s)") +
@@ -102,7 +105,15 @@ ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +
 ```
 
 ```{r}
-#Side max velocity per substrate 
+#creating labels for histograms
+sex.labs <- c("Female", "Male")
+names(sex.labs) <- c("F", "M")
+sub.labs <- c("Debris", "Sand", "Sand/Debris")
+names(sub.labs) <- c("D", "S", "SD")
+```
+
+```{r}
+#Velocity vs Substrate Type - Side
 ggplot(data = lab_data, aes(side_vmax))  + 
   geom_histogram(bins = 8) +
   facet_wrap(~substrate_type) +
@@ -129,20 +140,41 @@ lme.log.top.vmax.sub.tukey <- emmeans(lme.log.top.vmax.sub, pairwise ~ substrate
 lme.log.top.vmax.sub.tukey  #no significant differences between substrates
 
 #DATA IS NOT NORMAL -- TRANSFORM
-#data isn't normal without log10, with log10
-
-lme.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
-anova(lme.top.vmax.sub)  #p-value=0.0004  #significant
-hist(residuals(lme.log.top.vmax.sub))
-shapiro.test(residuals(lme.top.vmax.sub))  # not normal
-summary(lme.top.vmax.sub)
-performance::r2(lme.top.vmax.sub)  #pretty low R2s
-lme.top.vmax.sub.tukey <- emmeans(lme.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
-lme.top.vmax.sub.tukey  #no significant differences between substrates
-
-#LOOK BACK AT!!!!!!!!!!!!!!!!!!!!!!!!!1
-
 ```
+
+```{r}
+#Transformations of Velocity vs Substrate Type - Top
+#none of the transformations are normal
+
+lme1 <- lme(top_vmax ~ substrate_type, random = ~1|ID, data = lab_data)  #un-transformed
+shapiro.test(residuals(lme1))  #not normal
+hist(residuals(lme1))
+
+lme2 <- lme(sqrt(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)  #square root
+shapiro.test(residuals(lme2))  #not normal
+hist(residuals(lme2))
+
+lme3 <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)  #log
+shapiro.test(residuals(lme3))  #not normal
+hist(residuals(lme3))
+
+lme4 <- lme(abs(top_vmax+1)^(1/3) ~ substrate_type, random = ~1|ID, data = lab_data)  #cubed root
+shapiro.test(residuals(lme4))  #not normal
+hist(residuals(lme4))
+
+lme5 <- lme(transformTukey(top_vmax+1, plotit = FALSE) ~ substrate_type, random = ~1|ID, data = lab_data)  #TUkey's ladder of powers
+shapiro.test(residuals(lme5))  #not normal
+hist(residuals(lme5))
+plotNormalHistogram(residuals(lme5))
+
+lme6 <- lm(top_vmax ~ substrate_type, data = lab_data)
+shapiro.test(residuals(lme6))  #normal but not a mixed-effect model
+plotNormalHistogram(residuals(lme6))
+
+hist(lab_data$top_vmax)
+shapiro.test(lab_data$top_vmax)
+```
+
 
 ```{r}
 #Top max velocity per substrate 
@@ -173,6 +205,7 @@ summary(lme.log.side.amax.sub)
 performance::r2(lme.log.side.amax.sub)   #C=0.047  #M=0.002
 lme.log.side.amax.sub.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
 lme.log.side.amax.sub.tukey  #no significant differences in any substrate's acceleration
+
 ggplot(lab_data, aes(y=log10(side_amax+1), x=substrate_type)) +
   geom_boxplot() + 
   labs(x = "Substrate", y = "Acceleration (side camera) (m^2/s)") +
@@ -184,10 +217,12 @@ ggplot(lab_data, aes(y=log10(side_amax+1), x=substrate_type)) +
         axis.line.y = element_line(color = "black", size = 0.5))
 
 #low R2s make sense because the model shows that susbtrate type doesn't affect acceleration, which means that substrate type should not explain a high percentage of changes in the data
+
+#substrate does not affect acceleration in side videos
 ```
 
 ```{r}
-#Side max acceleration per substrate 
+#Acceleration vs Substrate Type - Side
 ggplot(data = lab_data, aes(side_amax))  + 
   geom_histogram(bins = 8) +
   facet_wrap(~substrate_type) +
@@ -215,6 +250,7 @@ summary(lme.biped.sub)
 performance::r2(lme.biped.sub)  #conditional: 0.417, marginal: 0.05  
 lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data_omit)
 lme.biped.sub.tukey  #no significant differences in substrates
+
 ggplot(lab_data_omit, aes(y=sqrt(bipedal_percent), x=substrate_type)) +
   geom_boxplot() + 
   labs(x = "Substrate", y = "Percent Bipedal") +
@@ -224,19 +260,11 @@ ggplot(lab_data_omit, aes(y=sqrt(bipedal_percent), x=substrate_type)) +
         axis.line = element_line(color = "black")) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5))
+
+#substrate type does not affect bipedalism
 ```
-#check back over - p-value barely insignificant
-
-
-> Bipedalism on difference substrates
 
 ```{r}
-#creating labels for histograms
-sex.labs <- c("Female", "Male")
-names(sex.labs) <- c("F", "M")
-sub.labs <- c("Debris", "Sand", "Sand/Debris")
-names(sub.labs) <- c("D", "S", "SD")
-
 #Bipedalism per substrate and sex Histogram
 ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent)))  + 
   geom_histogram(bins=10) +
@@ -250,7 +278,6 @@ summaryBy(bipedal_percent ~ substrate_type + sex, data = lab_data_omit,
           FUN = list(mean, median, min, max))
 ```
 
-
 ```{r}
 #Histogram of bipedal percent broken into substrate type and sex
 ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), alpha=sex)) +
@@ -262,7 +289,6 @@ ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), alpha=sex)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 ```
 
-
 ```{r}
 #Histogram of bipedal percent broken into substrate type
 ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), fill=substrate_type)) +
@@ -271,7 +297,6 @@ ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), fill=substrate_typ
   scale_fill_discrete(name = "Substrate Type", labels = c("Debris", "Sand", "Sand/Debris")) +
   theme(panel.background = element_blank())
 ```
-
 
 ```{r}
 #Boxplot of bipedal percent separated by substrate type and sex
@@ -304,23 +329,24 @@ table(fieldspeed_final$Substrate.Type == "")        #2  (4.3%)
 
 ```{r}
 #Speed vs. Substrate Type 
-mcelroy_speed_sub_lme <- lme(Speed ~ Substrate.Type, random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
-anova(mcelroy_speed_sub_lme)  #p-value=0.3845  #not significant
-mcelroy_speed_sub_lme_tukey <- emmeans(mcelroy_speed_sub_lme, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_final)
-mcelroy_speed_sub_lme_tukey  #no substrates are signficant
-hist(residuals(mcelroy_speed_sub_lme))
-shapiro.test(residuals(mcelroy_speed_sub_lme))  #normal
+mcelroy_speed_sub_lme2 <- lme(Speed ~ Substrate.Type, random = ~1|ID, data = fieldspeed_final_reduced, na.action=na.omit)
+anova(mcelroy_speed_sub_lme2)  #p-value=0.3976  #not significant
+mcelroy_speed_sub_lme_tukey2 <- emmeans(mcelroy_speed_sub_lme2, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_final_reduced)
+mcelroy_speed_sub_lme_tukey2  #no substrates are signficant
+hist(residuals(mcelroy_speed_sub_lme2))
+shapiro.test(residuals(mcelroy_speed_sub_lme2))  #normal
 
-anova(lme(Speed ~ Substrate.Type + Sex, random = ~1|ID, data = fieldspeed_final, na.action = na.omit))
+anova(lme(Speed ~ Substrate.Type + Sex, random = ~1|ID, data = fieldspeed_final_reduced, na.action = na.omit))
 #Sex doesn't affect model either
 
-ggplot(data = fieldspeed_final, aes(x = Substrate.Type, y = Speed)) +
+ggplot(data = fieldspeed_final_reduced, aes(x = Substrate.Type, y = Speed)) +
   geom_boxplot() +
   labs(x = "Substrate Type", y = "Speed (m/s)") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.background = element_blank()) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5))
+
 #Substrate type doesn't appear to affect speed at all
 ```
 
@@ -344,44 +370,45 @@ ggplot(fieldspeed_final, aes(log10(NumberClutter+1), Speed))+
 ```
 
 ```{r}
-#Distance vs. Number Clutter 
-mcelroy_dist_clutter_lme3 <- lme(log10(Distance) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_final, na.action = na.omit)
-anova(mcelroy_dist_clutter_lme3)  #p-value=0.0137  #significant
-shapiro.test(residuals(mcelroy_dist_clutter_lme3))  #normal
-hist(residuals(mcelroy_dist_clutter_lme3))
-performance::r2(mcelroy_dist_clutter_lme3)  #good  #C=0.586  #M=0.154
+#Bipedalism's effect on side velocity
+side.vmax.biped <- lme(log10(side_vmax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
+anova(side.vmax.biped)  #p-value < 0.0001
+hist(residuals(side.vmax.biped))
+shapiro.test(residuals(side.vmax.biped))  #normal
+performance::r2(side.vmax.biped)  #C=0.304  #M=0.273
 
-ggplot(fieldspeed_final4, aes(log10(NumberClutter+1), log10(Distance))) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  labs(x = "Number of Clutter Crossed", y = "Distance Traveled (m)") +
-  theme(panel.background = element_blank()) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5))
-#trying to get dots to color-coordinate with ID, but when I put col=ID after Distance in aes, it messes up the lm line
+ggplot(lab_data_omit, aes(log10(bipedal_percent+1), log10(side_vmax+1))) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Percent Bipedal", y = "Velocity (side) (m/s)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+
+#bipedalism does effect velocity in side videos
 ```
 
 ```{r}
-#Speed vs. Distance
-mcelroy_dist_speed_lme <- lme(log10(Speed) ~ log10(Distance), random = ~1|ID, data = fieldspeed_final, na.action=na.omit)
-anova(mcelroy_dist_speed_lme)  #p-value=0.0001  #significant
-shapiro.test(residuals(mcelroy_dist_speed_lme))   #normal
-hist(residuals(mcelroy_dist_speed_lme))
-performance::r2(mcelroy_dist_speed_lme)  #good  #C=0.702  #M=0.449
+#Bipedalism's effect on top velocity
+top.vmax.biped <- lme(log10(top_vmax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
+anova(top.vmax.biped)  #p-value = 0.0736  #not significant
+hist(residuals(top.vmax.biped))
+shapiro.test(residuals(top.vmax.biped))  #normal
+performance::r2(top.vmax.biped)  #C=0.425  #M=0.038
 
-ggplot(fieldspeed_final, aes(log10(Distance), log10(Speed))) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  labs(x = "Distance (m)", y = "Speed (m/s)") +
-  theme(panel.background = element_blank()) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5))
+#bipedalsim does not effect velocity in top videos
 ```
 
+```{r}
+#Bipedalism's effect on side acceleration
+side.amax.biped <- lme(log10(side_amax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
+anova(side.amax.biped)  #p-value < 0.5229
+hist(residuals(side.amax.biped))
+shapiro.test(residuals(side.amax.biped))  #normal
+performance::r2(side.amax.biped)  #C=0.119  #M=0.006
 
-
-
-
+#Bipedalism does not effect acceleration in side videos
+```
 
 
 
