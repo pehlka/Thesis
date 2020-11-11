@@ -34,6 +34,8 @@ fieldspeed_final <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habita
   #McElroy & McBrayer habitat data from 2018-2019 with substrates crossed listed
 fieldspeed_final_reduced <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced.csv")
   #same as fieldspeed_final data except 2 rows were removed that did not have substrate types listed
+Racerunner_demographics <- read.csv("~/College of Charleston/Thesis/Data/Racerunner_demographics.csv")
+  #demographic data of lizards ran in the lab
 ```
 
 
@@ -411,5 +413,58 @@ performance::r2(side.amax.biped)  #C=0.119  #M=0.006
 ```
 
 
+> Racerunner Demographics
 
+```{r}
+#Mean
+mean(Racerunner_demographics$svl)  #mean = 6.32 cm
+mean(Racerunner_demographics$tail_length)   #mean = 13.04 cm (including 2 that lost part of tail)
+mean(Racerunner_demographics$weight)   #mean = 5.91 g
+
+#Range
+range(Racerunner_demographics$svl)  #range = 5.59, 7.80
+range(Racerunner_demographics$tail_length)   #range = 4.20, 16.10
+range(Racerunner_demographics$weight)   #range = 4.09, 8.76
+```
+
+#mean, median & range of demographic data separated by sex
+```{r}
+#SVL
+summaryBy(svl ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+svl.f <- Racerunner_demographics$svl[Racerunner_demographics$sex=="F"]
+svl.m <- Racerunner_demographics$svl[Racerunner_demographics$sex=="M"]
+t.test(svl.f, svl.m)  #p-value = 0.067  #not significant
+
+#no significant differences in SVL length between sexes
+```
+
+```{r}
+#tail length
+summaryBy(tail_length ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+
+f.tail_length_removed <- Racerunner_demographics[-c(12,15),]  #removing data from 2 lizards whose tails were missing
+
+tail.f <- Racerunner_demographics$tail_length[Racerunner_demographics$sex=="F"]
+tail.f2 <- f.tail_length_removed$tail_length[Racerunner_demographics$sex=="F"]
+tail.m <- Racerunner_demographics$tail_length[Racerunner_demographics$sex=="M"]
+t.test(tail.f, tail.m)  #p-value = 0.01117  #significant
+t.test(tail.f2, tail.m)  #p-value = 0.02911  #significant
+
+#significant differences in tail length between sexes
+```
+
+```{r}
+#weight
+summaryBy(weight ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+weight.f <- Racerunner_demographics$weight[Racerunner_demographics$sex=="F"]
+weight.f2 <- f.tail_length_removed$weight[Racerunner_demographics$sex=="F"]
+weight.m <- Racerunner_demographics$weight[Racerunner_demographics$sex=="M"]
+t.test(weight.f, weight.m)  #not significant
+t.test(weight.f2, weight.m)   #not significant
+
+#no differences in weight beteween sexes
+```
 
