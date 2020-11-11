@@ -1,0 +1,10 @@
+substrate,distance_cm,distance_m,cover_space_cm,percent_type
+light_debris,18905,189.05,2540,4.92%
+heavy_debris,11640,116.40,5235,3.03%
+light_mixed,60300,603.00,9705,15.68%
+heavy_mixed,170815,1708.15,160095,44.43%
+light_veg,38910,389.10,2900,10.12%
+heavy_veg,5690,56.90,4820,1.48%
+veg,1805,18.05,1010,0.47%
+sand_veg,12680,126.80,2085,3.30%
+sand,63745,637.45,530,16.58%
