@@ -1,0 +1,23 @@
+﻿bag_ID,ID,sex,age,svl,tail_length,weight,regrown_tail
+MS3,A,M,juvenile,5.80,14.40,4.84,no
+SD15,B,F,,6.80,14.80,7.60,no
+EM19,C,F,,5.59,14.20,4.58,no
+AW27,D,M,,5.70,14.40,5.55,no
+17-0,E,F,,6.10,13.00,4.70,no
+EM16,F,F,,6.80,15.20,7.62,no
+EM19.b,G,F,,6.60,7.70,6.97,?
+AW27.b,H,F,,6.60,14.90,6.11,no
+EM16.b,I,F,,7.10,11.10,7.90,no
+MS3.b,J,M,,6.10,15.50,5.89,no
+EM18,K,F,,6.80,10.30,6.56,no
+EM25,L,F,young,6.10,4.20,4.23,no but 9.10cm fell off before trials
+EM7,M,F,,7.80,15.20,8.76,no
+EM1,N,F,,5.90,13.20,4.46,no
+EM6,O,F,,5.80,7.80,4.09,no but lost 6.30cm during capture before trials
+EM25.b,P,F,,6.70,14.20,5.47,no
+EM7.b,Q,M,,6.10,14.90,5.93,no
+17-0.b,R,F,,5.80,12.90,4.29,no
+AW21,S,M,,6.70,16.10,8.37,no
+MS21,T,M,,5.80,14.00,5.01,no
+SD4,U,F,,6.20,14.50,5.06,no
+EM18.b,V,M,,6.20,14.30,6.08,no
