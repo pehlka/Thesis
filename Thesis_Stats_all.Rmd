@@ -33,8 +33,6 @@ field_transect_data_totals_condensed <- read.csv("~/College of Charleston/Thesis
   #field transect substrate totals condensed into debris/mixed/vegetation/sand
 field_transect_data_totals_heaviness <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_heaviness.csv")
   #field transect susbtrate totals broken into heavy/light/sand
-Racerunner_demographics <- read.csv("~/College of Charleston/Thesis/Data/Racerunner_demographics.csv")
-  #demographic data of lizards ran in the lab
 ```
 
 
@@ -46,7 +44,7 @@ Question 1: Do Racerunners use their habitat randomly or non-randomly?
 ```{r}
 #Ground Clutter Crossed vs. Speed
 
-log.speed.clutter <- lme(log10(Speed) ~ log10(NumberClutter+1), random= ~1|ID, data = fieldspeed, na.action=na.omit)
+log.speed.clutter <- lme(log10(Speed) ~ log10(NumberClutter+1) + Sex, random= ~1|ID, data = fieldspeed, na.action=na.omit)
 anova(log.speed.clutter)   #p-value = 0.1255  #not significant
 hist(residuals(log.speed.clutter))
 shapiro.test(residuals(log.speed.clutter))  #normal  
@@ -76,12 +74,12 @@ field_transect_data_totals_heaviness  #heavy derbis/mixed/veg most common
 
 Question 2: How does "available" habitat affect Racerunner locomotion?
  Ho: Racerunners run the same on all substrates.
- Ha: Racerunners run fastest on sand compared to debris and sand/debris.
+ Ha: Racerunners run fastest on sand compared to debris and mixed.
 
 ```{r}
 #Velocity vs Substrate Type - Side
-lme.log.side.vmax.sub <- lme(log10(side_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
-anova(lme.log.side.vmax.sub)  #p-value=0.0028  #significant
+lme.log.side.vmax.sub <- lme(log10(side_vmax+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data)
+anova(lme.log.side.vmax.sub)  #p-value substrate=0.0029  #significant  #sex insignificant
 ggplot(lab_data, aes(residuals(lme.log.side.vmax.sub))) + 
   geom_histogram(bins = 11, color = "white") +
   labs(x = "Residuals of lme.log.side.vmax.sub") +
@@ -90,14 +88,14 @@ ggplot(lab_data, aes(residuals(lme.log.side.vmax.sub))) +
         axis.line = element_line(color = "black"))
 shapiro.test(residuals(lme.log.side.vmax.sub))  #normal (but just barely)
 summary(lme.log.side.vmax.sub)
-performance::r2(lme.log.side.vmax.sub)  #C=0.395 #M=0.056
+performance::r2(lme.log.side.vmax.sub)  #C=0.387 #M=0.065
 lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
 lme.log.side.vmax.sub.tukey  #significant differences between D-S but not D-SD or S-SD
 
 ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +  #fill = substrate_type
   geom_boxplot() + 
   labs(x = "Substrate", y = "Velocity (side camera) (m/s)") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
@@ -109,7 +107,7 @@ ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +  #fill = substra
 #creating labels for histograms
 sex.labs <- c("Female", "Male")
 names(sex.labs) <- c("F", "M")
-sub.labs <- c("Debris", "Sand", "Sand/Debris")
+sub.labs <- c("Debris", "Sand", "Mixed")
 names(sub.labs) <- c("D", "S", "SD")
 ```
 
@@ -131,8 +129,8 @@ summaryBy(side_vmax ~ substrate_type, data = lab_data,
 ```{r}
 #Velocity vs Substrate Type - Top
 
-lme.log.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
-anova(lme.log.top.vmax.sub)  #p-value=0.0004  #significant
+lme.log.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data)
+anova(lme.log.top.vmax.sub)  #p-value substrate=0.0005  #significant   #sex insignificant
 hist(residuals(lme.log.top.vmax.sub))
 shapiro.test(residuals(lme.log.top.vmax.sub))  # not normal
 summary(lme.log.top.vmax.sub)
@@ -166,11 +164,11 @@ hist(residuals(lme4))
 lme5 <- lme(transformTukey(top_vmax+1, plotit = FALSE) ~ substrate_type, random = ~1|ID, data = lab_data)  #TUkey's ladder of powers
 shapiro.test(residuals(lme5))  #not normal
 hist(residuals(lme5))
-plotNormalHistogram(residuals(lme5))
+hist(residuals(lme5))
 
 lme6 <- lm(top_vmax ~ substrate_type, data = lab_data)
 shapiro.test(residuals(lme6))  #normal but not a mixed-effect model
-plotNormalHistogram(residuals(lme6))
+hist(residuals(lme6))
 
 hist(lab_data$top_vmax)
 shapiro.test(lab_data$top_vmax)
@@ -194,8 +192,8 @@ summaryBy(top_vmax ~ substrate_type, data = lab_data,
 
 ```{r}
 #Acceleration vs Substrate Type - Side
-lme.log.side.amax.sub <- lme(log10(side_amax+1) ~ substrate_type, random = ~1|ID, data = lab_data)
-anova(lme.log.side.amax.sub)  #p-value=0.8411  #not significant
+lme.log.side.amax.sub <- lme(log10(side_amax+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data)
+anova(lme.log.side.amax.sub)  #p-value substrate & sex = not significant
 ggplot(lab_data, aes(residuals(lme.log.side.amax.sub))) + 
   geom_histogram(bins = 8, color = "white") +
   labs(x = "Residuals of lme.log.side.amax.sub") +
@@ -211,7 +209,7 @@ lme.log.side.amax.sub.tukey  #no significant differences in any substrate's acce
 ggplot(lab_data, aes(y=log10(side_amax+1), x=substrate_type)) +
   geom_boxplot() + 
   labs(x = "Substrate", y = "Acceleration (side camera) (m^2/s)") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
@@ -240,8 +238,8 @@ summaryBy(side_amax ~ substrate_type, data = lab_data,
 
 ```{r}
 #Bipedalism vs Substrate Type
-lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type, random = ~1|ID, data = lab_data_omit)
-anova(lme.biped.sub)  #p-value=0.0512  #barely not significant
+lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type + sex, random = ~1|ID, data = lab_data_omit)
+anova(lme.biped.sub)  #p-value substrate=0.0513  #barely not significant   #sex insignificant
 ggplot(lab_data_omit, aes(residuals(lme.biped.sub))) + 
   geom_histogram(bins = 7, color = "white") +
   labs(x = "Residuals of lme.biped.sub") +
@@ -250,14 +248,14 @@ ggplot(lab_data_omit, aes(residuals(lme.biped.sub))) +
         axis.line = element_line(color = "black"))
 shapiro.test(residuals(lme.biped.sub))   #normal
 summary(lme.biped.sub)
-performance::r2(lme.biped.sub)  #conditional: 0.417, marginal: 0.05  
+performance::r2(lme.biped.sub)  #conditional: 0.426, marginal: 0.072  
 lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data_omit)
 lme.biped.sub.tukey  #no significant differences in substrates
 
 ggplot(lab_data_omit, aes(y=sqrt(bipedal_percent), x=substrate_type)) +
   geom_boxplot() + 
   labs(x = "Substrate", y = "Percent Bipedal") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
@@ -298,7 +296,7 @@ ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), alpha=sex)) +
 ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), fill=substrate_type)) +
   geom_histogram(col = "white") + 
   labs(x = "Percent Bipedal") +
-  scale_fill_discrete(name = "Substrate Type", labels = c("Debris", "Sand", "Sand/Debris")) +
+  scale_fill_discrete(name = "Substrate Type", labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.background = element_blank())
 ```
 
@@ -307,7 +305,7 @@ ggplot(data = lab_data_omit, aes(as.numeric(bipedal_percent), fill=substrate_typ
 ggplot(data = lab_data_omit, aes(substrate_type, as.numeric(bipedal_percent), fill = sex)) +
   geom_boxplot() +
   labs(x = "Substrate", y = "Percent Bipedal") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Sand/Debris")) +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.background = element_blank()) +
   scale_fill_discrete(name = "Sex", labels = c("Female", "Male")) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
@@ -334,7 +332,7 @@ table(fieldspeed$Substrate.Type == "")        #2  (4.3%)
 ```{r}
 #Speed vs. Substrate Type 
 mcelroy_speed_sub_lme2 <- lme(log10(Speed) ~ Substrate.Type, random = ~1|ID, data = fieldspeed_reduced, na.action=na.omit)
-anova(mcelroy_speed_sub_lme2)  #p-value=0.2871  #not significant
+anova(mcelroy_speed_sub_lme2)  #p-value substrate & sex = insignificant
 mcelroy_speed_sub_lme_tukey2 <- emmeans(mcelroy_speed_sub_lme2, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_reduced)
 mcelroy_speed_sub_lme_tukey2  #no substrates are signficant
 hist(residuals(mcelroy_speed_sub_lme2))
@@ -356,11 +354,11 @@ ggplot(data = fieldspeed_reduced, aes(x = Substrate.Type, y = Speed)) +
 
 ```{r}
 #Speed vs. Number Clutter
-mcelroy_speed_clutter_lme_log3 <- lme(Speed ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed, na.action = na.omit)
-anova(mcelroy_speed_clutter_lme_log3)  #p-value=0.0905  #not significant
+mcelroy_speed_clutter_lme_log3 <- lme(Speed ~ log10(NumberClutter+1) + Sex, random = ~1|ID, data = fieldspeed, na.action = na.omit)
+anova(mcelroy_speed_clutter_lme_log3)  #p-value clutter & sex = insignificant
 shapiro.test(residuals(mcelroy_speed_clutter_lme_log3))  #normal
 hist(residuals(mcelroy_speed_clutter_lme_log3))
-performance::r2(mcelroy_speed_clutter_lme_log3)  #ok  #C=0.2250   #M=0.083
+performance::r2(mcelroy_speed_clutter_lme_log3)  #ok  #C=0.265   #M=0.086
 
 ggplot(fieldspeed, aes(log10(NumberClutter+1), Speed))+
   geom_point() + 
@@ -377,11 +375,11 @@ ggplot(fieldspeed, aes(log10(NumberClutter+1), Speed))+
 
 ```{r}
 #Bipedalism's effect on side velocity
-side.vmax.biped <- lme(log10(side_vmax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
-anova(side.vmax.biped)  #p-value < 0.0001
+side.vmax.biped <- lme(log10(side_vmax+1) ~ log10(bipedal_percent+1) + sex, random = ~1|ID, data = lab_data_omit)
+anova(side.vmax.biped)  #p-value substrate < 0.0001  significant   #sex is insignificant
 hist(residuals(side.vmax.biped))
 shapiro.test(residuals(side.vmax.biped))  #normal
-performance::r2(side.vmax.biped)  #C=0.304  #M=0.273
+performance::r2(side.vmax.biped)  #C=0.303  #M=0.303
 
 ggplot(lab_data_omit, aes(log10(bipedal_percent+1), log10(side_vmax+1))) +
   geom_point() + 
@@ -396,11 +394,11 @@ ggplot(lab_data_omit, aes(log10(bipedal_percent+1), log10(side_vmax+1))) +
 
 ```{r}
 #Bipedalism's effect on top velocity
-top.vmax.biped <- lme(log10(top_vmax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
-anova(top.vmax.biped)  #p-value = 0.0736  #not significant
+top.vmax.biped <- lme(log10(top_vmax+1) ~ log10(bipedal_percent+1) + sex, random = ~1|ID, data = lab_data_omit)
+anova(top.vmax.biped)  #p-value substrate & sex = insignificant
 hist(residuals(top.vmax.biped))
 shapiro.test(residuals(top.vmax.biped))  #normal
-performance::r2(top.vmax.biped)  #C=0.425  #M=0.038
+performance::r2(top.vmax.biped)  #C=0.420  #M=0.075
 
 ggplot(lab_data_omit, aes(log10(bipedal_percent+1), log10(top_vmax+1))) +
   geom_point() + 
@@ -415,97 +413,13 @@ ggplot(lab_data_omit, aes(log10(bipedal_percent+1), log10(top_vmax+1))) +
 
 ```{r}
 #Bipedalism's effect on side acceleration
-side.amax.biped <- lme(log10(side_amax+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data_omit)
-anova(side.amax.biped)  #p-value=0.5229
+side.amax.biped <- lme(log10(side_amax+1) ~ log10(bipedal_percent+1) + sex, random = ~1|ID, data = lab_data_omit)
+anova(side.amax.biped)  #p-value substrate & sex = insignificant
 hist(residuals(side.amax.biped))
 shapiro.test(residuals(side.amax.biped))  #normal
-performance::r2(side.amax.biped)  #C=0.119  #M=0.006
+performance::r2(side.amax.biped)  #C=0.130  #M=0.005
 
 #Bipedalism does not effect acceleration in side videos
-```
-
-
-
-> Racerunner Morphometrics
-
-```{r}
-#Mean
-mean(Racerunner_demographics$svl)  #mean = 6.32 cm
-mean(Racerunner_demographics$tail_length)   #mean = 13.04 cm (including 2 that lost part of tail)
-mean(Racerunner_demographics$weight)   #mean = 5.91 g
-
-#Range
-range(Racerunner_demographics$svl)  #range = 5.59, 7.80
-range(Racerunner_demographics$tail_length)   #range = 4.20, 16.10
-range(Racerunner_demographics$weight)   #range = 4.09, 8.76
-```
-
-#mean, median & range of demographic data separated by sex
-```{r}
-#SVL
-summaryBy(svl ~ sex, data = Racerunner_demographics,
-          FUN = list(mean, median, min, max))
-svl.f <- Racerunner_demographics$svl[Racerunner_demographics$sex=="F"]
-svl.m <- Racerunner_demographics$svl[Racerunner_demographics$sex=="M"]
-t.test(svl.f, svl.m)  #p-value = 0.067  #not significant
-
-ggplot(data = Racerunner_demographics, aes(x = sex, y = svl, fill = sex)) +
-  geom_boxplot() +
-  labs(x = "Sex", y = "SVL (cm)") +
-  scale_x_discrete(labels = c("Female", "Male")) +
-  theme(panel.background = element_blank()) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5))
-
-#no significant differences in SVL length between sexes
-```
-
-```{r}
-#tail length
-summaryBy(tail_length ~ sex, data = Racerunner_demographics,
-          FUN = list(mean, median, min, max))
-
-f.tail_length_removed <- Racerunner_demographics[-c(12,15),]  #removing data from 2 lizards whose tails were missing
-
-summaryBy(tail_length ~ sex, data = f.tail_length_removed,
-          FUN = list(mean, median, min, max))
-
-tail.f <- Racerunner_demographics$tail_length[Racerunner_demographics$sex=="F"]
-tail.f2 <- f.tail_length_removed$tail_length[Racerunner_demographics$sex=="F"]
-tail.m <- Racerunner_demographics$tail_length[Racerunner_demographics$sex=="M"]
-t.test(tail.f, tail.m)  #p-value = 0.01117  #significant
-t.test(tail.f2, tail.m)  #p-value = 0.02911  #significant
-
-ggplot(data = f.tail_length_removed, aes(x = sex, y = tail_length, fill = sex)) +
-  geom_boxplot() +
-  labs(x = "Sex", y = "Tail Length (cm)") +
-  scale_x_discrete(labels = c("Female", "Male")) +
-  theme(panel.background = element_blank()) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5))
-
-#significant differences in tail length between sexes
-```
-
-```{r}
-#weight
-summaryBy(weight ~ sex, data = Racerunner_demographics,
-          FUN = list(mean, median, min, max))
-weight.f <- Racerunner_demographics$weight[Racerunner_demographics$sex=="F"]
-weight.f2 <- f.tail_length_removed$weight[Racerunner_demographics$sex=="F"]
-weight.m <- Racerunner_demographics$weight[Racerunner_demographics$sex=="M"]
-t.test(weight.f, weight.m)  #not significant
-t.test(weight.f2, weight.m)   #not significant
-
-ggplot(data = f.tail_length_removed, aes(x = sex, y = weight, fill = sex)) +
-  geom_boxplot() +
-  labs(x = "Sex", y = "Weight (g)") +
-  scale_x_discrete(labels = c("Female", "Male")) +
-  theme(panel.background = element_blank()) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5))
-
-#no differences in weight beteween sexes
 ```
 
 
