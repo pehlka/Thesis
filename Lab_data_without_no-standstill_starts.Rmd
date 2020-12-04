@@ -18,6 +18,9 @@ lab.data_omit <- lab.data[!is.na(lab.data$bipedal_percent), ]
 
 fieldspeed_final <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final.csv")
 
+Racerunner_demographics <- read.csv("~/College of Charleston/Thesis/Data/Racerunner_demographics.csv")
+  #demographic data of lizards ran in the lab
+
 library(ggplot2)
 library(rcompanion)
 library(lme4)
@@ -76,6 +79,7 @@ summary(lab.data)
 table(lab.data$pauses_side)
 table(lab.data$pauses_top)
 ```
+
 ```{r}
 #Runs per lizard on each substrate type
 table(lab.data$ID, lab.data$substrate_type)
@@ -1720,3 +1724,335 @@ plotNormalHistogram(residuals(lme6))
 hist(lab_data$top_vmax)
 shapiro.test(lab_data$top_vmax)
 ```
+
+
+
+> Racerunner Demographics
+
+```{r}
+Racerunner_demographics <- read.csv("~/College of Charleston/Thesis/Data/Racerunner_demographics.csv")
+
+#Mean
+mean(Racerunner_demographics$svl)  #mean = 6.32 cm
+mean(Racerunner_demographics$tail_length)   #mean = 13.04 cm (including 2 that lost part of tail)
+mean(Racerunner_demographics$weight)   #mean = 5.91 g
+
+#Range
+range(Racerunner_demographics$svl)  #range = 5.59, 7.80
+range(Racerunner_demographics$tail_length)   #range = 4.20, 16.10
+range(Racerunner_demographics$weight)   #range = 4.09, 8.76
+```
+
+#mean, median & range of demographic data separated by sex
+```{r}
+#SVL
+summaryBy(svl ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+svl.f <- Racerunner_demographics$svl[Racerunner_demographics$sex=="F"]
+svl.m <- Racerunner_demographics$svl[Racerunner_demographics$sex=="M"]
+t.test(svl.f, svl.m)  #p-value = 0.067  #not significant
+
+#no significant differences in SVL length between sexes
+```
+
+```{r}
+#tail length
+summaryBy(tail_length ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+
+f.tail_length_removed <- Racerunner_demographics[-c(12,15),]  #removing data from 2 lizards whose tails were missing
+
+tail.f <- Racerunner_demographics$tail_length[Racerunner_demographics$sex=="F"]
+tail.f2 <- f.tail_length_removed$tail_length[Racerunner_demographics$sex=="F"]
+tail.m <- Racerunner_demographics$tail_length[Racerunner_demographics$sex=="M"]
+t.test(tail.f, tail.m)  #p-value = 0.01117  #significant
+t.test(tail.f2, tail.m)  #p-value = 0.02911  #significant
+
+#significant differences in tail length between sexes
+```
+
+```{r}
+#weight
+summaryBy(weight ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+weight.f <- Racerunner_demographics$weight[Racerunner_demographics$sex=="F"]
+weight.f2 <- f.tail_length_removed$weight[Racerunner_demographics$sex=="F"]
+weight.m <- Racerunner_demographics$weight[Racerunner_demographics$sex=="M"]
+t.test(weight.f, weight.m)  #not significant
+t.test(weight.f2, weight.m)   #not significant
+
+#no differences in weight beteween sexes
+```
+
+
+```{r}
+#Tmax
+
+ggplot(data = lab_data, aes(log10(side_tmax))) +
+  geom_histogram(bins=11)
+shapiro.test(log10(lab_data$side_tmax))
+
+mean(lab_data$side_tmax)  #0.559 sec
+range(lab_data$side_tmax)  #min=0.102 sec  #max=1.19 sec
+
+mean(lab_data$top_tmax)  #0.541 sec
+range(lab_data$top_tmax)  #min=0.302 sec  #max=1.35 sec
+
+t.test(lab_data$side_tmax, lab_data$top_tmax)  #p-value=0.413
+#the difference in time spent in each camera video is not significantly different
+```
+
+```{r}
+#Pmax
+
+mean(lab_data$side_pmax)  #0.21.23 
+range(lab_data$side_pmax)  #min=6.605   #max=64.22
+
+mean(lab_data$top_pmax)  #17.38
+range(lab_data$top_pmax)  #min=3.30  #max=69.02
+
+t.test(lab_data$side_pmax, lab_data$top_pmax)
+```
+
+```{r}
+#Posmax
+
+mean(lab_data$side_posmax) 
+range(lab_data$side_posmax) 
+
+mean(lab_data$top_posmax) 
+range(lab_data$top_posmax)  
+
+t.test(lab_data$side_posmax, lab_data$top_posmax)
+
+#posmax probably not needed because the position of the lizard is obviously going to change throughout the run because it's moving
+```
+
+```{r}
+citation("lme4")
+```
+
+> Racerunner Morphometrics
+  # Eric said I do not need to include in final data
+
+```{r}
+#Mean
+mean(Racerunner_demographics$svl)  #mean = 6.32 cm
+mean(Racerunner_demographics$tail_length)   #mean = 13.04 cm (including 2 that lost part of tail)
+mean(Racerunner_demographics$weight)   #mean = 5.91 g
+
+#Range
+range(Racerunner_demographics$svl)  #range = 5.59, 7.80
+range(Racerunner_demographics$tail_length)   #range = 4.20, 16.10
+range(Racerunner_demographics$weight)   #range = 4.09, 8.76
+```
+
+#mean, median & range of demographic data separated by sex
+```{r}
+#SVL
+summaryBy(svl ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+svl.f <- Racerunner_demographics$svl[Racerunner_demographics$sex=="F"]
+svl.m <- Racerunner_demographics$svl[Racerunner_demographics$sex=="M"]
+t.test(svl.f, svl.m)  #p-value = 0.067  #not significant
+
+ggplot(data = Racerunner_demographics, aes(x = sex, y = svl, fill = sex)) +
+  geom_boxplot() +
+  labs(x = "Sex", y = "SVL (cm)") +
+  scale_x_discrete(labels = c("Female", "Male")) +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+
+#no significant differences in SVL length between sexes
+```
+
+```{r}
+#tail length
+summaryBy(tail_length ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+
+f.tail_length_removed <- Racerunner_demographics[-c(12,15),]  #removing data from 2 lizards whose tails were missing
+
+summaryBy(tail_length ~ sex, data = f.tail_length_removed,
+          FUN = list(mean, median, min, max))
+
+tail.f <- Racerunner_demographics$tail_length[Racerunner_demographics$sex=="F"]
+tail.f2 <- f.tail_length_removed$tail_length[Racerunner_demographics$sex=="F"]
+tail.m <- Racerunner_demographics$tail_length[Racerunner_demographics$sex=="M"]
+t.test(tail.f, tail.m)  #p-value = 0.01117  #significant
+t.test(tail.f2, tail.m)  #p-value = 0.02911  #significant
+
+ggplot(data = f.tail_length_removed, aes(x = sex, y = tail_length, fill = sex)) +
+  geom_boxplot() +
+  labs(x = "Sex", y = "Tail Length (cm)") +
+  scale_x_discrete(labels = c("Female", "Male")) +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+
+#significant differences in tail length between sexes
+```
+
+```{r}
+#weight
+summaryBy(weight ~ sex, data = Racerunner_demographics,
+          FUN = list(mean, median, min, max))
+weight.f <- Racerunner_demographics$weight[Racerunner_demographics$sex=="F"]
+weight.f2 <- f.tail_length_removed$weight[Racerunner_demographics$sex=="F"]
+weight.m <- Racerunner_demographics$weight[Racerunner_demographics$sex=="M"]
+t.test(weight.f, weight.m)  #not significant
+t.test(weight.f2, weight.m)   #not significant
+
+ggplot(data = f.tail_length_removed, aes(x = sex, y = weight, fill = sex)) +
+  geom_boxplot() +
+  labs(x = "Sex", y = "Weight (g)") +
+  scale_x_discrete(labels = c("Female", "Male")) +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+
+#no differences in weight beteween sexes
+```
+
+
+```{r}
+#Ground Clutter Crossed vs. Speed
+
+log.speed.clutter <- lme(log10(Speed) ~ log10(NumberClutter+1) + Sex, random= ~1|ID, data = fieldspeed, na.action=na.omit)
+anova(log.speed.clutter)   #p-value substrate = 0.1426  #not significant
+hist(residuals(log.speed.clutter))
+shapiro.test(residuals(log.speed.clutter))  #normal  
+performance::r2(log.speed.clutter)  #C=0.281 #M=0.091
+
+ggplot(fieldspeed, aes(log10(NumberClutter+1), log10(Speed)) )+
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+
+#Slight upward trend: as ground clutter increases, so does speed
+``` 
+
+
+
+> Data deleted from Thesis_Stats_all 12/4/20 because combined camera peak velocity and bipedalism 
+
+
+```{r}
+#Velocity vs Substrate Type - Side
+lme.log.side.vmax.sub <- lme(log10(side_vmax+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data)
+anova(lme.log.side.vmax.sub)  #p-value substrate=0.0029, significant  #sex insignificant
+ggplot(lab_data, aes(residuals(lme.log.side.vmax.sub))) + 
+  geom_histogram(bins = 11, color = "white") +
+  labs(x = "Residuals of lme.log.side.vmax.sub") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.log.side.vmax.sub))  #normal (but just barely)
+summary(lme.log.side.vmax.sub)
+performance::r2(lme.log.side.vmax.sub)  #C=0.387 #M=0.065
+lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
+lme.log.side.vmax.sub.tukey  #significant differences between D-S but not D-SD or S-SD
+
+ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +  #fill = substrate_type
+  geom_boxplot() + 
+  labs(x = "Substrate", y = "Velocity (side camera) (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+```
+
+```{r}
+#Velocity vs Substrate Type - Side
+ggplot(data = lab_data, aes(side_vmax))  + 
+  geom_histogram(bins = 8) +
+  facet_wrap(~substrate_type) +
+  facet_grid(~substrate_type,
+             labeller = labeller(substrate_type=sub.labs)) +
+  labs(x = "Velocity (Side Camera) (m/s)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+#mean, median & range of top max velocity separated into substrate types
+summaryBy(side_vmax ~ substrate_type, data = lab_data,
+          FUN = list(mean, median, min, max))
+```
+
+```{r}
+#Velocity vs Substrate Type - Top
+
+lme.log.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data)
+anova(lme.log.top.vmax.sub)  #p-value substrate=0.0005  #significant   #sex insignificant
+hist(residuals(lme.log.top.vmax.sub))
+shapiro.test(residuals(lme.log.top.vmax.sub))  # not normal
+summary(lme.log.top.vmax.sub)
+performance::r2(lme.log.top.vmax.sub)  #pretty low R2s
+lme.log.top.vmax.sub.tukey <- emmeans(lme.log.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
+lme.log.top.vmax.sub.tukey  #no significant differences between substrates
+
+#DATA IS NOT NORMAL -- TRANSFORM
+```
+
+```{r}
+#Transformations of Velocity vs Substrate Type - Top
+#none of the transformations are normal
+
+lme1 <- lme(top_vmax ~ substrate_type, random = ~1|ID, data = lab_data)  #un-transformed
+shapiro.test(residuals(lme1))  #not normal
+hist(residuals(lme1))
+
+lme2 <- lme(sqrt(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)  #square root
+shapiro.test(residuals(lme2))  #not normal
+hist(residuals(lme2))
+
+lme3 <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)  #log
+shapiro.test(residuals(lme3))  #not normal
+hist(residuals(lme3))
+
+lme4 <- lme(abs(top_vmax+1)^(1/3) ~ substrate_type, random = ~1|ID, data = lab_data)  #cubed root
+shapiro.test(residuals(lme4))  #not normal
+hist(residuals(lme4))
+
+lme5 <- lme(transformTukey(top_vmax+1, plotit = FALSE) ~ substrate_type, random = ~1|ID, data = lab_data)  #TUkey's ladder of powers
+shapiro.test(residuals(lme5))  #not normal
+hist(residuals(lme5))
+hist(residuals(lme5))
+
+lme6 <- lm(top_vmax ~ substrate_type, data = lab_data)
+shapiro.test(residuals(lme6))  #normal but not a mixed-effect model
+hist(residuals(lme6))
+
+hist(lab_data$top_vmax)
+shapiro.test(lab_data$top_vmax)
+```
+
+```{r}
+#Top max velocity per substrate 
+ggplot(data = lab_data, aes(top_vmax))  + 
+  geom_histogram(bins = 8) +
+  facet_wrap(~substrate_type) +
+  facet_grid(~substrate_type,
+             labeller = labeller(substrate_type=sub.labs)) +
+  labs(x = "Velocity (Top Camera) (m/s)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+#mean, median & range of top max velocity separated into substrate types
+summaryBy(top_vmax ~ substrate_type, data = lab_data,
+          FUN = list(mean, median, min, max))
+```
+
+
+```{r}
+lab_data2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_12.04.20_removed_non-standstill_starts+NAs+negatives+3lizards+peak_v_biped.csv")
+
+is.numeric(lab_data2$biped_tot)
+is.numeric(lab_data2$peak_v)
+is.factor(lab_data2$peak_v_cam)
+```
+
+
