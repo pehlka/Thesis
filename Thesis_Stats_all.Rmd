@@ -20,6 +20,8 @@ library(lmtest)
 #Importing data
 lab_data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.26.20_removed_non-standstill_starts+NAs+negatives+3lizards.csv")  
   #lab experiment data without no-standstill starts & 3 incomplete lizards
+lab_data2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_12.04.20_removed_non-standstill_starts+NAs+negatives+3lizards+peak_v_biped.csv")
+  #includes peak velocity column and biped total column
 lab_data_omit <- lab_data[!is.na(lab_data$bipedal_percent), ]
   #lab_data without trials that were run quadrupedally with no bipedalism present
 fieldspeed <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_11.18.20.csv")
@@ -36,30 +38,9 @@ field_transect_data_totals_heaviness <- read.csv("~/College of Charleston/Thesis
 ```
 
 
-
 Question 1: Do Racerunners use their habitat randomly or non-randomly?
  Ho: Racerunners use their habitat randomly.
  Ha: Racerunners use their habitat non-randomly.
- 
-```{r}
-#Ground Clutter Crossed vs. Speed
-
-log.speed.clutter <- lme(log10(Speed) ~ log10(NumberClutter+1) + Sex, random= ~1|ID, data = fieldspeed, na.action=na.omit)
-anova(log.speed.clutter)   #p-value = 0.1255  #not significant
-hist(residuals(log.speed.clutter))
-shapiro.test(residuals(log.speed.clutter))  #normal  
-performance::r2(log.speed.clutter)  #C=0.206 #M=0.068 
-
-ggplot(fieldspeed, aes(log10(NumberClutter+1), log10(Speed)) )+
-  geom_point() + 
-  geom_smooth(method = 'lm') +
-  labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
-
-#Slight upward trend: as ground clutter increases, so does speed
-``` 
 
 ```{r}
 #Field Transect Data
@@ -69,32 +50,31 @@ field_transect_data_totals_heaviness  #heavy derbis/mixed/veg most common
 ```
 
 
-
-
-
 Question 2: How does "available" habitat affect Racerunner locomotion?
  Ho: Racerunners run the same on all substrates.
  Ha: Racerunners run fastest on sand compared to debris and mixed.
 
+
+
 ```{r}
-#Velocity vs Substrate Type - Side
-lme.log.side.vmax.sub <- lme(log10(side_vmax+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data)
-anova(lme.log.side.vmax.sub)  #p-value substrate=0.0029  #significant  #sex insignificant
-ggplot(lab_data, aes(residuals(lme.log.side.vmax.sub))) + 
+#Velocity vs Substrate Type - total
+lme.log.side.vmax.sub2 <- lme(log10(peak_v+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data2)
+anova(lme.log.side.vmax.sub2)  #p-value substrate=0.0001, significant  #sex insignificant
+ggplot(lab_data2, aes(residuals(lme.log.side.vmax.sub2))) + 
   geom_histogram(bins = 11, color = "white") +
-  labs(x = "Residuals of lme.log.side.vmax.sub") +
+  labs(x = "Residuals of lme.log.side.vmax.sub2") +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black"))
-shapiro.test(residuals(lme.log.side.vmax.sub))  #normal (but just barely)
-summary(lme.log.side.vmax.sub)
-performance::r2(lme.log.side.vmax.sub)  #C=0.387 #M=0.065
-lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
-lme.log.side.vmax.sub.tukey  #significant differences between D-S but not D-SD or S-SD
+shapiro.test(residuals(lme.log.side.vmax.sub2))  #normal
+summary(lme.log.side.vmax.sub2)
+performance::r2(lme.log.side.vmax.sub2)  #C=0.374 #M=0.128
+lme.log.side.vmax.sub.tukey2 <- emmeans(lme.log.side.vmax.sub2, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.log.side.vmax.sub.tukey2  #significant differences between D-S (p<0.0001) and D-SD (p=0.0405), but not S-SD (p=0.0661)
 
-ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +  #fill = substrate_type
+ggplot(lab_data2, aes(y=log10(peak_v+1), x=substrate_type)) +  #fill = substrate_type
   geom_boxplot() + 
-  labs(x = "Substrate", y = "Velocity (side camera) (m/s)") +
+  labs(x = "Substrate", y = "Peak Velocity (m/s)") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -102,6 +82,9 @@ ggplot(lab_data, aes(y=log10(side_vmax+1), x=substrate_type)) +  #fill = substra
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5))
 ```
+
+
+
 
 ```{r}
 #creating labels for histograms
@@ -112,83 +95,20 @@ names(sub.labs) <- c("D", "S", "SD")
 ```
 
 ```{r}
-#Velocity vs Substrate Type - Side
-ggplot(data = lab_data, aes(side_vmax))  + 
+#Velocity vs Substrate Type - total
+ggplot(data = lab_data2, aes(peak_v))  + 
   geom_histogram(bins = 8) +
   facet_wrap(~substrate_type) +
   facet_grid(~substrate_type,
              labeller = labeller(substrate_type=sub.labs)) +
-  labs(x = "Velocity (Side Camera) (m/s)") +
+  labs(x = "Peak Velocity (m/s)") +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 #mean, median & range of top max velocity separated into substrate types
-summaryBy(side_vmax ~ substrate_type, data = lab_data,
+summaryBy(peak_v ~ substrate_type, data = lab_data2,
           FUN = list(mean, median, min, max))
 ```
 
-```{r}
-#Velocity vs Substrate Type - Top
-
-lme.log.top.vmax.sub <- lme(log10(top_vmax+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data)
-anova(lme.log.top.vmax.sub)  #p-value substrate=0.0005  #significant   #sex insignificant
-hist(residuals(lme.log.top.vmax.sub))
-shapiro.test(residuals(lme.log.top.vmax.sub))  # not normal
-summary(lme.log.top.vmax.sub)
-performance::r2(lme.log.top.vmax.sub)  #pretty low R2s
-lme.log.top.vmax.sub.tukey <- emmeans(lme.log.top.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data)
-lme.log.top.vmax.sub.tukey  #no significant differences between substrates
-
-#DATA IS NOT NORMAL -- TRANSFORM
-```
-
-```{r}
-#Transformations of Velocity vs Substrate Type - Top
-#none of the transformations are normal
-
-lme1 <- lme(top_vmax ~ substrate_type, random = ~1|ID, data = lab_data)  #un-transformed
-shapiro.test(residuals(lme1))  #not normal
-hist(residuals(lme1))
-
-lme2 <- lme(sqrt(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)  #square root
-shapiro.test(residuals(lme2))  #not normal
-hist(residuals(lme2))
-
-lme3 <- lme(log10(top_vmax+1) ~ substrate_type, random = ~1|ID, data = lab_data)  #log
-shapiro.test(residuals(lme3))  #not normal
-hist(residuals(lme3))
-
-lme4 <- lme(abs(top_vmax+1)^(1/3) ~ substrate_type, random = ~1|ID, data = lab_data)  #cubed root
-shapiro.test(residuals(lme4))  #not normal
-hist(residuals(lme4))
-
-lme5 <- lme(transformTukey(top_vmax+1, plotit = FALSE) ~ substrate_type, random = ~1|ID, data = lab_data)  #TUkey's ladder of powers
-shapiro.test(residuals(lme5))  #not normal
-hist(residuals(lme5))
-hist(residuals(lme5))
-
-lme6 <- lm(top_vmax ~ substrate_type, data = lab_data)
-shapiro.test(residuals(lme6))  #normal but not a mixed-effect model
-hist(residuals(lme6))
-
-hist(lab_data$top_vmax)
-shapiro.test(lab_data$top_vmax)
-```
-
-
-```{r}
-#Top max velocity per substrate 
-ggplot(data = lab_data, aes(top_vmax))  + 
-  geom_histogram(bins = 8) +
-  facet_wrap(~substrate_type) +
-  facet_grid(~substrate_type,
-             labeller = labeller(substrate_type=sub.labs)) +
-  labs(x = "Velocity (Top Camera) (m/s)") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-#mean, median & range of top max velocity separated into substrate types
-summaryBy(top_vmax ~ substrate_type, data = lab_data,
-          FUN = list(mean, median, min, max))
-```
 
 ```{r}
 #Acceleration vs Substrate Type - Side
@@ -331,7 +251,7 @@ table(fieldspeed$Substrate.Type == "")        #2  (4.3%)
 
 ```{r}
 #Speed vs. Substrate Type 
-mcelroy_speed_sub_lme2 <- lme(log10(Speed) ~ Substrate.Type, random = ~1|ID, data = fieldspeed_reduced, na.action=na.omit)
+mcelroy_speed_sub_lme2 <- lme(log10(Speed) ~ Substrate.Type + Sex, random = ~1|ID, data = fieldspeed_reduced, na.action=na.omit)
 anova(mcelroy_speed_sub_lme2)  #p-value substrate & sex = insignificant
 mcelroy_speed_sub_lme_tukey2 <- emmeans(mcelroy_speed_sub_lme2, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_reduced)
 mcelroy_speed_sub_lme_tukey2  #no substrates are signficant
@@ -368,7 +288,7 @@ ggplot(fieldspeed, aes(log10(NumberClutter+1), Speed))+
         panel.background = element_blank(), 
         axis.line = element_line(color = "black"))
 
-#slight upward trend: as ground clutter increased, speed also increased slightly
+#slight upward trend: as ground clutter increased, speed also increased slightly, but insignificantly
 
 #the linear regression line shows a positive relationship between speed and ground clutter croseed, but the ANOVA says it's not significant.
 ```
@@ -442,6 +362,29 @@ t.test(lab_data$side_tmax, lab_data$top_tmax)  #p-value=0.413
 #the difference in time spent in each camera video is not significantly different
 ```
 
+```{r}
+table(lab_data$bipedal_quad_side)  #total = 139
+#sum(lab_data$bipedal_side)
+#sum bipedal_side = 5390 frames bipedal
+table(lab_data$bipedal_quad_top)  #total = 139
+#sum(lab_data$bipedal_top)
+#sum bipedal_top = 6982 frames bipedal
+```
 
+```{r}
+#amount of obstacles crossed in fieldspeed data
+summary(fieldspeed$NumberClutter==0)
+summary(fieldspeed$NumberClutter==1)
+#0 obstacles = 13
+#1 obstacle = 3
+#>1 obstacle = 30
+
+mean(fieldspeed$NumberClutter)
+#mean clutter per movement = 3.56
+mean(fieldspeed$Distance)
+#mean distance per movement = 1.183 m
+
+3.56/1.183  #3.01 obstacles per meter
+```
 
 
