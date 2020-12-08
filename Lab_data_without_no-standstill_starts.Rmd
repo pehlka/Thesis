@@ -2056,3 +2056,47 @@ is.factor(lab_data2$peak_v_cam)
 ```
 
 
+#replaced with lab_data2_omit data
+```{r}
+#Bipedalism's effect on side velocity
+side.vmax.biped <- lme(log10(side_vmax+1) ~ log10(bipedal_percent+1) + sex, random = ~1|ID, data = lab_data_omit)
+anova(side.vmax.biped)  #p-value substrate < 0.0001  significant   #sex is insignificant
+hist(residuals(side.vmax.biped))
+shapiro.test(residuals(side.vmax.biped))  #normal
+performance::r2(side.vmax.biped)  #C=0.303  #M=0.303
+
+ggplot(lab_data_omit, aes(log10(bipedal_percent+1), log10(side_vmax+1))) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Percent Bipedal", y = "Velocity (side) (m/s)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+
+#bipedalism does effect velocity in side videos
+```
+
+
+```{r}
+#Bipedalism's effect on top velocity
+top.vmax.biped <- lme(log10(top_vmax+1) ~ log10(bipedal_percent+1) + sex, random = ~1|ID, data = lab_data_omit)
+anova(top.vmax.biped)  #p-value substrate & sex = insignificant
+hist(residuals(top.vmax.biped))
+shapiro.test(residuals(top.vmax.biped))  #normal
+performance::r2(top.vmax.biped)  #C=0.420  #M=0.075
+
+ggplot(lab_data_omit, aes(log10(bipedal_percent+1), log10(top_vmax+1))) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Percent Bipedal", y = "Velocity (top) (m/s)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+
+#bipedalsim does not effect velocity in top videos
+```
+
+
+
+
+
