@@ -15,9 +15,9 @@ library(emmeans)
 library(nlme)
 library(lmtest)
 
-library(dplyr)
-library(tidyverse)
-library(forcats)
+#library(dplyr)
+#library(tidyverse)
+#library(forcats)
 ```
 
 ```{r}
@@ -34,7 +34,7 @@ lab_data2_omit <- lab_data2[!is.na(lab_data2$bipedal_percent), ]
 fieldspeed <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_11.18.20.csv")
   #final fieldspeed data; double checked with data sheets & it's correct 11.18.20
   #replacing all fieldspeed_final data and McElroy_habitat_data
-fieldspeed_reduced <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced_11.18.20.csv")
+fieldspeed_reduced <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced_12.11.20.csv")
   #final fieldspeed data without 2 rows that did not have substrate type listed
 field_transect_data_totals <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_Totals.csv") 
   #field transect substrate totals
@@ -42,6 +42,7 @@ field_transect_data_totals_condensed <- read.csv("~/College of Charleston/Thesis
   #field transect substrate totals condensed into debris/mixed/vegetation/sand
 field_transect_data_totals_heaviness <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_heaviness.csv")
   #field transect susbtrate totals broken into heavy/light/sand
+field_transect_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrates_condensed.csv")
 ```
 
 
@@ -60,7 +61,9 @@ field_transect_data_totals_heaviness  #heavy derbis/mixed/veg most common
 #bar plot of habitat assessment substrate totals
 ggplot(field_transect_data_totals, aes(x=substrate, y=distance_m)) +
   geom_bar(stat = "identity", fill = "steelblue") +
-  labs(x = "Substrate", y = "Distance (m)") +
+  labs(x = "Substrate", y = "Distance (m)", title = "Habitat Assessment") +
+  geom_text(aes(x=substrate, y = distance_m, label = percent_type, vjust = 1), size=3, 
+            color = "white") +
   scale_x_discrete(labels = c("Heavy Debris", "Heavy Mixed", "Heavy Vegetation", "Light Debris", "Light Mixed", "Light Vegetation", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -68,28 +71,54 @@ ggplot(field_transect_data_totals, aes(x=substrate, y=distance_m)) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"),
-        axis.text.x = element_text(angle = 90))
+        axis.text.x = element_text(angle = 90),
+        plot.title = element_text(size = 15))
+```
 
-#trying to make a pie chart of substrates in habitat assessment
-ggplot(field_transect_data_totals, aes (x="", y = distance_m, fill = substrate)) + 
-  geom_col(position = 'stack', width = 1) +
-  geom_text(aes(label = percent_type, x = 1.2),
-            position = position_stack(vjust = 0.5)) +
-  scale_fill_brewer(palette = "Blues", direction = -1) +
-  theme(plot.title = element_text(hjust=0.5),
-        axis.line = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(fill = "Substrate",
-       x = NULL,
-       y = NULL,
-       title = NULL) + 
-    coord_polar("y", start = 0) +
-  theme_void() 
-
+```{r}
+#bar plot of habitat assessment substrate totals condensed
+ggplot(field_transect_condensed, aes(x=substrate, y=distance_m)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Substrate", y = "Distance (m)", title = "Habitat Assessment") +
+  geom_text(aes(x=substrate, y = distance_m, label = percent_type, vjust = 1), size=3, 
+            color = "white") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"),
+        plot.title = element_text(size = 15))
 ```
 
 
+```{r}
+#How often lizards ran on certain substrates
+table(fieldspeed$Segment.)                    #total: 46
+table(fieldspeed$Substrate.Type == "DEBRIS")  #2  (4.3%)
+table(fieldspeed$Substrate.Type == "MIXED")   #12 (26.1%)
+table(fieldspeed$Substrate.Type == "SAND")    #30 (65.2%)
+table(fieldspeed$Substrate.Type == "")        #2  (4.3%)
+
+#most of lizards' movements are happening on sand, then mixed, and only a few happen on debris
+```
+
+```{r}
+#bar plot of field data substrate totals
+ggplot(fieldspeed_reduced, aes(x=Substrate.Type, y=Distance)) +
+  geom_bar(stat = "identity", fill = "steelblue", width = 0.5) +
+  labs(x = "Substrate", y = "Distance Traveled (m)") +
+  geom_text(aes(x=Substrate.Type, y = Distance, label = PercentSubstrate, vjust = 1), size=3, 
+            color = "white") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
+```
 
 
 
@@ -288,31 +317,6 @@ Question 3: Is the pattern observed in question #1 explained by question #2?
  Ho: Racerunners run the same on all substrates.
  Ha: Racerunners avoid moving on suboptimal parts of habitat.
 
-```{r}
-#How often lizards ran on certain substrates
-table(fieldspeed$Segment.)                    #total: 46
-table(fieldspeed$Substrate.Type == "DEBRIS")  #2  (4.3%)
-table(fieldspeed$Substrate.Type == "MIXED")   #12 (26.1%)
-table(fieldspeed$Substrate.Type == "SAND")    #30 (65.2%)
-table(fieldspeed$Substrate.Type == "")        #2  (4.3%)
-
-#most of lizards' movements are happening on sand, then mixed, and only a few happen on debris
-```
-
-```{r}
-#bar plot of field data substrate totals
-ggplot(fieldspeed_reduced, aes(x=Substrate.Type, y=Distance)) +
-  geom_bar(stat = "identity", fill = "steelblue", width = 0.5) +
-  labs(x = "Substrate", y = "Distance (m)") +
-  #scale_x_discrete(labels = c("Heavy Debris", "Heavy Mixed", "Heavy Vegetation", "Light Debris", "Light Mixed", "Light Vegetation", "Sand")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black")) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"),
-        axis.text.x = element_text(angle = 90))
-```
 
 
 ```{r}
@@ -321,8 +325,8 @@ mcelroy_speed_sub_lme2 <- lme(log10(Speed) ~ Substrate.Type + Sex, random = ~1|I
                               data = fieldspeed_reduced, na.action=na.omit)
 anova(mcelroy_speed_sub_lme2)  #p-value substrate & sex = insignificant
 summary(mcelroy_speed_sub_lme2)
-mcelroy_speed_sub_lme_tukey2 <- emmeans(mcelroy_speed_sub_lme2, pairwise ~ Substrate.Type, adjust = "tukey", 
-                                        data = fieldspeed_reduced)
+mcelroy_speed_sub_lme_tukey2 <- emmeans(mcelroy_speed_sub_lme2, pairwise ~ Substrate.Type, 
+                                        adjust = "tukey", data = fieldspeed_reduced)
 mcelroy_speed_sub_lme_tukey2  #no substrates are signficant
 hist(residuals(mcelroy_speed_sub_lme2))
 shapiro.test(residuals(mcelroy_speed_sub_lme2))  #normal
@@ -349,6 +353,7 @@ anova(mcelroy_speed_clutter_lme_log3)  #p-value clutter & sex = insignificant
 shapiro.test(residuals(mcelroy_speed_clutter_lme_log3))  #normal
 hist(residuals(mcelroy_speed_clutter_lme_log3))
 performance::r2(mcelroy_speed_clutter_lme_log3)  #ok  #C=0.265   #M=0.086
+summary(mcelroy_speed_clutter_lme_log3)
 
 ggplot(fieldspeed, aes(log10(NumberClutter+1), Speed))+
   geom_point() + 
@@ -370,6 +375,7 @@ peakv.biped <- lme(log10(peak_v+1) ~ log10(bipedal_percent+1) + sex, random = ~1
 anova(peakv.biped)  #p-value substrate=0.0655, insignificant   #sex = insignificant
 hist(residuals(peakv.biped))
 shapiro.test(residuals(peakv.biped))  #normal
+summary(peakv.biped)
 performance::r2(peakv.biped)  #C=0.419  #M=0.075
 
 ggplot(lab_data2_omit, aes(log10(bipedal_percent+1), log10(peak_v+1))) +
@@ -401,54 +407,12 @@ side.amax.biped <- lme(log10(side_amax+1) ~ log10(bipedal_percent+1) + sex, rand
 anova(side.amax.biped)  #p-value substrate & sex = insignificant
 hist(residuals(side.amax.biped))
 shapiro.test(residuals(side.amax.biped))  #normal
+summary(side.amax.biped)
 performance::r2(side.amax.biped)  #C=0.130  #M=0.005
 
 #Bipedalism does not effect acceleration in side videos
 ```
 
 
-```{r}
-#Number of Pauses
-table(lab_data2$pauses_side)
-table(lab_data2$pauses_top)
-```
-
-```{r}
-#Tmax
-
-mean(lab_data2$side_tmax)  #0.559 sec
-range(lab_data2$side_tmax)  #min=0.102 sec  #max=1.19 sec
-
-mean(lab_data2$top_tmax)  #0.541 sec
-range(lab_data2$top_tmax)  #min=0.302 sec  #max=1.35 sec
-
-t.test(lab_data2$side_tmax, lab_data2$top_tmax)  #p-value=0.413
-#the difference in time spent in each camera video is not significantly different
-```
-
-```{r}
-table(lab_data2$bipedal_quad_side)  #total = 139
-#sum(lab_data$bipedal_side)
-#sum bipedal_side = 5390 frames bipedal
-table(lab_data2$bipedal_quad_top)  #total = 139
-#sum(lab_data$bipedal_top)
-#sum bipedal_top = 6982 frames bipedal
-```
-
-```{r}
-#amount of obstacles crossed in fieldspeed data
-summary(fieldspeed$NumberClutter==0)
-summary(fieldspeed$NumberClutter==1)
-#0 obstacles = 13
-#1 obstacle = 3
-#>1 obstacle = 30
-
-mean(fieldspeed$NumberClutter)
-#mean clutter per movement = 3.56
-mean(fieldspeed$Distance)
-#mean distance per movement = 1.183 m
-
-3.56/1.183  #3.01 obstacles per meter
-```
 
 
