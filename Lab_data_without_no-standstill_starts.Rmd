@@ -2098,5 +2098,68 @@ ggplot(lab_data_omit, aes(log10(bipedal_percent+1), log10(top_vmax+1))) +
 
 
 
+```{r}
+#Number of Pauses
+table(lab_data2$pauses_side)
+table(lab_data2$pauses_top)
+```
+
+```{r}
+#Tmax
+
+mean(lab_data2$side_tmax)  #0.559 sec
+range(lab_data2$side_tmax)  #min=0.102 sec  #max=1.19 sec
+
+mean(lab_data2$top_tmax)  #0.541 sec
+range(lab_data2$top_tmax)  #min=0.302 sec  #max=1.35 sec
+
+t.test(lab_data2$side_tmax, lab_data2$top_tmax)  #p-value=0.413
+#the difference in time spent in each camera video is not significantly different
+```
+
+```{r}
+table(lab_data2$bipedal_quad_side)  #total = 139
+#sum(lab_data$bipedal_side)
+#sum bipedal_side = 5390 frames bipedal
+table(lab_data2$bipedal_quad_top)  #total = 139
+#sum(lab_data$bipedal_top)
+#sum bipedal_top = 6982 frames bipedal
+```
+
+```{r}
+#amount of obstacles crossed in fieldspeed data
+summary(fieldspeed$NumberClutter==0)
+summary(fieldspeed$NumberClutter==1)
+#0 obstacles = 13
+#1 obstacle = 3
+#>1 obstacle = 30
+
+mean(fieldspeed$NumberClutter)
+#mean clutter per movement = 3.56
+mean(fieldspeed$Distance)
+#mean distance per movement = 1.183 m
+
+3.56/1.183  #3.01 obstacles per meter
+```
+
+```{r}
+#trying to make a pie chart of substrates in habitat assessment
+ggplot(field_transect_data_totals, aes (x="", y = distance_m, fill = substrate)) + 
+  geom_col(position = 'stack', width = 1) +
+  geom_text(aes(label = percent_type, x = 1.2),
+            position = position_stack(vjust = 0.5)) +
+  scale_fill_brewer(palette = "Blues", direction = -1) +
+  theme(plot.title = element_text(hjust=0.5),
+        axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(fill = "Substrate",
+       x = NULL,
+       y = NULL,
+       title = NULL) + 
+    coord_polar("y", start = 0) +
+  theme_void() 
+```
+
 
 
