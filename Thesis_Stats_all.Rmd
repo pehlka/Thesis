@@ -43,6 +43,9 @@ field_transect_data_totals_condensed <- read.csv("~/College of Charleston/Thesis
 field_transect_data_totals_heaviness <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_heaviness.csv")
   #field transect susbtrate totals broken into heavy/light/sand
 field_transect_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrates_condensed.csv")
+  #field transect data broken into debris, mixed and sand to match lab data
+fieldspeed_substrate_percent <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_substrate_percent.csv")
+  #field data with substrate percentages
 ```
 
 
@@ -79,8 +82,8 @@ ggplot(field_transect_data_totals, aes(x=substrate, y=distance_m)) +
 #bar plot of habitat assessment substrate totals condensed
 ggplot(field_transect_condensed, aes(x=substrate, y=distance_m)) +
   geom_bar(stat = "identity", fill = "steelblue") +
-  labs(x = "Substrate", y = "Distance (m)", title = "Habitat Assessment") +
-  geom_text(aes(x=substrate, y = distance_m, label = percent_type, vjust = 1), size=3, 
+  labs(x = "Substrate", y = "Distance (m)") +
+  geom_text(aes(x=substrate, y = distance_m, label = percent_type, vjust = 1), size=4, 
             color = "white") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -106,10 +109,10 @@ table(fieldspeed$Substrate.Type == "")        #2  (4.3%)
 
 ```{r}
 #bar plot of field data substrate totals
-ggplot(fieldspeed_reduced, aes(x=Substrate.Type, y=Distance)) +
-  geom_bar(stat = "identity", fill = "steelblue", width = 0.5) +
+ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
   labs(x = "Substrate", y = "Distance Traveled (m)") +
-  geom_text(aes(x=Substrate.Type, y = Distance, label = PercentSubstrate, vjust = 1), size=3, 
+  geom_text(aes(x=Substrate.Type, y = Distance, label = PercentSubstrate, vjust = 1), size=4, 
             color = "white") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -120,6 +123,24 @@ ggplot(fieldspeed_reduced, aes(x=Substrate.Type, y=Distance)) +
         axis.text = element_text(face = "bold"))
 ```
 
+
+```{r}
+#Chi Square test to see if % habitat is related to % field data
+  #Ho: % habitat and % field data are not associated, i.e., are independent
+  #Ha: % habitat and % field data are associeated, i.e. are dependent
+
+# Pearson's chi-squared test is used to determine whether there is a statistically significant difference between the expected frequencies and the observed frequencies in one or more categories of a contingency table.
+# a significant result from this test suggests that the distribution of proportions between the two groups is different.
+# need 2 categorical variables
+
+
+env <- matrix(c(1899.5, 1.05, 1307.95, 16.94, 637.45, 34.928), ncol = 2, byrow = TRUE)
+colnames(env) <- c("random", "used")
+rownames(env) <- c("debris", "mixed", "sand")
+env
+
+chisq.test(env)  #p < 2.2e-16  #significant - distribution of proportions between the two groups is different
+```
 
 
 Question 2: How does "available" habitat affect Racerunner locomotion?
@@ -156,8 +177,6 @@ ggplot(lab_data2, aes(y=log10(peak_v+1), x=substrate_type, fill = substrate_type
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
 ```
-
-
 
 
 ```{r}
@@ -204,7 +223,7 @@ lme.log.side.amax.sub.tukey  #no significant differences in any substrate's acce
 ggplot(lab_data2, aes(y=log10(side_amax+1), x=substrate_type, fill = substrate_type)) +
   geom_boxplot() + 
   scale_fill_brewer(palette = "Blues") +
-  labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m^2/s))) +
+  labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -344,6 +363,7 @@ ggplot(data = fieldspeed_reduced, aes(x = Substrate.Type, y = Speed, fill = Subs
 
 #Substrate type doesn't appear to affect speed at all
 ```
+
 
 
 ```{r}
