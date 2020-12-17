@@ -2162,4 +2162,160 @@ ggplot(field_transect_data_totals, aes (x="", y = distance_m, fill = substrate))
 ```
 
 
+CHI-SQUARED TEST (for available habitat (random) vs. field data (used))
+
+```{r}
+#use an example
+iris.data <- iris
+iris.data$size <- ifelse(iris.data$Sepal.Length < median(iris.data$Sepal.Length),
+  "small", "big")
+iris.data
+table(iris.data$Species, iris.data$size)
+```
+
+```{r}
+#Chi Square test to see if % habitat is related to % field data
+  #Ho: % habitat and % field data are not associated, i.e., are independent
+  #Ha: % habitat and % field data are associeated, i.e. are dependent
+
+#need 2 categorical variables
+
+chisq.test(field_transect_condensed$percent_type, fieldspeed_substrate_percent$PercentSubstrate)  #p=0.1991
+chisq.test(field_transect_condensed$substrate, fieldspeed_substrate_percent$Substrate.Type)  ##p=0.1991
+
+chi_sq <-  read.csv("~/College of Charleston/Thesis/Data/chi_square_habitat_vs_field.csv")
+
+table(field_transect_condensed$percent_type, fieldspeed_substrate_percent$PercentSubstrate)
+table(field_transect_condensed$substrate, field_transect_condensed$percent_type)
+table(field_transect_condensed$percent_type, fieldspeed_substrate_percent)
+
+chi2 <- read.csv("~/College of Charleston/Thesis/Data/chi_square_habitat_vs_field.csv")
+chi_rank <- table(chi2$habitat_rank, chi2$field_rank)
+
+dat <- ifelse(chi_sq$percent_habitat)
+```
+
+```{r}
+habitat <- matrix(c(49.41, 1.98, 34.02, 32.01, 16.58, 66.00), ncol = 2, byrow = TRUE)
+colnames(habitat) <- c("random", "used")
+rownames(habitat) <- c("debris", "mixed", "sand")
+habitat <- as.table(habitat)
+habitat
+summary(habitat)
+```
+
+```{r}
+#substrates = species
+# columns = random, used
+
+chi_sq$habitat <- ifelse(chi_sq$random == chi_sq$random, "random", "used")
+
+chi_sq$dat <- table(chi_sq$substrate,habitat)
+
+length(chi_sq$substrate)
+length(habitat)
+
+random <- matrix(c(49.41, 34.02, 16.58))
+random
+used <- matrix(c(1.98, 32.01, 66.00))
+used
+
+habitat <- table(random, used)
+habitat
+```
+
+```{r}
+#Chi Square test to see if % habitat is related to % field data
+  #Ho: % habitat and % field data are not associated, i.e., are independent
+  #Ha: % habitat and % field data are associeated, i.e. are dependent
+
+#need 2 categorical variables
+
+habitat <- matrix(c(49.41, 1.98, 34.02, 32.01, 16.58, 66.00), ncol = 2, byrow = TRUE)
+colnames(habitat) <- c("random", "used")
+rownames(habitat) <- c("debris", "mixed", "sand")
+habitat <- as.table(habitat)
+habitat
+summary(habitat)
+```
+
+```{r}
+chisq.test(habitat)
+prop.test(habitat)
+```
+
+```{r}
+prop.test(x = c(49.41, 1.98), n = c(100,100))
+```
+
+```{r}
+habitat2 <- matrix(c(0.4941, 0.0198, 0.3402, 0.3201, 0.1658, 0.66), ncol = 2, byrow = TRUE)
+colnames(habitat2) <- c("random", "used")
+rownames(habitat2) <- c("debris", "mixed", "sand")
+habitat2 <- as.table(habitat2)
+habitat2
+
+prop.test(habitat2)
+```
+
+```{r}
+dat <- matrix(c(0.4941, 0.0198, 0.3402, 0.3201, 0.1658, 0.66), ncol = 2, byrow = TRUE)
+colnames(dat) <- c("random", "used")
+dat
+
+substrate <- matrix(c("debris", "mixed", "sand"), ncol = 1)
+substrate
+
+hab <- table(substrate, dat)
+length(substrate)
+```
+
+```{r}
+random <- c(0.494, 0.3402, 0.1658)
+used <- c(0.0198, 0.3202, 0.6600)
+sum(random)
+sum(used)
+chisq.test(random, p=used)
+prop.test(random, used)
+prop.test(x=c(random, used), n=c(1,1))
+```
+
+```{r}
+dat2 <- matrix(c(1899.5, 1.05, 1307.95, 16.94, 637.45, 34.93), ncol = 2, byrow = TRUE)
+colnames(dat2) <- c("random", "used")
+rownames(dat2) <- c("debris", "mixed", "sand")
+dat2
+
+dat3 <- c(1899.5, 1.05, 1307.95, 16.94, 637.45, 34.93)
+dat3
+sub <- c("debris", "mixed", "random")
+sub
+
+dat <- read.csv("~/College of Charleston/Thesis/Data/dat.csv")
+dat$hab <- ifelse(dat$distance > 500, "random", "used")
+dat$hab
+table(dat$ï..substrate, dat$hab)
+chisq.test(dat$hab, dat$distance)
+```
+
+```{r}
+chisq <- read.csv("~/College of Charleston/Thesis/Data/chisq.csv")
+
+chisq2 <- as.table(as.matrix(chisq))
+chisq2
+
+chisq.test(chisq2)
+```
+
+```{r}
+# this one worked (I think). FINAL RESULTS - only this chunk is needed in final stats
+env <- matrix(c(1899.5, 1.05, 1307.95, 16.94, 637.45, 34.928), ncol = 2, byrow = TRUE)
+colnames(env) <- c("random", "used")
+rownames(env) <- c("debris", "mixed", "sand")
+env
+
+chisq.test(env)
+```
+
+
 
