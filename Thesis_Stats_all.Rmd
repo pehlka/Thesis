@@ -48,6 +48,8 @@ field_transect_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field 
   #field transect data broken into debris, mixed and sand to match lab data
 fieldspeed_substrate_percent <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_substrate_percent.csv")
   #field data with substrate percentages
+cover <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/cover.csv")
+  #data of cover in the habitat assessment
 ```
 
 
@@ -127,8 +129,6 @@ ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
 
 ```{r}
 #bar plot of cover
-cover <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/cover.csv")
-
 ggplot(cover, aes(x=substrate, y=distance_m)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(x = "Substrate", y = "Distance Cover (m)") +
