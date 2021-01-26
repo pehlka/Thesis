@@ -36,6 +36,8 @@ fieldspeed <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Dat
   #replacing all fieldspeed_final data and McElroy_habitat_data
 fieldspeed_reduced <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced_12.11.20.csv")
   #final fieldspeed data without 2 rows that did not have substrate type listed
+fieldspeed_jan <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced_1.26.21.csv")
+  #same as fieldspeed_reduced except rows without speed values were taken out; this enabled me to change the order of the boxplots
 field_transect_data_totals <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_Totals.csv") 
   #field transect substrate totals
 field_transect_data_totals_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_Totals_condensed.csv")
@@ -84,7 +86,7 @@ ggplot(field_transect_condensed, aes(x=substrate, y=distance_m)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(x = "Substrate", y = "Distance (m)") +
   geom_text(aes(x=substrate, y = distance_m, label = percent_type, vjust = 1), size=4, 
-            color = "white") +
+            color = "black") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -113,7 +115,7 @@ ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(x = "Substrate", y = "Distance Traveled (m)") +
   geom_text(aes(x=Substrate.Type, y = Distance, label = PercentSubstrate, vjust = 1), size=4, 
-            color = "white") +
+            color = "black") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -122,6 +124,25 @@ ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
 ```
+
+```{r}
+#bar plot of cover
+cover <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/cover.csv")
+
+ggplot(cover, aes(x=substrate, y=distance_m)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Substrate", y = "Distance Cover (m)") +
+  geom_text(aes(x=substrate, y = distance_m, label = percent, vjust = 1), size=4, 
+            color = "black") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
+```
+
 
 
 ```{r}
@@ -165,9 +186,9 @@ performance::r2(lme.log.side.vmax.sub2)  #C=0.374 #M=0.128
 lme.log.side.vmax.sub.tukey2 <- emmeans(lme.log.side.vmax.sub2, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
 lme.log.side.vmax.sub.tukey2  #significant differences between D-S (p<0.0001) and D-SD (p=0.0405), but not S-SD (p=0.0661)
 
-ggplot(lab_data2, aes(y=log10(peak_v+1), x=substrate_type, fill = substrate_type)) +
+ggplot(lab_data2, aes(y=(peak_v), x=substrate_type, fill = substrate_type)) +
   geom_boxplot() + 
-  scale_fill_brewer(palette = "Blues") +
+  scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
   labs(x = "Substrate", y = "Peak Velocity (m/s)") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -220,9 +241,9 @@ lme.log.side.amax.sub.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substra
                                        data=lab_data2)
 lme.log.side.amax.sub.tukey  #no significant differences in any substrate's acceleration
 
-ggplot(lab_data2, aes(y=log10(side_amax+1), x=substrate_type, fill = substrate_type)) +
+ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = substrate_type)) +
   geom_boxplot() + 
-  scale_fill_brewer(palette = "Blues") +
+  scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
   labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -268,9 +289,9 @@ performance::r2(lme.biped.sub)  #conditional: 0.426, marginal: 0.072
 lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2_omit)
 lme.biped.sub.tukey  #no significant differences in substrates
 
-ggplot(lab_data2_omit, aes(y=sqrt(bipedal_percent), x=substrate_type, fill = substrate_type)) +
+ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate_type)) +
   geom_boxplot() + 
-  scale_fill_brewer(palette = "Blues") +
+  scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
   labs(x = "Substrate", y = "Percent Bipedal") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -337,25 +358,24 @@ Question 3: Is the pattern observed in question #1 explained by question #2?
  Ha: Racerunners avoid moving on suboptimal parts of habitat.
 
 
-
 ```{r}
 #Speed vs. Substrate Type 
-mcelroy_speed_sub_lme2 <- lme(log10(Speed) ~ Substrate.Type + Sex, random = ~1|ID, 
-                              data = fieldspeed_reduced, na.action=na.omit)
-anova(mcelroy_speed_sub_lme2)  #p-value substrate & sex = insignificant
-summary(mcelroy_speed_sub_lme2)
-mcelroy_speed_sub_lme_tukey2 <- emmeans(mcelroy_speed_sub_lme2, pairwise ~ Substrate.Type, 
-                                        adjust = "tukey", data = fieldspeed_reduced)
-mcelroy_speed_sub_lme_tukey2  #no substrates are signficant
-hist(residuals(mcelroy_speed_sub_lme2))
-shapiro.test(residuals(mcelroy_speed_sub_lme2))  #normal
-performance::r2(mcelroy_speed_sub_lme2)
+mcelroy_speed_sub_lme3 <- lme(log10(Speed) ~ Substrate.Type + Sex, random = ~1|ID, 
+                              data = fieldspeed_jan, na.action=na.omit)
+anova(mcelroy_speed_sub_lme3)  #p-value substrate & sex = insignificant
+summary(mcelroy_speed_sub_lme3)
+mcelroy_speed_sub_lme_tukey3 <- emmeans(mcelroy_speed_sub_lme3, pairwise ~ Substrate.Type, 
+                                        adjust = "tukey", data = fieldspeed_jan)
+mcelroy_speed_sub_lme_tukey3  #no substrates are signficant
+hist(residuals(mcelroy_speed_sub_lme3))
+shapiro.test(residuals(mcelroy_speed_sub_lme3))  #normal
+performance::r2(mcelroy_speed_sub_lme3)
 
-ggplot(data = fieldspeed_reduced, aes(x = Substrate.Type, y = Speed, fill = Substrate.Type)) +
+ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y = Speed, fill = Substrate.Type)) + 
   geom_boxplot() +
-  scale_fill_brewer(palette = "Blues") +
-  labs(x = "Substrate Type", y = "Speed (m/s)") +
-  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  scale_fill_manual(values = c("lightskyblue2", "steelblue", "lightblue2")) +
+  labs(x = "Substrate", y = "Speed (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.background = element_blank()) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
@@ -363,7 +383,6 @@ ggplot(data = fieldspeed_reduced, aes(x = Substrate.Type, y = Speed, fill = Subs
 
 #Substrate type doesn't appear to affect speed at all
 ```
-
 
 
 ```{r}
@@ -429,6 +448,15 @@ hist(residuals(side.amax.biped))
 shapiro.test(residuals(side.amax.biped))  #normal
 summary(side.amax.biped)
 performance::r2(side.amax.biped)  #C=0.130  #M=0.005
+
+ggplot(lab_data2_omit, aes(log10(bipedal_percent+1), log10(side_amax+1))) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Percent Bipedal", y = bquote('Peak Acceleration' ~ (m/s^2))) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"),
+        axis.text = element_text(face = "bold"))
 
 #Bipedalism does not effect acceleration in side videos
 ```
