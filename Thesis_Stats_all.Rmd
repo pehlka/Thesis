@@ -50,6 +50,23 @@ fieldspeed_substrate_percent <- read.csv("~/College of Charleston/Thesis/Data/Mc
   #field data with substrate percentages
 cover <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/cover.csv")
   #data of cover in the habitat assessment
+field_obs_sub <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Obstacle_substrate.csv")
+  #field transect data - obstacles - broken into substrate type where the obstacles were found
+field_obs_type <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Obstacle_type.csv")
+  #field transect data - obstacles - broken into obstacle type
+
+demo_debris <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_debris.csv")
+  #demographics and top performance on debris 
+demo_mixed <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_mixed.csv")
+  #demographics and top performance on mixed
+demo_sand <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_sand.csv")
+  #demographics and top performance on sand
+demo_debris2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_debris_TL.csv")
+  #demographics and top performance on debris with lizards mizzing tails removed 
+demo_mixed2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_mixed_TL.csv")
+  #demographics and top performance on mixed with lizards mizzing tails removed 
+demo_sand2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_sand_TL.csv")
+  #demographics and top performance on sand with lizards mizzing tails removed 
 ```
 
 
@@ -141,6 +158,40 @@ ggplot(cover, aes(x=substrate, y=distance_m)) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
+```
+
+```{r}
+#bar plot of field obstacles per substrate
+ggplot(field_obs_sub, aes(x=substrate, y=number_obstacles)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Substrate", y = "Number of Obstacles per Substrate") +
+  geom_text(aes(x=substrate, y = number_obstacles, label = percent, vjust = 1), size=4, 
+            color = "black") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"),
+        plot.title = element_text(size = 15))
+```
+
+```{r}
+#bar plot of field type of obstacles
+ggplot(field_obs_type, aes(x = reorder(type_obstacle, +number_obstacle), y=number_obstacle)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Obstacle Type", y = "Number of Obstacles") +
+  geom_text(aes(x=type_obstacle, y = number_obstacle, label = percent, vjust = 1), size=4, 
+            color = "black") +
+  scale_x_discrete(labels = c("Unclassified", "Vegetation", "Debris", "Vine")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"),
+        plot.title = element_text(size = 15))
 ```
 
 
@@ -463,4 +514,168 @@ ggplot(lab_data2_omit, aes(log10(bipedal_percent+1), log10(side_amax+1))) +
 
 
 
+> Demographics: SVL, tail length
+
+
+```{r}
+#Checking for normality of data: max accelerations and velocities
+
+#histograms
+ggplot(data = demo, aes(top_acc))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Top Acceleration")   
+ggplot(data = demo, aes(top_velocity))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Top Velocity") 
+
+#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
+shapiro.test(demo$top_acc)  #normal
+shapiro.test(demo$top_velocity)  #normal
+shapiro.test(demo_debris$top_acc)  #normal
+shapiro.test(demo_debris$top_velocity)  #normal
+shapiro.test(demo_mixed$top_acc)  #normal
+shapiro.test(demo_mixed$top_velocity)  #normal
+shapiro.test(demo_sand$top_acc)  #normal
+shapiro.test(demo_sand$top_velocity)  #normal
+```
+
+#SVL
+
+```{r}
+#Debris - SVL vs. acceleration
+lm(demo_debris$top_acc ~ demo_debris$svl)  #p=0.041, significant
+debris.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_debris)
+anova(debris.svl.acc)  
+hist(residuals(debris.svl.acc))
+shapiro.test(residuals(debris.svl.acc))  
+summary(debris.svl.acc)
+performance::r2(debris.svl.acc)  
+```
+
+```{r}
+#Mixed - SVL vs. acceleration
+lm(demo_mixed$top_acc ~ demo_mixed$svl)   
+mixed.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_mixed)  #p=0.5863, not significant
+anova(mixed.svl.acc)  
+hist(residuals(mixed.svl.acc))
+shapiro.test(residuals(mixed.svl.acc))  
+summary(mixed.svl.acc)
+performance::r2(mixed.svl.acc)  
+```
+
+```{r}
+#Sand - SVL vs. acceleration
+lm(demo_sand$top_acc ~ demo_sand$svl)  
+sand.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_sand)  #p=0.4619, not significant
+anova(sand.svl.acc)  
+hist(residuals(sand.svl.acc))
+shapiro.test(residuals(sand.svl.acc))  
+summary(sand.svl.acc)
+performance::r2(sand.svl.acc)  
+```
+
+
+```{r}
+#Debris - SVL vs. velocity
+lm(demo_debris$top_velocity ~ demo_debris$top_velocity)  
+debris.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_debris)  #p=0.1968, not significant
+anova(debris.svl.vel)  
+hist(residuals(debris.svl.vel))
+shapiro.test(residuals(debris.svl.vel))  
+summary(debris.svl.vel)
+performance::r2(debris.svl.vel)  
+```
+
+```{r}
+#Mixed - SVL vs. velocity
+lm(demo_mixed$top_velocity ~ demo_mixed$top_velocity)  
+mixed.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_mixed)  #p=0.6829, not significant
+anova(mixed.svl.vel)  
+hist(residuals(mixed.svl.vel))
+shapiro.test(residuals(mixed.svl.vel))  #normal
+summary(mixed.svl.vel)
+performance::r2(mixed.svl.vel)  
+```
+
+```{r}
+#Sand - SVL vs. velocity
+lm(demo_sand$top_velocity ~ demo_sand$top_velocity)  
+sand.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_sand)  #p=0.3959, not significant
+anova(sand.svl.vel)  
+hist(residuals(sand.svl.vel))
+shapiro.test(residuals(sand.svl.vel))  
+summary(sand.svl.vel)
+performance::r2(sand.svl.vel)  
+```
+
+#Tail Length
+
+```{r}
+#Debris - TL vs. acceleration
+lm(demo_debris2$top_acc ~ demo_debris2$tail_length)  
+debris.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_debris2)  #p=0.443, not significant
+anova(debris.tl.acc)  
+hist(residuals(debris.tl.acc))
+shapiro.test(residuals(debris.tl.acc))  
+summary(debris.tl.acc)
+performance::r2(debris.tl.acc)  
+```
+
+```{r}
+#Mixed - tl vs. acceleration
+lm(demo_mixed2$top_acc ~ demo_mixed2$tail_length)   
+mixed.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_mixed2)  #p=0.4193, not significant
+anova(mixed.tl.acc)  
+hist(residuals(mixed.tl.acc))
+shapiro.test(residuals(mixed.tl.acc))  
+summary(mixed.tl.acc)
+performance::r2(mixed.tl.acc)  
+
+#the only one that is significant; tail length significantly effects top acceleration on mixed 
+```
+
+```{r}
+#Sand - tl vs. acceleration
+lm(demo_sand2$top_acc ~ demo_sand2$tail_length)  
+sand.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_sand2)  #p=0.6829, not significant
+anova(sand.tl.acc)  
+hist(residuals(sand.tl.acc))
+shapiro.test(residuals(sand.tl.acc))  
+summary(sand.tl.acc)
+performance::r2(sand.tl.acc)  
+```
+
+
+```{r}
+#Debris - tl vs. velocity
+lm(demo_debris2$top_velocity ~ demo_debris2$top_velocity)  
+debris.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_debris2)  #p=0.2924, not significant
+anova(debris.tl.vel)  
+hist(residuals(debris.tl.vel))
+shapiro.test(residuals(debris.tl.vel))  
+summary(debris.tl.vel)
+performance::r2(debris.tl.vel)  
+```
+
+```{r}
+#Mixed - tl vs. velocity
+lm(demo_mixed2$top_velocity ~ demo_mixed2$top_velocity)  
+mixed.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_mixed2)  #p=0.8614, not significant
+anova(mixed.tl.vel)  
+hist(residuals(mixed.tl.vel))
+shapiro.test(residuals(mixed.tl.vel))  #normal
+summary(mixed.tl.vel)
+performance::r2(mixed.tl.vel)  
+```
+
+```{r}
+#Sand - tl vs. velocity
+lm(demo_sand2$top_velocity ~ demo_sand2$top_velocity)  
+sand.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_sand2)  #p=0.9727, not significant
+anova(sand.tl.vel)  
+hist(residuals(sand.tl.vel))
+shapiro.test(residuals(sand.tl.vel))  
+summary(sand.tl.vel)
+performance::r2(sand.tl.vel)  
+```
 
