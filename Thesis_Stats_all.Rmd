@@ -21,51 +21,51 @@ library(lmtest)
 ```
 
 ```{r}
+#Set working directory
+setwd("~/College of Charleston/Thesis/R_Data")
+
 #Importing data
 
-#lab_data <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_10.26.20_removed_non-standstill_starts+NAs+negatives+3lizards.csv")  
-  #lab experiment data without no-standstill starts & 3 incomplete lizards
-lab_data2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_12.04.20_removed_non-standstill_starts+NAs+negatives+3lizards+peak_v_biped.csv")
+lab_data2 <- read.csv("lab_data2.csv")
   #includes peak velocity column and biped total column
 lab_data2_omit <- lab_data2[!is.na(lab_data2$bipedal_percent), ]
   #includes peak velocity column and biped total column with non-bipedal rows omitted
 #lab_data_omit <- lab_data[!is.na(lab_data$bipedal_percent), ]
   #lab_data without trials that were run quadrupedally with no bipedalism present
-fieldspeed <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_11.18.20.csv")
+fieldspeed <-  read.csv("fieldspeed.csv")
   #final fieldspeed data; double checked with data sheets & it's correct 11.18.20
   #replacing all fieldspeed_final data and McElroy_habitat_data
-fieldspeed_reduced <-  read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced_12.11.20.csv")
+fieldspeed_reduced <-  read.csv("fieldspeed_reduced.csv")
   #final fieldspeed data without 2 rows that did not have substrate type listed
-fieldspeed_jan <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_final_reduced_1.26.21.csv")
+fieldspeed_jan <- read.csv("fieldspeed_jan.csv")
   #same as fieldspeed_reduced except rows without speed values were taken out; this enabled me to change the order of the boxplots
-field_transect_data_totals <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_Totals.csv") 
+field_transect_data_totals <- read.csv("field_transect_data_totals.csv") 
   #field transect substrate totals
-field_transect_data_totals_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_Totals_condensed.csv")
+field_transect_data_totals_condensed <- read.csv("field_transect_data_totals_condensed.csv")
   #field transect substrate totals condensed into debris/mixed/vegetation/sand
-field_transect_data_totals_heaviness <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrate_heaviness.csv")
+field_transect_data_totals_heaviness <- read.csv("field_transect_data_totals_heaviness.csv")
   #field transect susbtrate totals broken into heavy/light/sand
-field_transect_condensed <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Substrates_condensed.csv")
+field_transect_condensed <- read.csv("field_transect_condensed.csv")
   #field transect data broken into debris, mixed and sand to match lab data
-fieldspeed_substrate_percent <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_substrate_percent.csv")
+fieldspeed_substrate_percent <- read.csv("fieldspeed_substrate_percent.csv")
   #field data with substrate percentages
-cover <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/cover.csv")
+cover <- read.csv("cover.csv")
   #data of cover in the habitat assessment
-field_obs_sub <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Obstacle_substrate.csv")
+field_obs_sub <- read.csv("field_obs_sub.csv")
   #field transect data - obstacles - broken into substrate type where the obstacles were found
-field_obs_type <- read.csv("~/College of Charleston/Thesis/Data/Field Transects/Field_Transects_Obstacle_type.csv")
+field_obs_type <- read.csv("field_obs_type.csv")
   #field transect data - obstacles - broken into obstacle type
-
-demo_debris <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_debris.csv")
+demo_debris <- read.csv("demo_debris.csv")
   #demographics and top performance on debris 
-demo_mixed <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_mixed.csv")
+demo_mixed <- read.csv("demo_mixed.csv")
   #demographics and top performance on mixed
-demo_sand <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_sand.csv")
+demo_sand <- read.csv("demo_sand.csv")
   #demographics and top performance on sand
-demo_debris2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_debris_TL.csv")
+demo_debris2 <- read.csv("demo_debris2.csv")
   #demographics and top performance on debris with lizards mizzing tails removed 
-demo_mixed2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_mixed_TL.csv")
+demo_mixed2 <- read.csv("demo_mixed2.csv")
   #demographics and top performance on mixed with lizards mizzing tails removed 
-demo_sand2 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_2.8.21_demographics_sand_TL.csv")
+demo_sand2 <- read.csv("demo_sand2.csv")
   #demographics and top performance on sand with lizards mizzing tails removed 
 ```
 
@@ -678,4 +678,3 @@ shapiro.test(residuals(sand.tl.vel))
 summary(sand.tl.vel)
 performance::r2(sand.tl.vel)  
 ```
-
