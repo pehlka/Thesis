@@ -69,6 +69,15 @@ demo_sand2 <- read.csv("demo_sand2.csv")
   #demographics and top performance on sand with lizards mizzing tails removed 
 ```
 
+```{r}
+#Additional Data 
+
+#Habitat assessment transect GPS points
+##all latitude points are East and all longitude points are North
+transect_GPS_coordinates <- read.csv("transect_GPS_coordinates.csv")
+```
+
+
 
 Question 1: Do Racerunners use their habitat randomly or non-randomly?
  Ho: Racerunners use their habitat randomly.
@@ -249,7 +258,6 @@ ggplot(lab_data2, aes(y=(peak_v), x=substrate_type, fill = substrate_type)) +
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
 ```
-
 
 ```{r}
 #creating labels for histograms
