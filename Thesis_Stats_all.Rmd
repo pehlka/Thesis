@@ -14,10 +14,6 @@ library(car)
 library(emmeans)
 library(nlme)
 library(lmtest)
-
-#library(dplyr)
-#library(tidyverse)
-#library(forcats)
 ```
 
 ```{r}
@@ -282,6 +278,38 @@ summaryBy(peak_v ~ substrate_type, data = lab_data2,
           FUN = list(mean, median, min, max))
 ```
 
+```{r}
+#Velocity vs Substrate + Bipedalism: Combined
+lme.vmax.sub.biped3 <- lme(log10(peak_v+1) ~ substrate_type + biped_combined, random = ~1|ID, data = lab_data2)
+anova(lme.vmax.sub.biped3)  #p_substrate < 0.0001,  p_biped_comb < 0.0001
+ggplot(lab_data2, aes(residuals(lme.vmax.sub.biped3))) + 
+  geom_histogram(bins = 11, color = "white") +
+  labs(x = "Residuals of lme.vmax.sub.biped") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.vmax.sub.biped3))  #normal
+summary(lme.vmax.sub.biped3)
+performance::r2(lme.vmax.sub.biped3)  #C=0.466, M=0.335
+lme.lme.vmax.sub.biped.tukey3 <- emmeans(lme.vmax.sub.biped3, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.lme.vmax.sub.biped.tukey3  #D-S p=0.0006, D-SD p=0.0399, S-SD p=0.2526
+  #bipedalism is significantly different between debris and sand 
+```
+
+```{r}
+#ggplot for velocity  vs. substrate separated into bipedalism for combined
+ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
+  geom_boxplot() + 
+  scale_fill_discrete(name = "Bipedal/Quadrupedal", labels = c("bipedal", "quadrupedal")) +
+  labs(x = "Substrate", y = "Peak Velocity (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
+```
 
 ```{r}
 #Acceleration vs Substrate Type - Side
