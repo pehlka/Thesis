@@ -2429,3 +2429,142 @@ ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
 ```
 
 
+> SVL
+
+```{r}
+RR_demo <- read.csv("~/College of Charleston/Thesis/Data/Racerunner_demographics2.csv")
+```
+
+```{r}
+#Peak Velocity (all) vs SVL 
+lme.log.side.vmax.svl <- lme(log10(peak_v+1) ~ svl, random = ~1|ID, data = RR_demo)
+anova(lme.log.side.vmax.svl)  #p-value =0.6383, insignificant
+ggplot(RR_demo, aes(residuals(lme.log.side.vmax.svl))) + 
+  geom_histogram(bins = 11, color = "white") +
+  labs(x = "Residuals of lme.log.side.vmax.svl") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.log.side.vmax.svl))  #normal
+summary(lme.log.side.vmax.svl)
+performance::r2(lme.log.side.vmax.svl)  #C=0.217, M=0.006
+
+#SVL is insignificant on peak velocity
+```
+
+```{r}
+#Acceleration (all) vs Sex - Side
+lme.log.amax.svl <- lme(log10(peak_acc+1) ~ svl, random = ~1|ID, data = RR_demo)
+anova(lme.log.amax.svl)  #p-value = 0.7712, not significant
+ggplot(RR_demo, aes(residuals(lme.log.amax.svl))) + 
+  geom_histogram(bins = 8, color = "white") +
+  labs(x = "Residuals of lme.log.amax.svl") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.log.amax.svl))  #normal
+summary(lme.log.amax.svl)
+performance::r2(lme.log.amax.svl) #C=0.118, M=0.002
+
+#svl is insignificant for acceleration
+```
+
+> Tail length
+
+```{r}
+#Peak Velocity (all) vs tail length 
+lme.log.side.vmax.tail <- lme(log10(peak_v+1) ~ tail_length, random = ~1|ID, data = RR_demo)
+anova(lme.log.side.vmax.tail)  #p-value =0.168, insignificant
+ggplot(RR_demo, aes(residuals(lme.log.side.vmax.tail))) + 
+  geom_histogram(bins = 11, color = "white") +
+  labs(x = "Residuals of lme.log.side.vmax.tail") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.log.side.vmax.tail))  #normal
+summary(lme.log.side.vmax.tail)
+performance::r2(lme.log.side.vmax.tail)  #C=0.214, M=0.048
+
+#tail is insignificant on peak velocity
+```
+
+```{r}
+#Acceleration (all) vs tail length - Side
+lme.log.amax.tail <- lme(log10(peak_acc+1) ~ tail_length, random = ~1|ID, data = RR_demo)
+anova(lme.log.amax.tail)  #p-value = 0.4579, not significant
+ggplot(RR_demo, aes(residuals(lme.log.amax.tail))) + 
+  geom_histogram(bins = 8, color = "white") +
+  labs(x = "Residuals of lme.log.amax.tail") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.log.amax.tail))  #normal
+summary(lme.log.amax.tail)
+performance::r2(lme.log.amax.tail) #C=0.117, M=0.012
+
+#tail is insignificant for acceleration
+```
+
+
+> SVL & tail Length for each substrate type
+
+```{r}
+#Peak Velocity (debris) vs SVL 
+lme.vmax.svl.d <- lme(log10(top_velocity+1) ~ svl, random = ~1|ID, data = demo_debris)
+anova(lme.vmax.svl.d)  #p-value =0.1832, insignificant
+shapiro.test(residuals(lme.vmax.svl.d))  #normal
+summary(lme.vmax.svl.d)
+
+#SVL is insignificant on peak velocity for debris
+```
+
+```{r}
+#Peak Velocity (mixed) vs SVL 
+lme.vmax.svl.m <- lme(log10(top_velocity+1) ~ svl, random = ~1|ID, data = demo_mixed)
+anova(lme.vmax.svl.m)  #p-value =0.6859, insignificant
+shapiro.test(residuals(lme.vmax.svl.m))  #normal
+summary(lme.vmax.svl.m)
+
+#SVL is insignificant on peak velocity for mixed
+```
+
+```{r}
+#Peak Velocity (sand) vs SVL 
+lme.vmax.svl.s <- lme(log10(top_velocity+1) ~ svl, random = ~1|ID, data = demo_sand)
+anova(lme.vmax.svl.s)  #p-value =0.4077, insignificant
+shapiro.test(residuals(lme.vmax.svl.s))  #p=0.045
+summary(lme.vmax.svl.s)
+
+#SVL is insignificant on peak velocity for mixed
+```
+
+
+```{r}
+#Peak Velocity (debris) vs tail 
+lme.vmax.tail.d <- lme(log10(top_velocity+1) ~ tail_length, random = ~1|ID, data = demo_debris2)
+anova(lme.vmax.tail.d)  #p-value =0.2838, insignificant
+shapiro.test(residuals(lme.vmax.tail.d))  #normal
+summary(lme.vmax.tail.d)
+
+#tail is insignificant on peak velocity for debris
+```
+
+```{r}
+#Peak Velocity (mixed) vs tail 
+lme.vmax.tail.m <- lme(log10(top_velocity+1) ~ tail_length, random = ~1|ID, data = demo_mixed2)
+anova(lme.vmax.tail.m)  #p-value =0.9034, insignificant
+shapiro.test(residuals(lme.vmax.tail.m))  #normal
+summary(lme.vmax.tail.m)
+
+#tail is insignificant on peak velocity for mixed
+```
+
+```{r}
+#Peak Velocity (sand) vs tail 
+lme.vmax.tail.s <- lme(log10(top_velocity+1) ~ tail_length, random = ~1|ID, data = demo_sand2)
+anova(lme.vmax.tail.s)  #p-value =0.9819, insignificant
+shapiro.test(residuals(lme.vmax.tail.s))  #normal
+summary(lme.vmax.tail.s)
+
+#tail is insignificant on peak velocity for mixed
+```
