@@ -75,7 +75,7 @@ RR_demo <- read.csv("RR_demo.csv")
 
 #Habitat assessment transect GPS points
 ##all latitude points are East and all longitude points are North
-#transect_GPS_coordinates <- read.csv("transect_GPS_coordinates.csv")
+transect_GPS_coordinates <- read.csv("transect_GPS_coordinates.csv")
 ```
 
 
@@ -291,7 +291,7 @@ performance::r2(lme.log.side.vmax.tail)  #C=0.214, M=0.048
 
 ```{r}
 #Velocity vs Substrate Type - total
-lme.log.side.vmax.sub2 <- lme(log10(peak_v+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data2)
+lme.log.side.vmax.sub2 <- lme(log10(peak_v+1) ~ substrate_type, random = ~1|ID, data = lab_data2)
 anova(lme.log.side.vmax.sub2)  #p-value substrate=0.0001, significant  #sex insignificant
 ggplot(lab_data2, aes(residuals(lme.log.side.vmax.sub2))) + 
   geom_histogram(bins = 11, color = "white") +
@@ -399,7 +399,7 @@ lme.lme.vmax.sub.biped.tukey4  #D-S p=0.0001, D-SD p=0.0081, S-SD p=0.3145
 
 ```{r}
 #Acceleration vs Substrate Type - Side
-lme.log.side.amax.sub <- lme(log10(side_amax+1) ~ substrate_type + sex, random = ~1|ID, data = lab_data2)
+lme.log.side.amax.sub <- lme(log10(side_amax+1) ~ substrate_type, random = ~1|ID, data = lab_data2)
 anova(lme.log.side.amax.sub)  #p-value substrate & sex = not significant
 ggplot(lab_data2, aes(residuals(lme.log.side.amax.sub))) + 
   geom_histogram(bins = 8, color = "white") +
@@ -410,8 +410,7 @@ ggplot(lab_data2, aes(residuals(lme.log.side.amax.sub))) +
 shapiro.test(residuals(lme.log.side.amax.sub))  #normal
 summary(lme.log.side.amax.sub)
 performance::r2(lme.log.side.amax.sub)   #C=0.047  #M=0.002
-lme.log.side.amax.sub.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", 
-                                       data=lab_data2)
+lme.log.side.amax.sub.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
 lme.log.side.amax.sub.tukey  #no significant differences in any substrate's acceleration
 
 ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = substrate_type)) +
@@ -478,7 +477,7 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
 
 ```{r}
 #Bipedalism vs Substrate Type
-lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type + sex, random = ~1|ID, data = lab_data2_omit)
+lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type, random = ~1|ID, data = lab_data2_omit)
 anova(lme.biped.sub)  #p-value substrate=0.0513  #barely not significant   #sex insignificant
 ggplot(lab_data2_omit, aes(residuals(lme.biped.sub))) + 
   geom_histogram(bins = 7, color = "white") +
@@ -575,7 +574,7 @@ anova(mcelroy_clutter_sex)  #p=0.9755
 
 ```{r}
 #Speed vs. Substrate Type 
-mcelroy_speed_sub_lme3 <- lme(log10(Speed) ~ Substrate.Type + Sex, random = ~1|ID, data = fieldspeed_jan, na.action=na.omit)
+mcelroy_speed_sub_lme3 <- lme(log10(Speed) ~ Substrate.Type, random = ~1|ID, data = fieldspeed_jan, na.action=na.omit)
 anova(mcelroy_speed_sub_lme3)  #p-value substrate & sex = insignificant
 summary(mcelroy_speed_sub_lme3)
 mcelroy_speed_sub_lme_tukey3 <- emmeans(mcelroy_speed_sub_lme3, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_jan)
@@ -664,7 +663,7 @@ ggplot(fieldspeed_reduced_debris, aes(NumberClutter, Speed))+
 
 ```{r}
 #Bipedalism's effect on peak velocity 
-peakv.biped <- lme(log10(peak_v+1) ~ log10(bipedal_percent+1) + sex, random = ~1|ID, data = lab_data2_omit)
+peakv.biped <- lme(log10(peak_v+1) ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data2_omit)
 anova(peakv.biped)  #p-value substrate=0.0655, insignificant   #sex = insignificant
 hist(residuals(peakv.biped))
 shapiro.test(residuals(peakv.biped))  #normal
