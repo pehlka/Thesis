@@ -2684,6 +2684,18 @@ anova(mcelroy_speed_sex)
 ```
 
 
+```{r}
+#library(esc)
+library(lsr)
+```
+
+```{r}
+cohensD(lab_data2$peak_v[lab_data2$biped_combined=="B"], lab_data2$peak_v[lab_data2$biped_combined=="Q"])  #1.379734   
+  #small effect size - small stregnth of association between variables
+ 
+cohensD(lab_data2$side_amax[lab_data2$biped_combined=="B"], lab_data2$side_amax[lab_data2$biped_combined=="Q"])  #0.1976821    
+  #large effect size - large strength of association between variables
+```
 
 
 
