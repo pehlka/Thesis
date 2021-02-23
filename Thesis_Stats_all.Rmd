@@ -554,6 +554,31 @@ ggplot(data = lab_data2_omit, aes(substrate_type, as.numeric(bipedal_percent), f
 ```
 
 
+```{r}
+#calculating effect size
+
+library(lsr)
+
+cohensD(lab_data2$peak_v[lab_data2$biped_combined=="B"], lab_data2$peak_v[lab_data2$biped_combined=="Q"])  #1.379734   
+  #small effect size - small stregnth of association between variables
+ 
+cohensD(lab_data2$side_amax[lab_data2$biped_combined=="B"], lab_data2$side_amax[lab_data2$biped_combined=="Q"])  #0.1976821    
+  #large effect size - large strength of association between variables
+
+
+#does this make sense? 
+#should velocity & bipedalism have a small association considering biped and quad velocities were pretty different? 
+#should acceleration and bipedalism have a large association since biped and quad accelerations were very similar? 
+```
+
+
+
+
+
+
+
+
+
 
 Question 3: Is the pattern observed in question #1 explained by question #2?
  Ho: Racerunners run the same on all substrates.
@@ -624,7 +649,7 @@ ggplot(fieldspeed_reduced, aes(NumberClutter, Speed))+
 ```
 
 ```{r}
-fieldspeed_reduced_debris <- read.csv("fieldspeed_reduced_debris.csv")
+fieldspeed_reduced_debris <- read.csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
 #same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis because by definition, debris substrates were completely made up of obstacles
 
 #Speed vs. Number Clutter
@@ -656,6 +681,25 @@ ggplot(fieldspeed_reduced_debris, aes(NumberClutter, Speed))+
         panel.background = element_blank(), 
         axis.line = element_line(color = "black"),
         axis.text = element_text(face = "bold"))
+
+
+#log-log plot with axes with log spacing
+library(scales)
+
+ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
+  geom_point(aes(color = fieldspeed_reduced_debris$Substrate.Type)) + 
+  geom_smooth(method = 'lm') +
+  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x))) +
+  #labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
+  scale_color_discrete(name = "Substrate Type", labels = c("Mixed", "Sand")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"),
+        axis.text = element_text(face = "bold"))
+
 
 #signficant relationship between speed and ground clutter crossed 
 ```
