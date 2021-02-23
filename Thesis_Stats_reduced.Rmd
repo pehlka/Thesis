@@ -2,7 +2,9 @@
 title: "Thesis_Stats_reduced"
 author: "Kayla Pehl"
 date: "2/21/2021"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 #This file contains models and plots from Thesis_Stats_all but only includes code that is being used in actual manuscript. All extra plots and code that are not currently in the manuscript are not in this file.
@@ -240,7 +242,6 @@ lme.lme.vmax.sub.biped.tukey3 <- emmeans(lme.vmax.sub.biped3, pairwise ~ substra
 lme.lme.vmax.sub.biped.tukey3  #D-S p=0.0006, D-SD p=0.0399, S-SD p=0.2526
   #bipedalism is significantly different between debris and sand and debris and mixed
 
-
 ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
   geom_boxplot() + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
@@ -275,7 +276,6 @@ lme.lme.vmax.sub.biped.tukey4  #D-S p=0.0001, D-SD p=0.0081, S-SD p=0.3145
   #interaction between substrate*bipedalism is significantly different between debris-sand and debris-mixed
 
 #interaction effect is overall not significant but it produces better p-value significance between D-S and D-SD than the non-interaction model
-
 ```
 
 ```{r}
@@ -339,6 +339,25 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"),
         legend.title = element_blank())
+```
+
+```{r}
+#Acceleration vs Substrate Type + Bipedalism Combined - Interaction effect
+lme.amax.sub.biped <- lme(log10(side_amax+1) ~ substrate_type * biped_combined, random = ~1|ID, data = lab_data2)
+anova(lme.amax.sub.biped)  #p-value insignificant for all
+ggplot(lab_data2, aes(residuals(lme.amax.sub.biped))) + 
+  geom_histogram(bins = 8, color = "white") +
+  labs(x = "Residuals of lme.amax.sub.biped") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.amax.sub.biped))  #normal
+summary(lme.amax.sub.biped)
+performance::r2(lme.amax.sub.biped)   #C=0.079  #M=0.030
+lme.amax.sub.biped.tukey <- emmeans(lme.amax.sub.biped, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.amax.sub.biped.tukey  #no significant differences in any substrate's acceleration
+
+#interaction between substrate type and bipedalism was insignificant
 ```
 
 ```{r}
@@ -457,7 +476,7 @@ ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y =
 ```
 
 ```{r}
-fieldspeed_reduced_debris <- read_csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
+fieldspeed_reduced_debris <- read.csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
 #same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis because by definition, debris substrates were completely made up of obstacles
 
 #Speed vs. Number Clutter
