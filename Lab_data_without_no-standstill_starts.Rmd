@@ -2640,7 +2640,172 @@ ggplot(fieldspeed_reduced_debris, aes(NumberClutter, Speed))+
 ```
 
 
+> Demographics: SVL, tail length
 
+```{r}
+#Checking for normality of data: max accelerations and velocities
+
+#histograms
+ggplot(data = demo, aes(top_acc))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Top Acceleration")   
+ggplot(data = demo, aes(top_velocity))  + 
+  geom_histogram(bins = 11, col = ("grey")) +
+  labs(title = "Top Velocity") 
+
+#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
+shapiro.test(demo$top_acc)  #normal
+shapiro.test(demo$top_velocity)  #normal
+shapiro.test(demo_debris$top_acc)  #normal
+shapiro.test(demo_debris$top_velocity)  #normal
+shapiro.test(demo_mixed$top_acc)  #normal
+shapiro.test(demo_mixed$top_velocity)  #normal
+shapiro.test(demo_sand$top_acc)  #normal
+shapiro.test(demo_sand$top_velocity)  #normal
+```
+
+#SVL
+
+```{r}
+#Debris - SVL vs. acceleration
+lm(demo_debris$top_acc ~ demo_debris$svl)  #p=0.041, significant
+debris.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_debris)
+anova(debris.svl.acc)  
+hist(residuals(debris.svl.acc))
+shapiro.test(residuals(debris.svl.acc))  
+summary(debris.svl.acc)
+performance::r2(debris.svl.acc)  
+```
+
+```{r}
+#Mixed - SVL vs. acceleration
+lm(demo_mixed$top_acc ~ demo_mixed$svl)   
+mixed.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_mixed)  #p=0.5863, not significant
+anova(mixed.svl.acc)  
+hist(residuals(mixed.svl.acc))
+shapiro.test(residuals(mixed.svl.acc))  
+summary(mixed.svl.acc)
+performance::r2(mixed.svl.acc)  
+```
+
+```{r}
+#Sand - SVL vs. acceleration
+lm(demo_sand$top_acc ~ demo_sand$svl)  
+sand.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_sand)  #p=0.4619, not significant
+anova(sand.svl.acc)  
+hist(residuals(sand.svl.acc))
+shapiro.test(residuals(sand.svl.acc))  
+summary(sand.svl.acc)
+performance::r2(sand.svl.acc)  
+```
+
+
+```{r}
+#Debris - SVL vs. velocity
+lm(demo_debris$top_velocity ~ demo_debris$top_velocity)  
+debris.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_debris)  #p=0.1968, not significant
+anova(debris.svl.vel)  
+hist(residuals(debris.svl.vel))
+shapiro.test(residuals(debris.svl.vel))  
+summary(debris.svl.vel)
+performance::r2(debris.svl.vel)  
+```
+
+```{r}
+#Mixed - SVL vs. velocity
+lm(demo_mixed$top_velocity ~ demo_mixed$top_velocity)  
+mixed.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_mixed)  #p=0.6829, not significant
+anova(mixed.svl.vel)  
+hist(residuals(mixed.svl.vel))
+shapiro.test(residuals(mixed.svl.vel))  #normal
+summary(mixed.svl.vel)
+performance::r2(mixed.svl.vel)  
+```
+
+```{r}
+#Sand - SVL vs. velocity
+lm(demo_sand$top_velocity ~ demo_sand$top_velocity)  
+sand.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_sand)  #p=0.3959, not significant
+anova(sand.svl.vel)  
+hist(residuals(sand.svl.vel))
+shapiro.test(residuals(sand.svl.vel))  
+summary(sand.svl.vel)
+performance::r2(sand.svl.vel)  
+```
+
+#Tail Length
+
+```{r}
+#Debris - TL vs. acceleration
+lm(demo_debris2$top_acc ~ demo_debris2$tail_length)  
+debris.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_debris2)  #p=0.443, not significant
+anova(debris.tl.acc)  
+hist(residuals(debris.tl.acc))
+shapiro.test(residuals(debris.tl.acc))  
+summary(debris.tl.acc)
+performance::r2(debris.tl.acc)  
+```
+
+```{r}
+#Mixed - tl vs. acceleration
+lm(demo_mixed2$top_acc ~ demo_mixed2$tail_length)   
+mixed.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_mixed2)  #p=0.4193, not significant
+anova(mixed.tl.acc)  
+hist(residuals(mixed.tl.acc))
+shapiro.test(residuals(mixed.tl.acc))  
+summary(mixed.tl.acc)
+performance::r2(mixed.tl.acc)  
+
+#the only one that is significant; tail length significantly effects top acceleration on mixed 
+```
+
+```{r}
+#Sand - tl vs. acceleration
+lm(demo_sand2$top_acc ~ demo_sand2$tail_length)  
+sand.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_sand2)  #p=0.6829, not significant
+anova(sand.tl.acc)  
+hist(residuals(sand.tl.acc))
+shapiro.test(residuals(sand.tl.acc))  
+summary(sand.tl.acc)
+performance::r2(sand.tl.acc)  
+```
+
+
+```{r}
+#Debris - tl vs. velocity
+lm(demo_debris2$top_velocity ~ demo_debris2$top_velocity)  
+debris.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_debris2)  #p=0.2924, not significant
+anova(debris.tl.vel)  
+hist(residuals(debris.tl.vel))
+shapiro.test(residuals(debris.tl.vel))  
+summary(debris.tl.vel)
+performance::r2(debris.tl.vel)  
+```
+
+```{r}
+#Mixed - tl vs. velocity
+lm(demo_mixed2$top_velocity ~ demo_mixed2$top_velocity)  
+mixed.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_mixed2)  #p=0.8614, not significant
+anova(mixed.tl.vel)  
+hist(residuals(mixed.tl.vel))
+shapiro.test(residuals(mixed.tl.vel))  #normal
+summary(mixed.tl.vel)
+performance::r2(mixed.tl.vel)  
+```
+
+```{r}
+#Sand - tl vs. velocity
+lm(demo_sand2$top_velocity ~ demo_sand2$top_velocity)  
+sand.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_sand2)  #p=0.9727, not significant
+anova(sand.tl.vel)  
+hist(residuals(sand.tl.vel))
+shapiro.test(residuals(sand.tl.vel))  
+summary(sand.tl.vel)
+performance::r2(sand.tl.vel)  
+```
+
+
+> Analysis of biped during first 10% and last 10% of runs
 
 ```{r}
 biped_10 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_2.19.21_biped_first_last_10%.csv")
@@ -2684,6 +2849,8 @@ anova(mcelroy_speed_sex)
 ```
 
 
+> Finding Effect Size
+
 ```{r}
 #library(esc)
 library(lsr)
@@ -2697,6 +2864,32 @@ cohensD(lab_data2$side_amax[lab_data2$biped_combined=="B"], lab_data2$side_amax[
   #large effect size - large strength of association between variables
 ```
 
+```{r}
+fieldspeed_reduced_debris2 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_reduced_debris2.csv")
+
+mcelroy_speed_clutter_lme_log5 <- lme(log(Speed+1) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_reduced_debris2, na.action = na.omit)
+anova(mcelroy_speed_clutter_lme_log5)  #p-value
+shapiro.test(residuals(mcelroy_speed_clutter_lme_log5))  #normal
+hist(residuals(mcelroy_speed_clutter_lme_log5))
+performance::r2(mcelroy_speed_clutter_lme_log5)  #ok  #C=   #M=
+summary(mcelroy_speed_clutter_lme_log5)
+
+model1 <- lm(Speed ~ NumberClutter, data = fieldspeed_reduced_debris2)
+anova(model1)
+summary(model1)  #p=0.246, insignificant
+shapiro.test(residuals(model1))  #normal
+
+model2 <- lm(log10.speed. ~ log.NumberClutter, data = fieldspeed_reduced_debris2)
+anova(model2)
+summary(model2)  #p=0.2103, insignificant
+shapiro.test(residuals(model2))  #not normal
+
+model3 <- lm(log10.speed. ~ log.numberClutter., data = fieldspeed_reduced_debris2)
+anova(model3)
+summary(model3)  #p=0.3427, insignificant
+shapiro.test(residuals(model3))  #not normal
+
+```
 
 
 
