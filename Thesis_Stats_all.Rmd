@@ -35,6 +35,8 @@ fieldspeed <-  read.csv("fieldspeed.csv")
   #replacing all fieldspeed_final data and McElroy_habitat_data
 fieldspeed_reduced <-  read.csv("fieldspeed_reduced.csv")
   #final fieldspeed data without 2 rows that did not have substrate type listed
+fieldspeed_reduced_debris <- read.csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
+  #same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis b/c debris substrates were completely made up of obstacles
 fieldspeed_jan <- read.csv("fieldspeed_jan.csv")
   #same as fieldspeed_reduced except rows without speed values were taken out; this enabled me to change the order of the boxplots
 field_transect_data_totals <- read.csv("field_transect_data_totals.csv") 
@@ -388,9 +390,11 @@ ggplot(lab_data2, aes(residuals(lme.vmax.sub.biped4))) +
 shapiro.test(residuals(lme.vmax.sub.biped4))  #normal
 summary(lme.vmax.sub.biped4)
 performance::r2(lme.vmax.sub.biped4)  #C=0.482, M=0.354
-lme.lme.vmax.sub.biped.tukey4 <- emmeans(lme.vmax.sub.biped4, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.lme.vmax.sub.biped.tukey4 <- emmeans(lme.vmax.sub.biped4, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
 lme.lme.vmax.sub.biped.tukey4  #D-S p=0.0001, D-SD p=0.0081, S-SD p=0.3145
   #interaction between substrate*bipedalism is significantly different between debris-sand and debris-mixed
+lme.lme.vmax.sub.biped.tukey5 <- emmeans(lme.vmax.sub.biped4, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.lme.vmax.sub.biped.tukey5 
 
 #interaction effect is overall not significant but it produces better p-value significance between D-S and D-SD than the non-interaction model
 
@@ -476,6 +480,27 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
 ```
 
 ```{r}
+#Acceleration vs Substrate Type + Bipedalism Combined - Interaction effect
+lme.amax.sub.biped <- lme(log10(side_amax+1) ~ substrate_type * biped_combined, random = ~1|ID, data = lab_data2)
+anova(lme.amax.sub.biped)  #p-value insignificant for all
+ggplot(lab_data2, aes(residuals(lme.amax.sub.biped))) + 
+  geom_histogram(bins = 8, color = "white") +
+  labs(x = "Residuals of lme.amax.sub.biped") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"))
+shapiro.test(residuals(lme.amax.sub.biped))  #normal
+summary(lme.amax.sub.biped)
+performance::r2(lme.amax.sub.biped)   #C=0.079  #M=0.030
+lme.amax.sub.biped.tukey <- emmeans(lme.amax.sub.biped, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.amax.sub.biped.tukey  #no significant differences in any substrate's acceleration
+lme.amax.sub.biped.tukey2 <- emmeans(lme.amax.sub.biped, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
+lme.amax.sub.biped.tukey2
+
+#interaction between substrate type and bipedalism was insignificant
+```
+
+```{r}
 #Bipedalism vs Substrate Type
 lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type, random = ~1|ID, data = lab_data2_omit)
 anova(lme.biped.sub)  #p-value substrate=0.0513  #barely not significant   #sex insignificant
@@ -554,30 +579,6 @@ ggplot(data = lab_data2_omit, aes(substrate_type, as.numeric(bipedal_percent), f
 ```
 
 
-```{r}
-#calculating effect size
-
-library(lsr)
-
-cohensD(lab_data2$peak_v[lab_data2$biped_combined=="B"], lab_data2$peak_v[lab_data2$biped_combined=="Q"])  #1.379734   
-  #small effect size - small stregnth of association between variables
- 
-cohensD(lab_data2$side_amax[lab_data2$biped_combined=="B"], lab_data2$side_amax[lab_data2$biped_combined=="Q"])  #0.1976821    
-  #large effect size - large strength of association between variables
-
-
-#does this make sense? 
-#should velocity & bipedalism have a small association considering biped and quad velocities were pretty different? 
-#should acceleration and bipedalism have a large association since biped and quad accelerations were very similar? 
-```
-
-
-
-
-
-
-
-
 
 
 Question 3: Is the pattern observed in question #1 explained by question #2?
@@ -623,7 +624,7 @@ ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y =
 
 
 ```{r}
-# DELETE ?!! (replaced by chunk below)
+# DELETE !! (replaced by chunk below)
 
 #Speed vs. Number Clutter
 mcelroy_speed_clutter_lme_log3 <- lme(Speed ~ log10(NumberClutter+1) + Sex, random = ~1|ID, data = fieldspeed, na.action = na.omit)
@@ -649,9 +650,6 @@ ggplot(fieldspeed_reduced, aes(NumberClutter, Speed))+
 ```
 
 ```{r}
-fieldspeed_reduced_debris <- read.csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
-#same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis because by definition, debris substrates were completely made up of obstacles
-
 #Speed vs. Number Clutter
 mcelroy_speed_clutter_lme_log4 <- lme(log(Speed+1) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_reduced_debris, na.action = na.omit)
 anova(mcelroy_speed_clutter_lme_log4)  #p-value=0.0276, significant
@@ -660,11 +658,11 @@ hist(residuals(mcelroy_speed_clutter_lme_log4))
 performance::r2(mcelroy_speed_clutter_lme_log4)  #ok  #C=0.145   #M=0.145
 summary(mcelroy_speed_clutter_lme_log4)
 
-#log-log plot
+#log-log plot -- use this graph!
 ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
   geom_point(aes(color = fieldspeed_reduced_debris$Substrate.Type)) + 
   geom_smooth(method = 'lm') +
-  #labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
+  labs(x = "log10(Ground Clutter Crossed)", y = "log10(Speed) (m/s)") +
   scale_color_discrete(name = "Substrate Type", labels = c("Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -693,6 +691,7 @@ ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
                 labels = trans_format("log10", math_format(10^.x))) +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks() +
   #labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
   scale_color_discrete(name = "Substrate Type", labels = c("Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -760,167 +759,3 @@ ggplot(lab_data2_omit, aes(bipedal_percent, side_amax)) +
 
 
 
-> Demographics: SVL, tail length
-
-
-```{r}
-#Checking for normality of data: max accelerations and velocities
-
-#histograms
-ggplot(data = demo, aes(top_acc))  + 
-  geom_histogram(bins = 11, col = ("grey")) +
-  labs(title = "Top Acceleration")   
-ggplot(data = demo, aes(top_velocity))  + 
-  geom_histogram(bins = 11, col = ("grey")) +
-  labs(title = "Top Velocity") 
-
-#Shapiro-Wilks normality test (p-value >0.05 assumes normality)
-shapiro.test(demo$top_acc)  #normal
-shapiro.test(demo$top_velocity)  #normal
-shapiro.test(demo_debris$top_acc)  #normal
-shapiro.test(demo_debris$top_velocity)  #normal
-shapiro.test(demo_mixed$top_acc)  #normal
-shapiro.test(demo_mixed$top_velocity)  #normal
-shapiro.test(demo_sand$top_acc)  #normal
-shapiro.test(demo_sand$top_velocity)  #normal
-```
-
-#SVL
-
-```{r}
-#Debris - SVL vs. acceleration
-lm(demo_debris$top_acc ~ demo_debris$svl)  #p=0.041, significant
-debris.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_debris)
-anova(debris.svl.acc)  
-hist(residuals(debris.svl.acc))
-shapiro.test(residuals(debris.svl.acc))  
-summary(debris.svl.acc)
-performance::r2(debris.svl.acc)  
-```
-
-```{r}
-#Mixed - SVL vs. acceleration
-lm(demo_mixed$top_acc ~ demo_mixed$svl)   
-mixed.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_mixed)  #p=0.5863, not significant
-anova(mixed.svl.acc)  
-hist(residuals(mixed.svl.acc))
-shapiro.test(residuals(mixed.svl.acc))  
-summary(mixed.svl.acc)
-performance::r2(mixed.svl.acc)  
-```
-
-```{r}
-#Sand - SVL vs. acceleration
-lm(demo_sand$top_acc ~ demo_sand$svl)  
-sand.svl.acc <- lme(top_acc ~ svl, random = ~1|ID, data = demo_sand)  #p=0.4619, not significant
-anova(sand.svl.acc)  
-hist(residuals(sand.svl.acc))
-shapiro.test(residuals(sand.svl.acc))  
-summary(sand.svl.acc)
-performance::r2(sand.svl.acc)  
-```
-
-
-```{r}
-#Debris - SVL vs. velocity
-lm(demo_debris$top_velocity ~ demo_debris$top_velocity)  
-debris.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_debris)  #p=0.1968, not significant
-anova(debris.svl.vel)  
-hist(residuals(debris.svl.vel))
-shapiro.test(residuals(debris.svl.vel))  
-summary(debris.svl.vel)
-performance::r2(debris.svl.vel)  
-```
-
-```{r}
-#Mixed - SVL vs. velocity
-lm(demo_mixed$top_velocity ~ demo_mixed$top_velocity)  
-mixed.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_mixed)  #p=0.6829, not significant
-anova(mixed.svl.vel)  
-hist(residuals(mixed.svl.vel))
-shapiro.test(residuals(mixed.svl.vel))  #normal
-summary(mixed.svl.vel)
-performance::r2(mixed.svl.vel)  
-```
-
-```{r}
-#Sand - SVL vs. velocity
-lm(demo_sand$top_velocity ~ demo_sand$top_velocity)  
-sand.svl.vel <- lme(top_velocity ~ svl, random = ~1|ID, data = demo_sand)  #p=0.3959, not significant
-anova(sand.svl.vel)  
-hist(residuals(sand.svl.vel))
-shapiro.test(residuals(sand.svl.vel))  
-summary(sand.svl.vel)
-performance::r2(sand.svl.vel)  
-```
-
-#Tail Length
-
-```{r}
-#Debris - TL vs. acceleration
-lm(demo_debris2$top_acc ~ demo_debris2$tail_length)  
-debris.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_debris2)  #p=0.443, not significant
-anova(debris.tl.acc)  
-hist(residuals(debris.tl.acc))
-shapiro.test(residuals(debris.tl.acc))  
-summary(debris.tl.acc)
-performance::r2(debris.tl.acc)  
-```
-
-```{r}
-#Mixed - tl vs. acceleration
-lm(demo_mixed2$top_acc ~ demo_mixed2$tail_length)   
-mixed.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_mixed2)  #p=0.4193, not significant
-anova(mixed.tl.acc)  
-hist(residuals(mixed.tl.acc))
-shapiro.test(residuals(mixed.tl.acc))  
-summary(mixed.tl.acc)
-performance::r2(mixed.tl.acc)  
-
-#the only one that is significant; tail length significantly effects top acceleration on mixed 
-```
-
-```{r}
-#Sand - tl vs. acceleration
-lm(demo_sand2$top_acc ~ demo_sand2$tail_length)  
-sand.tl.acc <- lme(top_acc ~ tail_length, random = ~1|ID, data = demo_sand2)  #p=0.6829, not significant
-anova(sand.tl.acc)  
-hist(residuals(sand.tl.acc))
-shapiro.test(residuals(sand.tl.acc))  
-summary(sand.tl.acc)
-performance::r2(sand.tl.acc)  
-```
-
-
-```{r}
-#Debris - tl vs. velocity
-lm(demo_debris2$top_velocity ~ demo_debris2$top_velocity)  
-debris.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_debris2)  #p=0.2924, not significant
-anova(debris.tl.vel)  
-hist(residuals(debris.tl.vel))
-shapiro.test(residuals(debris.tl.vel))  
-summary(debris.tl.vel)
-performance::r2(debris.tl.vel)  
-```
-
-```{r}
-#Mixed - tl vs. velocity
-lm(demo_mixed2$top_velocity ~ demo_mixed2$top_velocity)  
-mixed.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_mixed2)  #p=0.8614, not significant
-anova(mixed.tl.vel)  
-hist(residuals(mixed.tl.vel))
-shapiro.test(residuals(mixed.tl.vel))  #normal
-summary(mixed.tl.vel)
-performance::r2(mixed.tl.vel)  
-```
-
-```{r}
-#Sand - tl vs. velocity
-lm(demo_sand2$top_velocity ~ demo_sand2$top_velocity)  
-sand.tl.vel <- lme(top_velocity ~ tail_length, random = ~1|ID, data = demo_sand2)  #p=0.9727, not significant
-anova(sand.tl.vel)  
-hist(residuals(sand.tl.vel))
-shapiro.test(residuals(sand.tl.vel))  
-summary(sand.tl.vel)
-performance::r2(sand.tl.vel)  
-```
