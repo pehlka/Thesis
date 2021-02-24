@@ -2865,6 +2865,7 @@ cohensD(lab_data2$side_amax[lab_data2$biped_combined=="B"], lab_data2$side_amax[
 ```
 
 ```{r}
+#trying to figure out Speed~NumberClutter issues
 fieldspeed_reduced_debris2 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_reduced_debris2.csv")
 
 mcelroy_speed_clutter_lme_log5 <- lme(log(Speed+1) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_reduced_debris2, na.action = na.omit)
