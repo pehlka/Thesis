@@ -2869,16 +2869,18 @@ cohensD(lab_data2$side_amax[lab_data2$biped_combined=="B"], lab_data2$side_amax[
 fieldspeed_reduced_debris2 <- read.csv("~/College of Charleston/Thesis/Data/McElroy Habitat Data/fieldspeed_reduced_debris2.csv")
 
 mcelroy_speed_clutter_lme_log5 <- lme(log(Speed+1) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_reduced_debris2, na.action = na.omit)
-anova(mcelroy_speed_clutter_lme_log5)  #p-value
+anova(mcelroy_speed_clutter_lme_log5)  #p-value=0.127
 shapiro.test(residuals(mcelroy_speed_clutter_lme_log5))  #normal
 hist(residuals(mcelroy_speed_clutter_lme_log5))
-performance::r2(mcelroy_speed_clutter_lme_log5)  #ok  #C=   #M=
+performance::r2(mcelroy_speed_clutter_lme_log5)  
 summary(mcelroy_speed_clutter_lme_log5)
 
 model1 <- lm(Speed ~ NumberClutter, data = fieldspeed_reduced_debris2)
 anova(model1)
 summary(model1)  #p=0.246, insignificant
 shapiro.test(residuals(model1))  #normal
+
+
 
 model2 <- lm(log10.speed. ~ log.NumberClutter, data = fieldspeed_reduced_debris2)
 anova(model2)
@@ -2890,6 +2892,10 @@ anova(model3)
 summary(model3)  #p=0.3427, insignificant
 shapiro.test(residuals(model3))  #not normal
 
+
+#Using lme model for log(speed) ~ log(ground clutter) produces a p-value of 0.127 and for some reason won't give me any R2 values. 
+#I ran a ln of speed ~ ground clutter (non-logged) and it produced a p-value of 0.246, which is still insignificant. I tried logging both speed and ground clutter crossed in excel before putting it in a ln model but the data for both models was not normal. 
+#In the lme log(speed) ~ substrate model the marginal and conditional R2 values are the same.
 ```
 
 
