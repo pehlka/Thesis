@@ -16,6 +16,7 @@ library(car)
 library(emmeans)
 library(nlme)
 library(lmtest)
+library(performance)
 ```
 
 ```{r}
@@ -622,32 +623,6 @@ ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y =
 #Substrate type doesn't appear to affect speed at all
 ```
 
-
-```{r}
-# DELETE !! (replaced by chunk below)
-
-#Speed vs. Number Clutter
-mcelroy_speed_clutter_lme_log3 <- lme(Speed ~ log10(NumberClutter+1) + Sex, random = ~1|ID, data = fieldspeed, na.action = na.omit)
-anova(mcelroy_speed_clutter_lme_log3)  #p-value clutter & sex = insignificant
-shapiro.test(residuals(mcelroy_speed_clutter_lme_log3))  #normal
-hist(residuals(mcelroy_speed_clutter_lme_log3))
-performance::r2(mcelroy_speed_clutter_lme_log3)  #ok  #C=0.265   #M=0.086
-summary(mcelroy_speed_clutter_lme_log3)
-
-ggplot(fieldspeed_reduced, aes(NumberClutter, Speed))+
-  geom_point(aes(color = fieldspeed_reduced$Substrate.Type)) + 
-  geom_smooth(method = 'lm') +
-  labs(x = "Ground Clutter Crossed", y = "Speed (m/s)") +
-  scale_color_discrete(name = "Substrate Type", labels = c("Debris", "Sand", "Mixed")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black"),
-        axis.text = element_text(face = "bold"))
-
-#slight upward trend: as ground clutter increased, speed also increased slightly, but insignificantly
-
-#the linear regression line shows a positive relationship between speed and ground clutter croseed, but the ANOVA says it's not significant.
-```
 
 ```{r}
 #Speed vs. Number Clutter
