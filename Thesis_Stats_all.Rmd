@@ -36,7 +36,7 @@ fieldspeed <-  read.csv("fieldspeed.csv")
   #replacing all fieldspeed_final data and McElroy_habitat_data
 fieldspeed_reduced <-  read.csv("fieldspeed_reduced.csv")
   #final fieldspeed data without 2 rows that did not have substrate type listed
-fieldspeed_reduced_debris <- read.csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
+fieldspeed_reduced_debris <- read.csv("fieldspeed_reduced_debris.csv")
   #same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis b/c debris substrates were completely made up of obstacles
 fieldspeed_jan <- read.csv("fieldspeed_jan.csv")
   #same as fieldspeed_reduced except rows without speed values were taken out; this enabled me to change the order of the boxplots
@@ -733,4 +733,38 @@ ggplot(lab_data2_omit, aes(bipedal_percent, side_amax)) +
 ```
 
 
+
+```{r}
+#trying to figure out Speed~NumberClutter issues
+fieldspeed_reduced_debris2 <- read.csv("fieldspeed_reduced_debris2.csv")
+
+mcelroy_speed_clutter_lme_log5 <- lme(log(Speed+1) ~ log10(NumberClutter+1), random = ~1|ID, data = fieldspeed_reduced_debris2, na.action = na.omit)
+anova(mcelroy_speed_clutter_lme_log5)  #p-value=0.127
+shapiro.test(residuals(mcelroy_speed_clutter_lme_log5))  #normal
+hist(residuals(mcelroy_speed_clutter_lme_log5))
+performance::r2(mcelroy_speed_clutter_lme_log5)  
+summary(mcelroy_speed_clutter_lme_log5)
+
+model1 <- lm(Speed ~ NumberClutter, data = fieldspeed_reduced_debris2)
+anova(model1)
+summary(model1)  #p=0.246, insignificant
+shapiro.test(residuals(model1))  #normal
+
+
+
+model2 <- lm(log10.speed. ~ log.NumberClutter, data = fieldspeed_reduced_debris2)
+anova(model2)
+summary(model2)  #p=0.2103, insignificant
+shapiro.test(residuals(model2))  #not normal
+
+model3 <- lm(log10.speed. ~ log.numberClutter., data = fieldspeed_reduced_debris2)
+anova(model3)
+summary(model3)  #p=0.3427, insignificant
+shapiro.test(residuals(model3))  #not normal
+
+
+#Using lme model for log(speed) ~ log(ground clutter) produces a p-value of 0.127 and for some reason won't give me any R2 values. 
+#I ran a ln of speed ~ ground clutter (non-logged) and it produced a p-value of 0.246, which is still insignificant. I tried logging both speed and ground clutter crossed in excel before putting it in a ln model but the data for both models was not normal. 
+#In the lme log(speed) ~ substrate model the marginal and conditional R2 values are the same.
+```
 
