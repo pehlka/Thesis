@@ -1,0 +1,232 @@
+---
+title: "Thesis_Stats_3.2.21"
+author: "Kayla Pehl"
+date: "3/2/2021"
+output: html_document
+---
+
+#This file contains analyses copied over from Thesis_Stats_all for Question 2. Models altered based off of Eric's 3/2/21 comments (via email). 
+
+```{r}
+#Loading necessary packages
+library(ggplot2)
+library(lme4)
+library(doBy)
+library(car)
+library(emmeans)
+library(nlme)
+library(lmtest)
+```
+
+```{r}
+#Set working directory
+setwd("~/College of Charleston/Thesis/R_Data")
+
+#Importing data
+
+RR_demo2 <- read.csv("RR_demo2.csv")
+  #demographics including peak velocity and acceleration (all and divided by substrate) for each lizard
+lab_data2 <- read.csv("lab_data2.csv")
+  #includes peak velocity column and biped total column
+lab_data2_omit <- lab_data2[!is.na(lab_data2$bipedal_percent), ]
+  #includes peak velocity column and biped total column with non-bipedal rows omitted
+#lab_data_omit <- lab_data[!is.na(lab_data$bipedal_percent), ]
+  #lab_data without trials that were run quadrupedally with no bipedalism present
+fieldspeed <-  read.csv("fieldspeed.csv")
+  #final fieldspeed data; double checked with data sheets & it's correct 11.18.20
+  #replacing all fieldspeed_final data and McElroy_habitat_data
+fieldspeed_reduced <-  read.csv("fieldspeed_reduced.csv")
+  #final fieldspeed data without 2 rows that did not have substrate type listed
+fieldspeed_reduced_debris <- read.csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
+  #same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis b/c debris substrates are made up of obstacles
+fieldspeed_jan <- read.csv("fieldspeed_jan.csv")
+  #same as fieldspeed_reduced except rows without speed values were taken out; this enabled me to change the order of the boxplots
+field_transect_data_totals <- read.csv("field_transect_data_totals.csv") 
+  #field transect substrate totals
+field_transect_data_totals_condensed <- read.csv("field_transect_data_totals_condensed.csv")
+  #field transect substrate totals condensed into debris/mixed/vegetation/sand
+field_transect_data_totals_heaviness <- read.csv("field_transect_data_totals_heaviness.csv")
+  #field transect susbtrate totals broken into heavy/light/sand
+field_transect_condensed <- read.csv("field_transect_condensed.csv")
+  #field transect data broken into debris, mixed and sand to match lab data
+fieldspeed_substrate_percent <- read.csv("fieldspeed_substrate_percent.csv")
+  #field data with substrate percentages
+```
+
+QUESITON 2
+
+1) Testing SVL, TL and SEX on Speed and Acc.  These are just simple linear models [example: lm(log10(peak_v)~SVL] because each lizard only has one observation for each variable on each substrate.   In fact, all of the mixed models are throwing an error because with only one observation per individual you cannot fit a mixed model!   I assume these are all not-signifcant (or maybe one is barely signicant).
+
+
+```{r}
+#Velocity 
+vel_sex <- lm(log10(peak_v) ~ sex, data = RR_demo2)   
+anova(vel_sex)   #p=0.1519
+
+vel_svl <- lm(log10(peak_v) ~ svl, data = RR_demo2)   
+anova(vel_svl)   #p=0.5978
+
+vel_tl <- lm(log10(peak_v) ~ tail_length, data = RR_demo2)   
+anova(vel_tl)   #p=0.1286
+
+#neither sex, SVL, or tail length affect acceleration
+```
+
+```{r}
+#Acceleration
+acc_sex <- lm(log10(peak_acc) ~ sex, data = RR_demo2)   
+anova(acc_sex)   #p=0.1003
+
+acc_svl <- lm(log10(peak_acc) ~ svl, data = RR_demo2)   
+anova(acc_svl)   #p=0.8229
+
+acc_tl <- lm(log10(peak_acc) ~ tail_length, data = RR_demo2)   
+anova(acc_tl)   #p=0.02722
+
+#tail length affected acceleration but sex and SVL did not 
+```
+
+
+2) Test the effects bipedal and substate on peak_v and acc and substrate on % biped. 
+
+```{r}
+#Velocity ~ Substrate 
+lme.log.side.vmax.sub <- lme(log10(peak_v) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2)
+anova(lme.log.side.vmax.sub, type="marginal")  #biped & interaction significant
+
+shapiro.test(residuals(lme.log.side.vmax.sub))  #normal
+performance::r2(lme.log.side.vmax.sub)  #C=0.479, M=0.359
+lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
+lme.log.side.vmax.subtukey  #some significant differences due to gait
+lme.log.side.vmax.subtukey2 <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.log.side.vmax.sub.tukey2   #D-S p=0.0001, D-SD p=0.0074, S-SD p=0.3280
+
+ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
+  geom_boxplot() + 
+  scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
+  labs(x = "Substrate", y = "Peak Velocity (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"),
+        legend.title = element_blank())
+```
+
+```{r}
+#Acceleration ~ Substrate
+lme.log.side.amax.sub <- lme(log10(side_amax) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2)
+anova(lme.log.side.amax.sub, type="marginal")  #all insignificant
+
+shapiro.test(residuals(lme.log.side.amax.sub))  #normal
+performance::r2(lme.log.side.amax.sub)  #C=0.0.79, M=0.031
+lme.log.side.amax.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.log.side.amax.tukey  #no significant differences in any substrate's acceleration
+lme.log.side.amax.tukey2 <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
+lme.log.side.amax.tukey2   #no significant differences in any substrate's acceleration based on gait
+
+ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
+  geom_boxplot() + 
+  scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
+  labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"),
+        legend.title = element_blank())
+```
+
+```{r}
+#Percent Bipedal ~ Substrate
+lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type, random = ~1|ID, data = lab_data2_omit)
+anova(lme.biped.sub, type="marginal")  #p=0.0512 - substrate barely insignificant
+
+shapiro.test(residuals(lme.biped.sub))  #normal
+performance::r2(lme.biped.sub)  #C=0.417, M=0.050
+lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2_omit)
+lme.biped.sub.tukey  #no significant differences in substrates
+
+ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate_type)) +
+  geom_boxplot() + 
+  scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
+  labs(x = "Substrate", y = "Percent Bipedal") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
+```
+
+
+3) Field data:  i'd run these with lm.   I think we don't have enough data for the mixed model to work (too few repeated observations per indiv).   You will be treating each obs. as unique.  This is not ideal, because we know they are not (some obs. come from the same indiv)...but there are not enough data to really do the mixed model properly.    The analysis is what it is...if it's not significant then it's not
+
+```{r}
+#testing effect of sex on models
+
+speed_sex <- lm(log10(Speed) ~ Sex, data = fieldspeed_jan, na.action=na.omit)
+anova(speed_sex)  #p=0.692
+
+clutter_sex <- lm(log10(NumberClutter+1) ~ Sex, data = fieldspeed, na.action = na.omit)
+anova(clutter_sex)  #p=0.6028
+
+#sex doesn't affect speed or clutter in field data
+```
+
+```{r}
+#Speed ~ Substrate
+mcelroy_speed_sub_lm <- lm(log10(Speed) ~ Substrate.Type, data = fieldspeed_jan, na.action=na.omit)
+anova(mcelroy_speed_sub_lm)   #p=0.2723
+
+shapiro.test(residuals(mcelroy_speed_sub_lm))  #normal
+
+ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y = Speed, fill = Substrate.Type)) + 
+  geom_boxplot() +
+  scale_fill_manual(values = c("lightskyblue2", "steelblue", "lightblue2")) +
+  labs(x = "Substrate", y = "Speed (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.background = element_blank()) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
+```
+
+```{r}
+#Speed ~ Number Clutter
+mcelroy_speed_clutter_lm <- lm(log(Speed+1) ~ log(NumberClutter+1), data = fieldspeed_reduced_debris, na.action = na.omit)
+anova(mcelroy_speed_clutter_lm)   #p=0.02004, significant
+
+shapiro.test(residuals(mcelroy_speed_clutter_lm))   #normal
+
+ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
+  geom_point(aes(color = fieldspeed_reduced_debris$Substrate.Type)) + 
+  geom_smooth(method = 'lm') +
+  labs(x = "log10(Ground Clutter Crossed)", y = "log10(Speed) (m/s)") +
+  scale_color_discrete(name = "Substrate Type", labels = c("Mixed", "Sand")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black"),
+        axis.text = element_text(face = "bold"))
+```
+
+```{r}
+#testing non-logged data of Speed ~ Number Clutter
+anova(lm(Speed ~ Substrate.Type, data = fieldspeed_jan, na.action=na.omit))  #p=0.3707
+shapiro.test(residuals(lm(Speed ~ Substrate.Type, data = fieldspeed_jan, na.action=na.omit)))  #normal
+
+anova(lm(Speed ~ NumberClutter, data = fieldspeed_reduced_debris, na.action = na.omit))   #p=0.03214, significant
+shapiro.test(residuals(lm(Speed ~ NumberClutter, data = fieldspeed_reduced_debris, na.action = na.omit)))   #normal
+
+#both non-logged models are worse than logged models
+```
+
+
+
+
+
