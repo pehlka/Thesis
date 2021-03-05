@@ -87,6 +87,19 @@ anova(acc_tl)   #p=0.02722
 ```
 
 
+RR_demo3 <- read.csv("~/College of Charleston/Thesis/Videos Digitized/Thesis_videos_digitized_condensed_final_3.2.21_removed_non-standstill_starts_demographics3_aka_RR_demo3.csv")
+
+biped_sex <- lm(peak_biped_percent ~ sex, RR_demo3)
+anova(biped_sex)
+
+biped_svl <- lm(peak_biped_percent ~ svl, RR_demo3)
+anova(biped_svl)
+
+biped_tl <- lm(peak_biped_percent ~ tail_length, RR_demo3)
+anova(biped_tl)
+
+
+
 2) Test the effects bipedal and substate on peak_v and acc and substrate on % biped. 
 
 ```{r}
@@ -97,9 +110,7 @@ anova(lme.log.side.vmax.sub, type="marginal")  #biped & interaction significant
 shapiro.test(residuals(lme.log.side.vmax.sub))  #normal
 performance::r2(lme.log.side.vmax.sub)  #C=0.479, M=0.359
 lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
-lme.log.side.vmax.subtukey  #some significant differences due to gait
-lme.log.side.vmax.subtukey2 <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
-lme.log.side.vmax.sub.tukey2   #D-S p=0.0001, D-SD p=0.0074, S-SD p=0.3280
+lme.log.side.vmax.sub.tukey  #some significant differences due to gait
 
 ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
   geom_boxplot() + 
@@ -122,8 +133,6 @@ anova(lme.log.side.amax.sub, type="marginal")  #all insignificant
 
 shapiro.test(residuals(lme.log.side.amax.sub))  #normal
 performance::r2(lme.log.side.amax.sub)  #C=0.0.79, M=0.031
-lme.log.side.amax.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
-lme.log.side.amax.tukey  #no significant differences in any substrate's acceleration
 lme.log.side.amax.tukey2 <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
 lme.log.side.amax.tukey2   #no significant differences in any substrate's acceleration based on gait
 
@@ -165,6 +174,7 @@ ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate
 ```
 
 
+
 3) Field data:  i'd run these with lm.   I think we don't have enough data for the mixed model to work (too few repeated observations per indiv).   You will be treating each obs. as unique.  This is not ideal, because we know they are not (some obs. come from the same indiv)...but there are not enough data to really do the mixed model properly.    The analysis is what it is...if it's not significant then it's not
 
 ```{r}
@@ -181,8 +191,11 @@ anova(clutter_sex)  #p=0.6028
 
 ```{r}
 #Speed ~ Substrate
-mcelroy_speed_sub_lm <- lm(log10(Speed) ~ Substrate.Type, data = fieldspeed_jan, na.action=na.omit)
-anova(mcelroy_speed_sub_lm)   #p=0.2723
+mcelroy_speed_sub_lm <- lm(log10(Speed+1) ~ Substrate.Type, data = fieldspeed_jan, na.action=na.omit)
+anova(mcelroy_speed_sub_lm)   #p=0.2832
+
+mcelroy_speed_sub_lm.tukey <- emmeans(mcelroy_speed_sub_lm, pairwise ~ Substrate.Type, adjust="tukey", data=fieldspeed_jan)
+mcelroy_speed_sub_lm.tukey
 
 shapiro.test(residuals(mcelroy_speed_sub_lm))  #normal
 
@@ -199,13 +212,13 @@ ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y =
 
 ```{r}
 #Speed ~ Number Clutter
-mcelroy_speed_clutter_lm <- lm(log(Speed+1) ~ log(NumberClutter+1), data = fieldspeed_reduced_debris, na.action = na.omit)
+mcelroy_speed_clutter_lm <- lm(log10(Speed+1) ~ log10(NumberClutter+1), data = fieldspeed_reduced_debris, na.action = na.omit)
 anova(mcelroy_speed_clutter_lm)   #p=0.02004, significant
 
 shapiro.test(residuals(mcelroy_speed_clutter_lm))   #normal
 
 ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
-  geom_point(aes(color = fieldspeed_reduced_debris$Substrate.Type)) + 
+  geom_point(aes(color = Substrate.Type)) + 
   geom_smooth(method = 'lm') +
   labs(x = "log10(Ground Clutter Crossed)", y = "log10(Speed) (m/s)") +
   scale_color_discrete(name = "Substrate Type", labels = c("Mixed", "Sand")) +
@@ -225,6 +238,70 @@ shapiro.test(residuals(lm(Speed ~ NumberClutter, data = fieldspeed_reduced_debri
 
 #both non-logged models are worse than logged models
 ```
+
+
+
+```{r}
+library(multcompView)
+
+lme.log.side.amax.sub <- lme(log10(side_amax) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2)
+
+ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
+  geom_boxplot() + 
+  scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
+  labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"),
+        legend.title = element_blank())
+
+Model4 <- aov(side_amax ~ substrate_type*biped_combined, data = lab_data2)
+TUKEY <- TukeyHSD(Model4)
+plot(TUKEY , las=1, col="brown")
+
+generate_label_df <- function(TUKEY, variable){
+
+    # Extract labels and factor levels from Tukey post-hoc 
+    Tukey.levels <- TUKEY[[variable]][,6]
+    Tukey.labels <- data.frame(multcompLetters(Tukey.levels)['Letters'])
+
+    #I need to put the labels in the same order as in the boxplot :
+    Tukey.labels$ChillTime=rownames(Tukey.labels)
+    Tukey.labels=Tukey.labels[order(Tukey.labels$substrate_type) , ]
+    return(Tukey.labels)
+}
+
+# Apply the function on my dataset
+LABELS=generate_label_df(TUKEY , "substrate")
+
+# A panel of colors to draw each group with the same color :
+my_colors=c( rgb(143,199,74,maxColorValue = 255),rgb(242,104,34,maxColorValue = 255), rgb(111,145,202,maxColorValue = 255),rgb(254,188,18,maxColorValue = 255) , rgb(74,132,54,maxColorValue = 255),rgb(236,33,39,maxColorValue = 255),rgb(165,103,40,maxColorValue = 255))
+
+# Draw the basic boxplot
+a=boxplot(side_amax ~ substrate_type*biped_combined, data = lab_data2)#, col=my_colors[as.numeric(LABELS[,1])], ylab="value", main="")
+
+# I want to write the letter over each box. Over is how high I want to write it.
+over=0.1*max( a$stats[nrow(a$stats),] )
+
+#Add the labels
+text(c(1:nlevels(lme.log.side.amax.sub)) , a$stats[nrow(a$stats),]+over , LABELS[,1]  , col=my_colors[as.numeric(LABELS[,1])])
+
+```
+
+
+```{r}
+vel <- structure(c(0.484L, .995L, .247L, .0001L, .0001L, .786L, .997L, .0002L, .0022L, .4899L, .0001L, .0001L, .0013L, .0106L, .982L), .Label = c("Debris", "Sand", "Mixed"), class = "factor"), gait = c(.321, .301, .316, .294, .225, .236)), .Names = c("substrate", "gait"), class = "data.frame")
+
+vel$substrate <- factor(vel$substrate, levels = c("D", "S", "SD"))
+```
+
+
+
+
 
 
 
