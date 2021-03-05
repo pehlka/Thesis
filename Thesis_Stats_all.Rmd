@@ -579,6 +579,16 @@ ggplot(data = lab_data2_omit, aes(substrate_type, as.numeric(bipedal_percent), f
         axis.line.y = element_line(color = "black", size = 0.5))
 ```
 
+```{r}
+#Looking at bipedal vs. quadrupedal percentages from side and top
+
+table(lab_data2$bipedal_quad_side)
+#42.4% bipedal on side runs, 57.6% quadrupedal on side runs
+
+table(lab_data2$bipedal_quad_top)
+#55.4% bipedal on top runs, 44.6% quadrupedal on top runs
+```
+```
 
 
 
