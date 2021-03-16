@@ -113,7 +113,7 @@ lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substra
 lme.log.side.vmax.sub.tukey  #some significant differences due to gait
 
 ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape=NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = "Peak Velocity (m/s)") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
@@ -132,12 +132,16 @@ lme.log.side.amax.sub <- lme(log10(side_amax) ~ substrate_type*biped_combined, r
 anova(lme.log.side.amax.sub, type="marginal")  #all insignificant
 
 shapiro.test(residuals(lme.log.side.amax.sub))  #normal
+
 performance::r2(lme.log.side.amax.sub)  #C=0.0.79, M=0.031
+performance::r2(lme(log10(side_amax) ~ biped_combined, random = ~1|ID, data = lab_data2))  #M=0.011
+performance::r2(lme(log10(side_amax) ~ substrate_type, random = ~1|ID, data = lab_data2))  #M=0.003
+
 lme.log.side.amax.tukey2 <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
 lme.log.side.amax.tukey2   #no significant differences in any substrate's acceleration based on gait
 
 ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape=NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
@@ -161,7 +165,7 @@ lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust=
 lme.biped.sub.tukey  #no significant differences in substrates
 
 ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate_type)) +
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape=NA) + 
   scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
   labs(x = "Substrate", y = "Percent Bipedal") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
