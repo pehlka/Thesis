@@ -34,7 +34,7 @@ lab_data2_omit <- lab_data2[!is.na(lab_data2$bipedal_percent), ]
 fieldspeed <-  read.csv("fieldspeed.csv")
   #final fieldspeed data; double checked with data sheets & it's correct 11.18.20
   #replacing all fieldspeed_final data and McElroy_habitat_data
-fieldspeed_reduced <-  read.csv("fieldspeed_reduced.csv")
+#fieldspeed_reduced <-  read.csv("fieldspeed_reduced.csv")
   #final fieldspeed data without 2 rows that did not have substrate type listed
 fieldspeed_reduced_debris <- read.csv("fieldspeed_reduced_debris.csv")
   #same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis b/c debris substrates were completely made up of obstacles
@@ -255,39 +255,32 @@ Question 2: How does "available" habitat affect Racerunner locomotion?
 > Testing effect of sex, SVL, and tail length on velocity [Eric said I only need to test it on velocity]
 
 ```{r}
-#Velocity vs Sex
-lme.log.side.vmax.sex <- lme(log10(peak_v+1) ~ sex, random = ~1|ID, data = lab_data2)
-anova(lme.log.side.vmax.sex)  #p-value =0.1399, insignificant
-shapiro.test(residuals(lme.log.side.vmax.sex))  #normal
-summary(lme.log.side.vmax.sex)
-performance::r2(lme.log.side.vmax.sex)  #C=0.265, #M=0.032
+#Velocity 
+vel_sex <- lm(log10(peak_v) ~ sex, data = RR_demo2)   
+anova(vel_sex)   #p=0.1519
 
-#sex is insignificant for peak velocity
+vel_svl <- lm(log10(peak_v) ~ svl, data = RR_demo2)   
+anova(vel_svl)   #p=0.5978
+
+vel_tl <- lm(log10(peak_v) ~ tail_length, data = RR_demo2)   
+anova(vel_tl)   #p=0.1286
+
+#neither sex, SVL, or tail length affect acceleration
 ```
 
 ```{r}
-#Peak Velocity (all) vs SVL 
-lme.log.side.vmax.svl <- lme(log10(peak_v+1) ~ svl, random = ~1|ID, data = RR_demo)
-anova(lme.log.side.vmax.svl)  #p-value =0.6383, insignificant
-shapiro.test(residuals(lme.log.side.vmax.svl))  #normal
-summary(lme.log.side.vmax.svl)
-performance::r2(lme.log.side.vmax.svl)  #C=0.217, M=0.006
+#Acceleration
+acc_sex <- lm(log10(peak_acc) ~ sex, data = RR_demo2)   
+anova(acc_sex)   #p=0.1003
 
-#SVL is insignificant on peak velocity
+acc_svl <- lm(log10(peak_acc) ~ svl, data = RR_demo2)   
+anova(acc_svl)   #p=0.8229
+
+acc_tl <- lm(log10(peak_acc) ~ tail_length, data = RR_demo2)   
+anova(acc_tl)   #p=0.02722
+
+#tail length affected acceleration but sex and SVL did not 
 ```
-
-```{r}
-#Peak Velocity (all) vs tail length 
-lme.log.side.vmax.tail <- lme(log10(peak_v+1) ~ tail_length, random = ~1|ID, data = RR_demo)
-anova(lme.log.side.vmax.tail)  #p-value =0.168, insignificant
-shapiro.test(residuals(lme.log.side.vmax.tail))  #normal
-summary(lme.log.side.vmax.tail)
-performance::r2(lme.log.side.vmax.tail)  #C=0.214, M=0.048
-
-#tail is insignificant on peak velocity
-```
-
-
 
 
 > Testing effect of substrate
@@ -588,7 +581,6 @@ table(lab_data2$bipedal_quad_side)
 table(lab_data2$bipedal_quad_top)
 #55.4% bipedal on top runs, 44.6% quadrupedal on top runs
 ```
-```
 
 
 
@@ -778,3 +770,4 @@ shapiro.test(residuals(model3))  #not normal
 #In the lme log(speed) ~ substrate model the marginal and conditional R2 values are the same.
 ```
 
+#ggsave("datafilename.png") <- how to save a png file of a plot; it'll automatically save the most recent plot
