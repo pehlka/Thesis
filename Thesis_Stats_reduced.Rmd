@@ -26,25 +26,6 @@ setwd("~/College of Charleston/Thesis/R_Data")
 
 #Importing data
 
-lab_data2 <- read.csv("lab_data2.csv")
-  #includes peak velocity column and biped total column
-lab_data2_omit <- lab_data2[!is.na(lab_data2$bipedal_percent), ]
-  #includes peak velocity column and biped total column with non-bipedal rows omitted
-#lab_data_omit <- lab_data[!is.na(lab_data$bipedal_percent), ]
-  #lab_data without trials that were run quadrupedally with no bipedalism present
-fieldspeed <-  read.csv("fieldspeed.csv")
-  #final fieldspeed data; double checked with data sheets & it's correct 11.18.20
-  #replacing all fieldspeed_final data and McElroy_habitat_data
-fieldspeed_reduced <-  read.csv("fieldspeed_reduced.csv")
-  #final fieldspeed data without 2 rows that did not have substrate type listed
-fieldspeed_jan <- read.csv("fieldspeed_jan.csv")
-  #same as fieldspeed_reduced except rows without speed values were taken out; this enabled me to change the order of the boxplots
-field_transect_data_totals <- read.csv("field_transect_data_totals.csv") 
-  #field transect substrate totals
-field_transect_data_totals_condensed <- read.csv("field_transect_data_totals_condensed.csv")
-  #field transect substrate totals condensed into debris/mixed/vegetation/sand
-field_transect_data_totals_heaviness <- read.csv("field_transect_data_totals_heaviness.csv")
-  #field transect susbtrate totals broken into heavy/light/sand
 field_transect_condensed <- read.csv("field_transect_condensed.csv")
   #field transect data broken into debris, mixed and sand to match lab data
 fieldspeed_substrate_percent <- read.csv("fieldspeed_substrate_percent.csv")
@@ -53,28 +34,29 @@ cover <- read.csv("cover.csv")
   #data of cover in the habitat assessment
 field_obs_sub <- read.csv("field_obs_sub.csv")
   #field transect data - obstacles - broken into substrate type where the obstacles were found
-field_obs_type <- read.csv("field_obs_type.csv")
-  #field transect data - obstacles - broken into obstacle type
-demo_debris <- read.csv("demo_debris.csv")
-  #demographics and top performance on debris 
-demo_mixed <- read.csv("demo_mixed.csv")
-  #demographics and top performance on mixed
-demo_sand <- read.csv("demo_sand.csv")
-  #demographics and top performance on sand
-demo_debris2 <- read.csv("demo_debris2.csv")
-  #demographics and top performance on debris with lizards mizzing tails removed 
-demo_mixed2 <- read.csv("demo_mixed2.csv")
-  #demographics and top performance on mixed with lizards mizzing tails removed 
-demo_sand2 <- read.csv("demo_sand2.csv")
-  #demographics and top performance on sand with lizards mizzing tails removed 
-RR_demo <- read.csv("RR_demo.csv")
+RR_demo2 <- read.csv("RR_demo2.csv")
   #demographics including peak velocity and acceleration (all and divided by substrate) for each lizard
+lab_data2 <- read.csv("lab_data2.csv")
+  #includes peak velocity column and biped total column
+lab_data2_omit <- lab_data2[!is.na(lab_data2$bipedal_percent), ]
+  #includes peak velocity column and biped total column with non-bipedal rows omitted
+fieldspeed <-  read.csv("fieldspeed.csv")
+  #final fieldspeed data from the field
+fieldspeed_jan <- read.csv("fieldspeed_jan.csv")
+  #final fieldspeed data without 2 rows that did not have substrate type listed & rows without speed values
+fieldspeed_reduced_debris <- read.csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
+  #same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis b/c debris substrates are made up of obstacles
+```
+
+```{r}
+#Additional Data - Habitat assessment transect GPS points
+
+##all latitude points are East and all longitude points are North
+transect_GPS_coordinates <- read.csv("transect_GPS_coordinates.csv")
 ```
 
 
-Question 1: Do Racerunners use their habitat randomly or non-randomly?
- Ho: Racerunners use their habitat randomly.
- Ha: Racerunners use their habitat non-randomly.
+Question 1: Do "A. sexlineata" move through their habitat randomly or non-randomly?
 
 ```{r}
 #bar plot of habitat assessment substrate totals condensed
@@ -91,6 +73,8 @@ ggplot(field_transect_condensed, aes(x=substrate, y=distance_m)) +
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"),
         plot.title = element_text(size = 15))
+
+ggsave("field_transect_condensed.png")
 ```
 
 ```{r}
@@ -107,6 +91,8 @@ ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
+
+ggsave("fieldspeed_substrate_percent.png")
 ```
 
 ```{r}
@@ -123,25 +109,8 @@ ggplot(cover, aes(x=substrate, y=distance_m)) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
-```
 
-```{r}
-#bar plot of field obstacles per substrate
-obs_sub <- field_obs_sub[c(2,3), ]   #removing debris from plot since I did not record obstacles there
-
-ggplot(obs_sub, aes(x=substrate, y=number_obstacles)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
-  labs(x = "Substrate", y = "Number of Obstacles per Substrate") +
-  geom_text(aes(x=substrate, y = number_obstacles, label = percent, vjust = 1), size=4, 
-            color = "black") +
-  scale_x_discrete(labels = c("Mixed", "Sand")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black")) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"),
-        plot.title = element_text(size = 15))
+ggsave("cover.png")
 ```
 
 ```{r}
@@ -155,95 +124,66 @@ chisq.test(env)  #p < 2.2e-16  #significant - distribution of proportions betwee
 ```
 
 
-Question 2: How does "available" habitat affect Racerunner locomotion?
- Ho: Racerunners run the same on all substrates.
- Ha: Racerunners run fastest on sand compared to debris and mixed.
+Question 2: How does "available" habitat affect "A. sexlineata" locomotion?
 
-> Testing effect of sex, SVL, and tail length on velocity [Eric said I only need to test it on velocity]
+> Testing effect of sex, SVL, and tail length 
+
+>> Lab Data
 
 ```{r}
-#Velocity vs Sex
-lme.log.side.vmax.sex <- lme(log10(peak_v+1) ~ sex, random = ~1|ID, data = lab_data2)
-anova(lme.log.side.vmax.sex)  #p-value =0.1399, insignificant
-shapiro.test(residuals(lme.log.side.vmax.sex))  #normal
-summary(lme.log.side.vmax.sex)
-performance::r2(lme.log.side.vmax.sex)  #C=0.265, #M=0.032
+#Velocity 
+vel_sex <- lm(log10(peak_v) ~ sex, data = RR_demo2)   
+anova(vel_sex)   #p=0.1519
 
-#sex is insignificant for peak velocity
+vel_svl <- lm(log10(peak_v) ~ svl, data = RR_demo2)   
+anova(vel_svl)   #p=0.5978
+
+vel_tl <- lm(log10(peak_v) ~ tail_length, data = RR_demo2)   
+anova(vel_tl)   #p=0.1286
+
+#neither sex, SVL, or tail length affect acceleration
 ```
 
 ```{r}
-#Peak Velocity (all) vs SVL 
-lme.log.side.vmax.svl <- lme(log10(peak_v+1) ~ svl, random = ~1|ID, data = RR_demo)
-anova(lme.log.side.vmax.svl)  #p-value =0.6383, insignificant
-shapiro.test(residuals(lme.log.side.vmax.svl))  #normal
-summary(lme.log.side.vmax.svl)
-performance::r2(lme.log.side.vmax.svl)  #C=0.217, M=0.006
+#Acceleration
+acc_sex <- lm(log10(peak_acc) ~ sex, data = RR_demo2)   
+anova(acc_sex)   #p=0.1003
 
-#SVL is insignificant on peak velocity
+acc_svl <- lm(log10(peak_acc) ~ svl, data = RR_demo2)   
+anova(acc_svl)   #p=0.8229
+
+acc_tl <- lm(log10(peak_acc) ~ tail_length, data = RR_demo2)   
+anova(acc_tl)   #p=0.02722
+
+#tail length affected acceleration but sex and SVL did not 
 ```
 
-```{r}
-#Peak Velocity (all) vs tail length 
-lme.log.side.vmax.tail <- lme(log10(peak_v+1) ~ tail_length, random = ~1|ID, data = RR_demo)
-anova(lme.log.side.vmax.tail)  #p-value =0.168, insignificant
-shapiro.test(residuals(lme.log.side.vmax.tail))  #normal
-summary(lme.log.side.vmax.tail)
-performance::r2(lme.log.side.vmax.tail)  #C=0.214, M=0.048
+>> Field Data
 
-#tail is insignificant on peak velocity
+```{r}
+speed_sex <- lm(log10(Speed) ~ Sex, data = fieldspeed_jan, na.action=na.omit)
+anova(speed_sex)  #p=0.692
+
+clutter_sex <- lm(log10(NumberClutter+1) ~ Sex, data = fieldspeed, na.action = na.omit)
+anova(clutter_sex)  #p=0.6028
+
+#sex doesn't affect speed or clutter in field data
 ```
 
-> Testing effect of substrate
+> Lab Data
 
 ```{r}
-#Velocity vs Substrate Type - total
-lme.log.side.vmax.sub2 <- lme(log10(peak_v+1) ~ substrate_type, random = ~1|ID, data = lab_data2)
-anova(lme.log.side.vmax.sub2)  #p-value substrate=0.0001, significant  #sex insignificant
-ggplot(lab_data2, aes(residuals(lme.log.side.vmax.sub2))) + 
-  geom_histogram(bins = 11, color = "white") +
-  labs(x = "Residuals of lme.log.side.vmax.sub2") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
-shapiro.test(residuals(lme.log.side.vmax.sub2))  #normal
-summary(lme.log.side.vmax.sub2)
-performance::r2(lme.log.side.vmax.sub2)  #C=0.374 #M=0.128
-lme.log.side.vmax.sub.tukey2 <- emmeans(lme.log.side.vmax.sub2, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
-lme.log.side.vmax.sub.tukey2  #significant differences between D-S (p<0.0001) and D-SD (p=0.0405), but not S-SD (p=0.0661)
+#Velocity ~ Substrate 
+lme.log.side.vmax.sub <- lme(log10(peak_v) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2)
+anova(lme.log.side.vmax.sub, type="marginal")  #biped & interaction significant
 
-ggplot(lab_data2, aes(y=(peak_v), x=substrate_type, fill = substrate_type)) +
-  geom_boxplot() + 
-  scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
-  labs(x = "Substrate", y = "Peak Velocity (m/s)") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black")) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"))
-```
-
-```{r}
-#Velocity vs Substrate + Bipedalism: Combined
-lme.vmax.sub.biped3 <- lme(log10(peak_v+1) ~ substrate_type + biped_combined, random = ~1|ID, data = lab_data2)
-anova(lme.vmax.sub.biped3)  #p_substrate < 0.0001,  p_biped_comb < 0.0001
-ggplot(lab_data2, aes(residuals(lme.vmax.sub.biped3))) + 
-  geom_histogram(bins = 11, color = "white") +
-  labs(x = "Residuals of lme.vmax.sub.biped") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
-shapiro.test(residuals(lme.vmax.sub.biped3))  #normal
-summary(lme.vmax.sub.biped3)
-performance::r2(lme.vmax.sub.biped3)  #C=0.466, M=0.335
-lme.lme.vmax.sub.biped.tukey3 <- emmeans(lme.vmax.sub.biped3, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
-lme.lme.vmax.sub.biped.tukey3  #D-S p=0.0006, D-SD p=0.0399, S-SD p=0.2526
-  #bipedalism is significantly different between debris and sand and debris and mixed
+shapiro.test(residuals(lme.log.side.vmax.sub))  #normal
+performance::r2(lme.log.side.vmax.sub)  #C=0.479, M=0.359
+lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
+lme.log.side.vmax.sub.tukey  #some significant differences due to gait
 
 ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = "Peak Velocity (m/s)") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
@@ -255,100 +195,21 @@ ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
         axis.text = element_text(face = "bold"),
         legend.title = element_blank())
 
-#the bipedal/quadrupedal used in this model is separated into whether or not each lizard ran bipedal at any point during their trial. If bipedalism occurred at all, the entire run was marked bipedal; if the lizard did not appear to run bipedal at all, the run was marked quadrupedal.
+ggsave("lab_data2.png")
 ```
 
 ```{r}
-#Velocity vs Substrate + Bipedalism: Combined - Interaction Effect
-lme.vmax.sub.biped4 <- lme(log10(peak_v+1) ~ substrate_type * biped_combined, random = ~1|ID, data = lab_data2)
-anova(lme.vmax.sub.biped4)  #p_interaction = 0.0614
-ggplot(lab_data2, aes(residuals(lme.vmax.sub.biped4))) + 
-  geom_histogram(bins = 11, color = "white") +
-  labs(x = "Residuals of lme.vmax.sub.biped") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
-shapiro.test(residuals(lme.vmax.sub.biped4))  #normal
-summary(lme.vmax.sub.biped4)
-performance::r2(lme.vmax.sub.biped4)  #C=0.482, M=0.354
-lme.lme.vmax.sub.biped.tukey4 <- emmeans(lme.vmax.sub.biped4, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
-lme.lme.vmax.sub.biped.tukey4  #D-S p=0.0001, D-SD p=0.0081, S-SD p=0.3145
-  #interaction between substrate*bipedalism is significantly different between debris-sand and debris-mixed
-lme.lme.vmax.sub.biped.tukey5 <- emmeans(lme.vmax.sub.biped4, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
-lme.lme.vmax.sub.biped.tukey5 
+#Acceleration ~ Substrate
+lme.log.side.amax.sub <- lme(log10(side_amax) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2)
+anova(lme.log.side.amax.sub, type="marginal")  #all insignificant
 
-#interaction effect is overall not significant but it produces better p-value significance between D-S and D-SD than the non-interaction model
-
-ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
-  geom_boxplot() + 
-  scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
-  labs(x = "Substrate", y = "Peak Velocity (m/s)") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black")) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"),
-        legend.title = element_blank())
-```
-
-```{r}
-#Acceleration vs Substrate Type - Side
-lme.log.side.amax.sub <- lme(log10(side_amax+1) ~ substrate_type, random = ~1|ID, data = lab_data2)
-anova(lme.log.side.amax.sub)  #p-value substrate & sex = not significant
-ggplot(lab_data2, aes(residuals(lme.log.side.amax.sub))) + 
-  geom_histogram(bins = 8, color = "white") +
-  labs(x = "Residuals of lme.log.side.amax.sub") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
 shapiro.test(residuals(lme.log.side.amax.sub))  #normal
-summary(lme.log.side.amax.sub)
-performance::r2(lme.log.side.amax.sub)   #C=0.047  #M=0.002
-lme.log.side.amax.sub.tukey <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
-lme.log.side.amax.sub.tukey  #no significant differences in any substrate's acceleration
-
-ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = substrate_type)) +
-  geom_boxplot() + 
-  scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
-  labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black")) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"))
-
-#low R2s make sense because the model shows that susbtrate type doesn't affect acceleration, which means that substrate type should not explain a high percentage of changes in the data
-
-#substrate does not affect acceleration in side videos
-```
-
-```{r}
-#Acceleration vs Substrate Type + Bipedalism Combined - Interaction effect
-lme.amax.sub.biped <- lme(log10(side_amax+1) ~ substrate_type * biped_combined, random = ~1|ID, data = lab_data2)
-anova(lme.amax.sub.biped)  #p-value insignificant for all
-ggplot(lab_data2, aes(residuals(lme.amax.sub.biped))) + 
-  geom_histogram(bins = 8, color = "white") +
-  labs(x = "Residuals of lme.amax.sub.biped") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
-shapiro.test(residuals(lme.amax.sub.biped))  #normal
-summary(lme.amax.sub.biped)
-performance::r2(lme.amax.sub.biped)   #C=0.079  #M=0.030
-lme.amax.sub.biped.tukey <- emmeans(lme.amax.sub.biped, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
-lme.amax.sub.biped.tukey  #no significant differences in any substrate's acceleration
-lme.amax.sub.biped.tukey2 <- emmeans(lme.amax.sub.biped, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
-lme.amax.sub.biped.tukey2
-
-#interaction between substrate type and bipedalism was insignificant
-
+performance::r2(lme.log.side.amax.sub)  #C=0.0.79, M=0.031
+lme.log.side.amax.tukey2 <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
+lme.log.side.amax.tukey2   #no significant differences in any substrate's acceleration based on gait
 
 ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
@@ -359,26 +220,22 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"),
         legend.title = element_blank())
+
+ggsave("lab_data2.png")
 ```
 
 ```{r}
-#Bipedalism vs Substrate Type
+#Percent Bipedal ~ Substrate
 lme.biped.sub <- lme(sqrt(bipedal_percent) ~ substrate_type, random = ~1|ID, data = lab_data2_omit)
-anova(lme.biped.sub)  #p-value substrate=0.0513  #barely not significant   #sex insignificant
-ggplot(lab_data2_omit, aes(residuals(lme.biped.sub))) + 
-  geom_histogram(bins = 7, color = "white") +
-  labs(x = "Residuals of lme.biped.sub") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line = element_line(color = "black"))
-shapiro.test(residuals(lme.biped.sub))   #normal
-summary(lme.biped.sub)
-performance::r2(lme.biped.sub)  #conditional: 0.426, marginal: 0.072  
+anova(lme.biped.sub, type="marginal")  #p=0.0512 - substrate barely insignificant
+
+shapiro.test(residuals(lme.biped.sub))  #normal
+performance::r2(lme.biped.sub)  #C=0.417, M=0.050
 lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2_omit)
 lme.biped.sub.tukey  #no significant differences in substrates
 
 ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate_type)) +
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape = NA) + 
   scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
   labs(x = "Substrate", y = "Percent Bipedal") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
@@ -389,8 +246,9 @@ ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
 
-#substrate type does not affect bipedalism
+ggsave("lab_data2_omit.png")
 ```
+
 
 ```{r}
 #Bipedalism's effect on peak velocity 
@@ -409,6 +267,8 @@ ggplot(lab_data2_omit, aes(bipedal_percent, peak_v)) +
         panel.background = element_blank(), 
         axis.line = element_line(color = "black"),
         axis.text = element_text(face = "bold"))
+ggsave("lab_data2_omit.pdf")
+ggsave("lab_data2_omit.png")
 
 #bipedalism does not affect peak velocity
 ```
@@ -431,6 +291,7 @@ ggplot(lab_data2_omit, aes(bipedal_percent, side_amax)) +
         axis.line = element_line(color = "black"),
         axis.text = element_text(face = "bold"))
 
+ggsave("lab_data2_omit.png")
 #Bipedalism does not effect acceleration in side videos
 ```
 
@@ -444,33 +305,17 @@ table(lab_data2$bipedal_quad_top)
 #55.4% bipedal on top runs, 44.6% quadrupedal on top runs
 ```
 
-
-Question 3: Is the pattern observed in question #1 explained by question #2?
- Ho: Racerunners run the same on all substrates.
- Ha: Racerunners avoid moving on suboptimal parts of habitat.
-
+> Field Data
 
 ```{r}
-#testing sex on field data: speed and ground clutter
-mcelroy_speed_sex <- lme(log10(Speed) ~ Sex, random = ~1|ID, data = fieldspeed_jan, na.action=na.omit)
-anova(mcelroy_speed_sex)  #p=0.6968
+#Speed ~ Substrate
+mcelroy_speed_sub_lm <- lm(log10(Speed+1) ~ Substrate.Type, data = fieldspeed_jan, na.action=na.omit)
+anova(mcelroy_speed_sub_lm)   #p=0.2832
 
-mcelroy_clutter_sex <- lme(log10(NumberClutter+1) ~ Sex, random = ~1|ID, data = fieldspeed, na.action = na.omit)
-anova(mcelroy_clutter_sex)  #p=0.9755
+mcelroy_speed_sub_lm.tukey <- emmeans(mcelroy_speed_sub_lm, pairwise ~ Substrate.Type, adjust="tukey", data=fieldspeed_jan)
+mcelroy_speed_sub_lm.tukey
 
-#sex was insignficant for both speed and ground clutter in field data
-```
-
-```{r}
-#Speed vs. Substrate Type 
-mcelroy_speed_sub_lme3 <- lme(log10(Speed) ~ Substrate.Type, random = ~1|ID, data = fieldspeed_jan, na.action=na.omit)
-anova(mcelroy_speed_sub_lme3)  #p-value substrate & sex = insignificant
-summary(mcelroy_speed_sub_lme3)
-mcelroy_speed_sub_lme_tukey3 <- emmeans(mcelroy_speed_sub_lme3, pairwise ~ Substrate.Type, adjust = "tukey", data = fieldspeed_jan)
-mcelroy_speed_sub_lme_tukey3  #no substrates are signficant
-hist(residuals(mcelroy_speed_sub_lme3))
-shapiro.test(residuals(mcelroy_speed_sub_lme3))  #normal
-performance::r2(mcelroy_speed_sub_lme3)
+shapiro.test(residuals(mcelroy_speed_sub_lm))  #normal
 
 ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y = Speed, fill = Substrate.Type)) + 
   geom_boxplot() +
@@ -482,27 +327,18 @@ ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y =
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
 
-#Substrate type doesn't appear to affect speed at all
+ggsave("fieldspeed_jan.png")
 ```
 
 ```{r}
-#UNFINISHED!!!
+#Speed ~ Number Clutter
+mcelroy_speed_clutter_lm <- lm(log10(Speed+1) ~ log10(NumberClutter+1), data = fieldspeed_reduced_debris, na.action = na.omit)
+anova(mcelroy_speed_clutter_lm)   #p=0.02004, significant
 
+shapiro.test(residuals(mcelroy_speed_clutter_lm))   #normal
 
-fieldspeed_reduced_debris <- read.csv("~/College of Charleston/Thesis/R_Data/fieldspeed_reduced_debris.csv")
-#same as fieldspeed_reduced except 2 debris points were removed for ground clutter analysis because by definition, debris substrates were completely made up of obstacles
-
-#Speed vs. Number Clutter
-mcelroy_speed_clutter_lme_log4 <- lme(log(Speed+1) ~ log(NumberClutter+1), random = ~1|ID, data = fieldspeed_reduced_debris, na.action = na.omit)
-anova(mcelroy_speed_clutter_lme_log4)  #p-value=0.0276, significant
-shapiro.test(residuals(mcelroy_speed_clutter_lme_log4))  #normal
-hist(residuals(mcelroy_speed_clutter_lme_log4))
-performance::r2(mcelroy_speed_clutter_lme_log4)  #ok  #C=0.145   #M=0.145
-summary(mcelroy_speed_clutter_lme_log4)
-
-#log-log plot
 ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
-  geom_point(aes(color = fieldspeed_reduced_debris$Substrate.Type)) + 
+  geom_point(aes(color = Substrate.Type)) + 
   geom_smooth(method = 'lm') +
   labs(x = "log10(Ground Clutter Crossed)", y = "log10(Speed) (m/s)") +
   scale_color_discrete(name = "Substrate Type", labels = c("Mixed", "Sand")) +
@@ -511,11 +347,8 @@ ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
         axis.line = element_line(color = "black"),
         axis.text = element_text(face = "bold"))
 
-#signficant relationship between speed and ground clutter crossed 
+ggsave("fieldspeed_reduced_debris.png")
 ```
-
-
-
 
 
 
