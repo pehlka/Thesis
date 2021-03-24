@@ -62,7 +62,7 @@ Question 1: Do "A. sexlineata" move through their habitat randomly or non-random
 #bar plot of habitat assessment substrate totals condensed
 ggplot(field_transect_condensed, aes(x=substrate, y=distance_m)) +
   geom_bar(stat = "identity", fill = "steelblue") +
-  labs(x = "Substrate", y = "Distance (m)") +
+  labs(x = "Substrate", y = "Distance (m)", title = "Habitat Assessment: Amount of Each Substrate") +
   geom_text(aes(x=substrate, y = distance_m, label = percent_type, vjust = 1), size=4, 
             color = "black") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
@@ -81,7 +81,7 @@ ggsave("field_transect_condensed.png")
 #bar plot of field data substrate totals
 ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
   geom_bar(stat = "identity", fill = "steelblue") +
-  labs(x = "Substrate", y = "Distance Traveled (m)") +
+  labs(x = "Substrate", y = "Distance Traveled (m)", title = "Field Data: Racerunner Distance Traveled per Substrate") +
   geom_text(aes(x=Substrate.Type, y = Distance, label = PercentSubstrate, vjust = 1), size=4, 
             color = "black") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
@@ -99,7 +99,7 @@ ggsave("fieldspeed_substrate_percent.png")
 #bar plot of cover
 ggplot(cover, aes(x=substrate, y=distance_m)) +
   geom_bar(stat = "identity", fill = "steelblue") +
-  labs(x = "Substrate", y = "Distance Cover (m)") +
+  labs(x = "Substrate", y = "Distance Cover (m)", title = "Habitat Assessment: Amount of Cover per Substrate") +
   geom_text(aes(x=substrate, y = distance_m, label = percent, vjust = 1), size=4, 
             color = "black") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
@@ -185,7 +185,7 @@ lme.log.side.vmax.sub.tukey  #some significant differences due to gait
 ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
-  labs(x = "Substrate", y = "Peak Velocity (m/s)") +
+  labs(x = "Substrate", y = "Peak Velocity (m/s)", title = "Lab Data: Peak Velocity vs. Substrate") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -211,7 +211,7 @@ lme.log.side.amax.tukey2   #no significant differences in any substrate's accele
 ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
-  labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
+  labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2)), title = "Lab Data: Peak Acceleration vs. Substrate") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -237,7 +237,7 @@ lme.biped.sub.tukey  #no significant differences in substrates
 ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate_type)) +
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
-  labs(x = "Substrate", y = "Percent Bipedal") +
+  labs(x = "Substrate", y = "Percent Bipedal", title = "Lab Data: Percent Bipedal vs. Substrate") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -262,7 +262,7 @@ performance::r2(peakv.biped)  #C=0.419  #M=0.075
 ggplot(lab_data2_omit, aes(bipedal_percent, peak_v)) +
   geom_point() + 
   geom_smooth(method = 'lm') +
-  labs(x = "Percent Bipedal", y = "Peak Velocity (m/s)") +
+  labs(x = "Percent Bipedal", y = "Peak Velocity (m/s)", title = 'Lab Data: Peak Velocity vs. Percent Bipedal') +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black"),
@@ -285,7 +285,7 @@ performance::r2(side.amax.biped)  #C=0.130  #M=0.005
 ggplot(lab_data2_omit, aes(bipedal_percent, side_amax)) +
   geom_point() + 
   geom_smooth(method = 'lm') +
-  labs(x = "Percent Bipedal", y = bquote('Peak Acceleration' ~ (m/s^2))) +
+  labs(x = "Percent Bipedal", y = bquote('Peak Acceleration' ~ (m/s^2)), title = 'Lab Data: Peak Acceleration vs. Percent Bipedal') +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black"),
@@ -320,7 +320,7 @@ shapiro.test(residuals(mcelroy_speed_sub_lm))  #normal
 ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y = Speed, fill = Substrate.Type)) + 
   geom_boxplot() +
   scale_fill_manual(values = c("lightskyblue2", "steelblue", "lightblue2")) +
-  labs(x = "Substrate", y = "Speed (m/s)") +
+  labs(x = "Substrate", y = "Speed (m/s)", title = "Field Data: Speed vs. Substrate") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.background = element_blank()) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
@@ -340,12 +340,15 @@ shapiro.test(residuals(mcelroy_speed_clutter_lm))   #normal
 ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
   geom_point(aes(color = Substrate.Type)) + 
   geom_smooth(method = 'lm') +
-  labs(x = "log10(Ground Clutter Crossed)", y = "log10(Speed) (m/s)") +
+  labs(x = "log10(Ground Clutter Crossed)", y = "log10(Speed) (m/s)", title = "Lab Data: Speed vs. Ground Clutter Crossed") +
   scale_color_discrete(name = "Substrate Type", labels = c("Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black"),
         axis.text = element_text(face = "bold"))
+        #plot.title = element_text(size = 14, face = "bold"),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.title.y = element_text(size = 12, face = "bold"))
 
 ggsave("fieldspeed_reduced_debris.png")
 ```
