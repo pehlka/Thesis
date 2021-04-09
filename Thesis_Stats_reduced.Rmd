@@ -63,7 +63,7 @@ Question 1: Do "A. sexlineata" move through their habitat randomly or non-random
 ggplot(field_transect_condensed, aes(x=substrate, y=distance_m)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(x = "Substrate", y = "Distance (m)", title = "Habitat Assessment: Amount of Each Substrate") +
-  geom_text(aes(x=substrate, y = distance_m, label = percent_type, vjust = 1), size=4, 
+  geom_text(aes(x=substrate, y = distance_m, label = percent_type, vjust = 1), size=5, 
             color = "black") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -71,8 +71,9 @@ ggplot(field_transect_condensed, aes(x=substrate, y=distance_m)) +
         axis.line = element_line(color = "black")) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"),
-        plot.title = element_text(size = 15))
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16))
 
 ggsave("field_transect_condensed.png")
 ```
@@ -82,7 +83,7 @@ ggsave("field_transect_condensed.png")
 ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(x = "Substrate", y = "Distance Traveled (m)", title = "Field Data: Racerunner Distance Traveled per Substrate") +
-  geom_text(aes(x=Substrate.Type, y = Distance, label = PercentSubstrate, vjust = 1), size=4, 
+  geom_text(aes(x=Substrate.Type, y = Distance, label = PercentSubstrate, vjust = 1), size=5, 
             color = "black") +
   scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -90,8 +91,10 @@ ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
         axis.line = element_line(color = "black")) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"))
-
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16))
+  
 ggsave("fieldspeed_substrate_percent.png")
 ```
 
@@ -108,7 +111,9 @@ ggplot(cover, aes(x=substrate, y=distance_m)) +
         axis.line = element_line(color = "black")) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"))
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16))
 
 ggsave("cover.png")
 ```
@@ -190,10 +195,13 @@ ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
+     theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"),
-        legend.title = element_blank())
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.text=element_text(size = 13))
 
 ggsave("lab_data2.png")
 ```
@@ -218,8 +226,11 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
         axis.line = element_line(color = "black")) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"),
-        legend.title = element_blank())
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.text=element_text(size = 13))
 
 ggsave("lab_data2.png")
 ```
@@ -244,7 +255,11 @@ ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate
         axis.line = element_line(color = "black")) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"))
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.text=element_text(size = 13))
 
 ggsave("lab_data2_omit.png")
 ```
@@ -265,9 +280,13 @@ ggplot(lab_data2_omit, aes(bipedal_percent, peak_v)) +
   labs(x = "Percent Bipedal", y = "Peak Velocity (m/s)", title = 'Lab Data: Peak Velocity vs. Percent Bipedal') +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
-        axis.line = element_line(color = "black"),
-        axis.text = element_text(face = "bold"))
-ggsave("lab_data2_omit.pdf")
+        axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16))
+
+#ggsave("lab_data2_omit.pdf")
 ggsave("lab_data2_omit.png")
 
 #bipedalism does not affect peak velocity
@@ -288,8 +307,11 @@ ggplot(lab_data2_omit, aes(bipedal_percent, side_amax)) +
   labs(x = "Percent Bipedal", y = bquote('Peak Acceleration' ~ (m/s^2)), title = 'Lab Data: Peak Acceleration vs. Percent Bipedal') +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
-        axis.line = element_line(color = "black"),
-        axis.text = element_text(face = "bold"))
+        axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16))
 
 ggsave("lab_data2_omit.png")
 #Bipedalism does not effect acceleration in side videos
@@ -323,10 +345,14 @@ ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y =
   labs(x = "Substrate", y = "Speed (m/s)", title = "Field Data: Speed vs. Substrate") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   theme(panel.background = element_blank()) +
-  theme(axis.line.x = element_line(color = "black", size = 0.5),
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold"))
-
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16))
+        
 ggsave("fieldspeed_jan.png")
 ```
 
@@ -344,8 +370,13 @@ ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
   scale_color_discrete(name = "Substrate Type", labels = c("Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
-        axis.line = element_line(color = "black"),
-        axis.text = element_text(face = "bold"))
+        axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.text=element_text(size = 13))
         #plot.title = element_text(size = 14, face = "bold"),
         #axis.title.x = element_text(size = 12, face = "bold"),
         #axis.title.y = element_text(size = 12, face = "bold"))
