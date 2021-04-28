@@ -75,7 +75,7 @@ ggplot(field_transect_condensed, aes(x=substrate, y=distance_m)) +
         axis.title = element_text(size = 14),
         plot.title = element_text(size = 16))
 
-ggsave("field_transect_condensed.png")
+#ggsave("field_transect_condensed.png")
 ```
 
 ```{r}
@@ -95,7 +95,7 @@ ggplot(fieldspeed_substrate_percent, aes(x=Substrate.Type, y=Distance)) +
         axis.title = element_text(size = 14),
         plot.title = element_text(size = 16))
   
-ggsave("fieldspeed_substrate_percent.png")
+#ggsave("fieldspeed_substrate_percent.png")
 ```
 
 ```{r}
@@ -115,7 +115,7 @@ ggplot(cover, aes(x=substrate, y=distance_m)) +
         axis.title = element_text(size = 14),
         plot.title = element_text(size = 16))
 
-ggsave("cover.png")
+#ggsave("cover.png")
 ```
 
 ```{r}
@@ -203,7 +203,7 @@ ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggsave("lab_data2.png")
+#ggsave("lab_data2.png")
 ```
 
 ```{r}
@@ -232,7 +232,7 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggsave("lab_data2.png")
+#ggsave("lab_data2.png")
 ```
 
 ```{r}
@@ -261,7 +261,7 @@ ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggsave("lab_data2_omit.png")
+#ggsave("lab_data2_omit.png")
 ```
 
 
@@ -286,8 +286,8 @@ ggplot(lab_data2_omit, aes(bipedal_percent, peak_v)) +
         axis.title = element_text(size = 14),
         plot.title = element_text(size = 16))
 
-#ggsave("lab_data2_omit.pdf")
-ggsave("lab_data2_omit.png")
+##ggsave("lab_data2_omit.pdf")
+#ggsave("lab_data2_omit.png")
 
 #bipedalism does not affect peak velocity
 ```
@@ -313,7 +313,8 @@ ggplot(lab_data2_omit, aes(bipedal_percent, side_amax)) +
         axis.title = element_text(size = 14),
         plot.title = element_text(size = 16))
 
-ggsave("lab_data2_omit.png")
+#ggsave("lab_data2_omit.png")
+
 #Bipedalism does not effect acceleration in side videos
 ```
 
@@ -353,7 +354,7 @@ ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y =
         axis.title = element_text(size = 14),
         plot.title = element_text(size = 16))
         
-ggsave("fieldspeed_jan.png")
+#ggsave("fieldspeed_jan.png")
 ```
 
 ```{r}
@@ -381,7 +382,7 @@ ggplot(fieldspeed_reduced_debris, aes(log(NumberClutter+1), log(Speed+1)))+
         #axis.title.x = element_text(size = 12, face = "bold"),
         #axis.title.y = element_text(size = 12, face = "bold"))
 
-ggsave("fieldspeed_reduced_debris.png")
+#ggsave("fieldspeed_reduced_debris.png")
 ```
 
 
