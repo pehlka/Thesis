@@ -2900,11 +2900,65 @@ shapiro.test(residuals(model3))  #not normal
 
 
 
+```{r}
+lme1 <- lme(side_avg_v ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2_avg_v)  #un-transformed
+shapiro.test(residuals(lme1))  #not normal
+hist(residuals(lme1))
+
+lme2 <- lme(sqrt(side_avg_v+1) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2_avg_v)  #square root
+shapiro.test(residuals(lme2))  #not normal
+hist(residuals(lme2))
+
+lme3 <- lme(log10(side_avg_v+1) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2_avg_v)  #log
+shapiro.test(residuals(lme3))  #not normal
+hist(residuals(lme3))
+
+lme4 <- lme(abs(side_avg_v+1)^(1/3) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2_avg_v)  #cubed root
+shapiro.test(residuals(lme4))  #not normal
+hist(residuals(lme4))
+
+lme6 <- lm(side_avg_v ~ substrate_type*biped_combined, data = lab_data2_avg_v)
+shapiro.test(residuals(lme6))  #not normal
+hist(residuals(lme6))
+```
 
 
+```{r}
+lme1 <- lme(side_avg_v ~ substrate_type, random = ~1|ID, data = lab_data2_avg_v)  #un-transformed
+shapiro.test(residuals(lme1))  #not normal
+hist(residuals(lme1))
+
+lme2 <- lme(sqrt(side_avg_v+1) ~ substrate_type, random = ~1|ID, data = lab_data2_avg_v)  #square root
+shapiro.test(residuals(lme2))  #not normal
+hist(residuals(lme2))
+
+lme3 <- lme(log10(side_avg_v+1) ~ substrate_type, random = ~1|ID, data = lab_data2_avg_v)  #log
+shapiro.test(residuals(lme3))  #not normal
+hist(residuals(lme3))
+
+lme4 <- lme(abs(side_avg_v+1)^(1/3) ~ substrate_type, random = ~1|ID, data = lab_data2_avg_v)  #cubed root
+shapiro.test(residuals(lme4))  #not normal
+hist(residuals(lme4))
+
+lme6 <- lm(side_avg_v ~ substrate_type, data = lab_data2_avg_v)
+shapiro.test(residuals(lme6))  #not normal
+hist(residuals(lme6))
+```
 
 
+```{r}
+lab_data2_avg_v_reduced <- read.csv("~/College of Charleston/Thesis/Data/lab_data2_avg_v_reduced.csv")
+lab_data2_avg_v_side.reduced <- read.csv("~/College of Charleston/Thesis/Data/lab_data2_avg_v_side-reduced.csv")
+lab_data2_avg_v_top.reduced <- read.csv("~/College of Charleston/Thesis/Data/lab_data2_avg_v_top-reduced.csv")
 
+lme1 <- lme(side_avg_v ~ substrate_type, random = ~1|ID, data = lab_data2_avg_v_side.reduced)  #un-transformed
+shapiro.test(residuals(lme1))  #not normal
+hist(residuals(lme1))
+
+lme2 <- lme(top_avg_v ~ substrate_type, random = ~1|ID, data = lab_data2_avg_v_top.reduced)  #un-transformed
+shapiro.test(residuals(lme2))  #not normal
+hist(residuals(lme1))
+```
 
 
 
