@@ -207,6 +207,100 @@ ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
 ```
 
 ```{r}
+#Side Camera Avg Velocity ~ Substrate 
+
+lab_data2_avg_v_side.reduced <- read.csv("~/College of Charleston/Thesis/Data/lab_data2_avg_v_side-reduced.csv")
+
+lme.side.avgv.sub <- lme(side_avg_v ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2_avg_v_side.reduced)
+anova(lme.side.avgv.sub, type="marginal")  
+
+shapiro.test(residuals(lme.side.avgv.sub))  #normal
+performance::r2(lme.side.avgv.sub)  
+lme.side.avgv.sub.tukey <- emmeans(lme.side.avgv.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2_avg_v)
+lme.side.avgv.sub.tukey  
+
+ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill = biped_combined)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
+  labs(x = "Substrate", y = "Camera 1 Average Velocity (m/s)", title = "Lab Data: Camera 1 Average Velocity vs. Substrate") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+     theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.text=element_text(size = 13))
+
+ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill=substrate_type)) +
+  geom_boxplot(outlier.shape = NA) + 
+  labs(x = "Substrate", y = "Camera 1 Average Velocity (m/s)", title = "Lab Data: Camera 1 Average Velocity vs. Substrate") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  scale_fill_brewer(palette = "Blues") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+     theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.text=element_text(size = 13))
+```
+
+```{r}
+#Top Camera Avg Velocity ~ Substrate 
+
+lab_data2_avg_v_top.reduced <- read.csv("~/College of Charleston/Thesis/Data/lab_data2_avg_v_top-reduced.csv")
+
+lme.top.avgv.sub <- lme(top_avg_v ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2_avg_v_top.reduced)
+anova(lme.top.avgv.sub, type="marginal")  #substrate type & biped significant
+
+shapiro.test(residuals(lme.top.avgv.sub))  #normal
+performance::r2(lme.top.avgv.sub)  
+lme.top.avgv.sub.tukey <- emmeans(lme.top.avgv.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2_avg_v_top.reduced)
+lme.top.avgv.sub.tukey  
+
+ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill = biped_combined)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
+  labs(x = "Substrate", y = "Camera 2 Average Velocity (m/s)", title = "Lab Data: Camera 2 Average Velocity vs. Substrate") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+     theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.text=element_text(size = 13))
+
+ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill=substrate_type)) +
+  geom_boxplot(outlier.shape = NA) + 
+  labs(x = "Substrate", y = "Camera 2 Average Velocity (m/s)", title = "Lab Data: Camera 2 Average Velocity vs. Substrate") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  scale_fill_brewer(palette = "Blues") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+     theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold", size = 13),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.text=element_text(size = 13))
+```
+
+
+
+```{r}
 #Acceleration ~ Substrate
 lme.log.side.amax.sub <- lme(log10(side_amax) ~ substrate_type*biped_combined, random = ~1|ID, data = lab_data2)
 anova(lme.log.side.amax.sub, type="marginal")  #all insignificant
