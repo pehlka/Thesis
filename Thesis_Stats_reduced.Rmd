@@ -187,7 +187,7 @@ performance::r2(lme.log.side.vmax.sub)  #C=0.479, M=0.359
 lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
 lme.log.side.vmax.sub.tukey  #some significant differences due to gait
 
-ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
+ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +   #ggplot with gait
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = "Peak Velocity (m/s)", title = "Lab Data: Peak Velocity vs. Substrate") +
@@ -202,6 +202,18 @@ ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +
         plot.title = element_text(size = 16),
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
+
+ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = substrate_type)) +   #ggplot without gait
+  geom_boxplot(outlier.shape = NA) +   
+  scale_fill_brewer(palette = "Blues") +
+  labs(x = "Substrate", y = "Peak Velocity (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
 
 #ggsave("lab_data2.png")
 ```
@@ -219,7 +231,12 @@ performance::r2(lme.side.avgv.sub)
 lme.side.avgv.sub.tukey <- emmeans(lme.side.avgv.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2_avg_v)
 lme.side.avgv.sub.tukey  
 
-ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill = biped_combined)) +
+lme.side.avgv.tukey <- emmeans(lme.side.avgv.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2_avg_v_side.reduced)
+lme.side.avgv.tukey  #Tukey differences between all 3 substrates with each other
+
+#only significant Tukey test result was between gaits on sand
+
+ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill = biped_combined)) +   #ggplot with gait
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = "Camera 1 Average Velocity (m/s)", title = "Lab Data: Camera 1 Average Velocity vs. Substrate") +
@@ -235,21 +252,19 @@ ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill = 
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill=substrate_type)) +
+ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill=substrate_type)) +   #ggplot without gait
   geom_boxplot(outlier.shape = NA) + 
-  labs(x = "Substrate", y = "Camera 1 Average Velocity (m/s)", title = "Lab Data: Camera 1 Average Velocity vs. Substrate") +
+  labs(x = "Substrate", y = "Camera 1 Average Velocity (m/s)") + #title = "Lab Data: Camera 1 Average Velocity vs. Substrate") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   scale_fill_brewer(palette = "Blues") +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
-     theme(axis.line.x = element_line(color = "black", size = 0.5),
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold", size = 13),
-        axis.title = element_text(size = 14),
-        plot.title = element_text(size = 16),
-        legend.title = element_blank(),
-        legend.text=element_text(size = 13))
+        axis.text = element_text(face = "bold"))
+
+#ggsave("lab_data2_avg_v_side.reduced.png")
 ```
 
 ```{r}
@@ -263,9 +278,12 @@ anova(lme.top.avgv.sub, type="marginal")  #substrate type & biped significant
 shapiro.test(residuals(lme.top.avgv.sub))  #normal
 performance::r2(lme.top.avgv.sub)  
 lme.top.avgv.sub.tukey <- emmeans(lme.top.avgv.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2_avg_v_top.reduced)
-lme.top.avgv.sub.tukey  
+lme.top.avgv.sub.tukey #Tukey differences between biped debris/sand, biped/quad on mixed, quad on debris/sand
 
-ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill = biped_combined)) +
+lme.top.avgv.tukey <- emmeans(lme.top.avgv.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2_avg_v_top.reduced)
+lme.top.avgv.tukey  #Tukey differences between all 3 substrates with each other
+
+ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill = biped_combined)) +  #ggplot with gait
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = "Camera 2 Average Velocity (m/s)", title = "Lab Data: Camera 2 Average Velocity vs. Substrate") +
@@ -281,21 +299,19 @@ ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill = bi
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill=substrate_type)) +
+ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill=substrate_type)) +   #ggplot without gait
   geom_boxplot(outlier.shape = NA) + 
-  labs(x = "Substrate", y = "Camera 2 Average Velocity (m/s)", title = "Lab Data: Camera 2 Average Velocity vs. Substrate") +
+  labs(x = "Substrate", y = "Camera 2 Average Velocity (m/s)") + #title = "Lab Data: Camera 2 Average Velocity vs. Substrate") +
   scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   scale_fill_brewer(palette = "Blues") +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
-     theme(axis.line.x = element_line(color = "black", size = 0.5),
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold", size = 13),
-        axis.title = element_text(size = 14),
-        plot.title = element_text(size = 16),
-        legend.title = element_blank(),
-        legend.text=element_text(size = 13))
+        axis.text = element_text(face = "bold"))
+
+#ggsave("lab_data2_avg_v_top.reduced.png")
 ```
 
 
@@ -310,7 +326,7 @@ performance::r2(lme.log.side.amax.sub)  #C=0.0.79, M=0.031
 lme.log.side.amax.tukey2 <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
 lme.log.side.amax.tukey2   #no significant differences in any substrate's acceleration based on gait
 
-ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
+ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +   #ggplot with gait
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2)), title = "Lab Data: Peak Acceleration vs. Substrate") +
@@ -325,6 +341,18 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +
         plot.title = element_text(size = 16),
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
+
+ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = substrate_type)) +  #ggplot without gait
+  geom_boxplot() + 
+  scale_fill_brewer(palette = "Blues") +
+  labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
+  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
 
 #ggsave("lab_data2.png")
 ```
@@ -385,6 +413,58 @@ ggplot(lab_data2_omit, aes(bipedal_percent, peak_v)) +
 
 #bipedalism does not affect peak velocity
 ```
+
+
+```{r}
+#Bipedalism's effect on side average velocity 
+
+lab_data2_avg_v_side.reduced_omit <- lab_data2_avg_v_side.reduced[!is.na(lab_data2_avg_v_side.reduced$bipedal_percent), ]
+  #lab racetrack data - omitted non-bipedal rows
+
+peakv.side.biped <- lme(side_avg_v ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data2_avg_v_side.reduced_omit)
+anova(peakv.side.biped)  #signficant
+shapiro.test(residuals(peakv.side.biped))  #normal
+performance::r2(peakv.side.biped)  #C=0.362 #M=0.362
+
+ggplot(lab_data2_avg_v_side.reduced_omit, aes(bipedal_percent, side_avg_v)) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Percent Bipedal", y = "Camera 1 Average Velocity (m/s)") + #title = 'Lab Data: Camera 1 Average Velocity vs. Percent Bipedal') +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
+
+#ggsave("lab_data2_avg_v_side.reduced_omit.png")
+```
+
+```{r}
+#Bipedalism's effect on top average velocity 
+
+lab_data2_avg_v_top.reduced_omit <- lab_data2_avg_v_top.reduced[!is.na(lab_data2_avg_v_top.reduced$bipedal_percent), ]
+  #lab racetrack data - omitted non-bipedal rows
+
+peakv.top.biped <- lme(top_avg_v ~ log10(bipedal_percent+1), random = ~1|ID, data = lab_data2_avg_v_top.reduced_omit)
+anova(peakv.top.biped)  #signficant
+shapiro.test(residuals(peakv.top.biped))  #normal
+performance::r2(peakv.top.biped)  #C=0.264 #M=0.210
+
+ggplot(lab_data2_avg_v_top.reduced_omit, aes(bipedal_percent, top_avg_v)) +
+  geom_point() + 
+  geom_smooth(method = 'lm') +
+  labs(x = "Percent Bipedal", y = "Camera 2 Average Velocity (m/s)") + #title = 'Lab Data: Camera 2 Average Velocity vs. Percent Bipedal') +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(color = "black")) +
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        axis.text = element_text(face = "bold"))
+
+#ggsave("lab_data2_avg_v_top.reduced_omit.png")
+```
+
 
 ```{r}
 #Bipedalism's effect on side acceleration
