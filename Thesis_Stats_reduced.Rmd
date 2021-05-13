@@ -187,11 +187,16 @@ performance::r2(lme.log.side.vmax.sub)  #C=0.479, M=0.359
 lme.log.side.vmax.sub.tukey <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
 lme.log.side.vmax.sub.tukey  #some significant differences due to gait
 
-ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +   #ggplot with gait
+lme.log.side.vmax.sub.tukey2 <- emmeans(lme.log.side.vmax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.log.side.vmax.sub.tukey2  #some significant differences due to gait
+
+levels(lab_data2$substrate) <- c('D', 'SD', 'S')
+  
+ggplot(lab_data2, aes(y=peak_v, x=substrate, fill = biped_combined)) +   #ggplot with gait
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = "Peak Velocity (m/s)", title = "Lab Data: Peak Velocity vs. Substrate") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  #scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
@@ -203,11 +208,13 @@ ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = biped_combined)) +   #g
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = substrate_type)) +   #ggplot without gait
+levels(lab_data2$substrate) <- c('D', 'SD', 'S')
+
+ggplot(lab_data2, aes(y=peak_v, x=substrate, fill = substrate_type)) +   #ggplot without gait
   geom_boxplot(outlier.shape = NA) +   
   scale_fill_brewer(palette = "Blues") +
   labs(x = "Substrate", y = "Peak Velocity (m/s)") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
@@ -215,7 +222,7 @@ ggplot(lab_data2, aes(y=peak_v, x=substrate_type, fill = substrate_type)) +   #g
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
 
-#ggsave("lab_data2.png")
+ggsave("lab_data2.png")
 ```
 
 ```{r}
@@ -228,7 +235,7 @@ anova(lme.side.avgv.sub, type="marginal")
 
 shapiro.test(residuals(lme.side.avgv.sub))  #normal
 performance::r2(lme.side.avgv.sub)  
-lme.side.avgv.sub.tukey <- emmeans(lme.side.avgv.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2_avg_v)
+lme.side.avgv.sub.tukey <- emmeans(lme.side.avgv.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2_avg_v_side.reduced)
 lme.side.avgv.sub.tukey  
 
 lme.side.avgv.tukey <- emmeans(lme.side.avgv.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2_avg_v_side.reduced)
@@ -236,7 +243,9 @@ lme.side.avgv.tukey  #Tukey differences between all 3 substrates with each other
 
 #only significant Tukey test result was between gaits on sand
 
-ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill = biped_combined)) +   #ggplot with gait
+#levels(lab_data2_avg_v_side.reduced$substrate) <- c('D', 'SD', 'S')
+
+ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate, fill = biped_combined)) +   #ggplot with gait
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = "Camera 1 Average Velocity (m/s)", title = "Lab Data: Camera 1 Average Velocity vs. Substrate") +
@@ -252,10 +261,14 @@ ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill = 
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate_type, fill=substrate_type)) +   #ggplot without gait
+
+levels(lab_data2_avg_v_side.reduced$substrate) <- c('S', 'SD', 'D')
+lab_data2_avg_v_side.reduced$substrate <- factor(lab_data2_avg_v_side.reduced$substrate, levels = c("D", "SD", "S"))
+
+ggplot(lab_data2_avg_v_side.reduced, aes(y=side_avg_v, x=substrate, fill=substrate_type)) +   #ggplot without gait
   geom_boxplot(outlier.shape = NA) + 
   labs(x = "Substrate", y = "Camera 1 Average Velocity (m/s)") + #title = "Lab Data: Camera 1 Average Velocity vs. Substrate") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  #scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   scale_fill_brewer(palette = "Blues") +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -299,10 +312,15 @@ ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill = bi
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate_type, fill=substrate_type)) +   #ggplot without gait
+
+levels(lab_data2_avg_v_top.reduced$substrate) <- c('D', 'SD', 'S')
+lab_data2_avg_v_top.reduced$substrate <- factor(lab_data2_avg_v_top.reduced$substrate, levels = c('D', 'SD', 'S'))
+
+
+ggplot(lab_data2_avg_v_top.reduced, aes(y=top_avg_v, x=substrate, fill=substrate)) +   #ggplot without gait
   geom_boxplot(outlier.shape = NA) + 
   labs(x = "Substrate", y = "Camera 2 Average Velocity (m/s)") + #title = "Lab Data: Camera 2 Average Velocity vs. Substrate") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  #scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
   scale_fill_brewer(palette = "Blues") +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
@@ -326,7 +344,10 @@ performance::r2(lme.log.side.amax.sub)  #C=0.0.79, M=0.031
 lme.log.side.amax.tukey2 <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type*biped_combined, adjust="tukey", data=lab_data2)
 lme.log.side.amax.tukey2   #no significant differences in any substrate's acceleration based on gait
 
-ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +   #ggplot with gait
+lme.log.side.amax.tukey3 <- emmeans(lme.log.side.amax.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2)
+lme.log.side.amax.tukey3   
+
+ggplot(lab_data2, aes(y=side_amax, x=substrate, fill = biped_combined)) +   #ggplot with gait
   geom_boxplot(outlier.shape = NA) + 
   scale_fill_discrete(labels = c("bipedal", "quadrupedal")) +
   labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2)), title = "Lab Data: Peak Acceleration vs. Substrate") +
@@ -342,11 +363,14 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = biped_combined)) +  
         legend.title = element_blank(),
         legend.text=element_text(size = 13))
 
-ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = substrate_type)) +  #ggplot without gait
-  geom_boxplot() + 
+
+levels(lab_data2$substrate) <- c('D', 'SD', 'S')
+
+ggplot(lab_data2, aes(y=side_amax, x=substrate, fill = substrate)) +  #ggplot without gait
+  geom_boxplot(outlier.shape = NA) + 
   scale_fill_brewer(palette = "Blues") +
   labs(x = "Substrate", y = bquote('Peak Acceleration' ~ (m/s^2))) +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
@@ -354,7 +378,7 @@ ggplot(lab_data2, aes(y=side_amax, x=substrate_type, fill = substrate_type)) +  
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
 
-#ggsave("lab_data2.png")
+ggsave("lab_data2.png")
 ```
 
 ```{r}
@@ -367,23 +391,23 @@ performance::r2(lme.biped.sub)  #C=0.417, M=0.050
 lme.biped.sub.tukey <- emmeans(lme.biped.sub, pairwise ~ substrate_type, adjust="tukey", data=lab_data2_omit)
 lme.biped.sub.tukey  #no significant differences in substrates
 
-ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate_type, fill = substrate_type)) +
+
+levels(lab_data2_omit$substrate) <- c('D', 'SD', 'S')
+lab_data2_omit <- factor(lab_data2_omit, levels = c('D', 'SD', 'S'))
+
+ggplot(lab_data2_omit, aes(y=bipedal_percent, x=substrate, fill = substrate)) +
   geom_boxplot(outlier.shape = NA) + 
-  scale_fill_manual(values = c("lightskyblue2", "lightblue2", "steelblue")) +
-  labs(x = "Substrate", y = "Percent Bipedal", title = "Lab Data: Percent Bipedal vs. Substrate") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  scale_fill_brewer(palette = "Blues") +
+  labs(x = "Substrate", y = "Percent Bipedal") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         panel.background = element_blank(), 
         axis.line = element_line(color = "black")) +
   theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold", size = 13),
-        axis.title = element_text(size = 14),
-        plot.title = element_text(size = 16),
-        legend.title = element_blank(),
-        legend.text=element_text(size = 13))
+        axis.text = element_text(face = "bold"))
 
-#ggsave("lab_data2_omit.png")
+ggsave("lab_data2_omit.png")
 ```
 
 
@@ -514,19 +538,17 @@ mcelroy_speed_sub_lm.tukey
 
 shapiro.test(residuals(mcelroy_speed_sub_lm))  #normal
 
-ggplot(fieldspeed_jan, aes(x = reorder(Substrate.Type, Speed, FUN = median), y = Speed, fill = Substrate.Type)) + 
+#levels(fieldspeed_jan$Substrate.Type) <- c('DEBRIS', 'MIXED', 'SAND')
+
+ggplot(fieldspeed_jan, aes(x = Substrate.Type, y = Speed, fill = Substrate.Type)) + 
   geom_boxplot() +
   scale_fill_manual(values = c("lightskyblue2", "steelblue", "lightblue2")) +
-  labs(x = "Substrate", y = "Speed (m/s)", title = "Field Data: Speed vs. Substrate") +
-  scale_x_discrete(labels = c("Debris", "Sand", "Mixed")) +
+  labs(x = "Substrate", y = "Speed (m/s)") +
+  scale_x_discrete(labels = c("Debris", "Mixed", "Sand")) +
   theme(panel.background = element_blank()) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-        panel.background = element_blank(), 
-        axis.line.x = element_line(color = "black", size = 0.5),
+  theme(axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
-        axis.text = element_text(face = "bold", size = 13),
-        axis.title = element_text(size = 14),
-        plot.title = element_text(size = 16))
+        axis.text = element_text(face = "bold"))
         
 #ggsave("fieldspeed_jan.png")
 ```
