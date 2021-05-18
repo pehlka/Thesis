@@ -368,7 +368,6 @@ ggplot(lab_data2_avg_v_both, aes(y=both_avg_v, x=substrate, fill = biped_combine
         axis.line.y = element_line(color = "black", size = 0.5),
         axis.text = element_text(face = "bold"))
 
-
 ggplot(lab_data2_avg_v_both, aes(y=both_avg_v, x=substrate, fill=substrate)) +   #ggplot without gait
   geom_boxplot(outlier.shape = NA) + 
   labs(x = "Substrate", y = "Average Velocity (m/s)") + 
